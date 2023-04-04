@@ -28,8 +28,7 @@ static const int64_t hs_metrics_circ_build_time_buckets[] =
   60000  /* 60s */
 };
 
-static const size_t hs_metrics_circ_build_time_buckets_size =
-  ARRAY_LENGTH(hs_metrics_circ_build_time_buckets);
+#define hs_metrics_circ_build_time_buckets_size ARRAY_LENGTH(hs_metrics_circ_build_time_buckets)
 
 /** The base metrics that is a static array of metrics that are added to every
  * single new stores.
