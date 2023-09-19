@@ -18,7 +18,7 @@
 
 - P2P Port=29301
 - RPC Port=29201
-- Client core= based on Firo 14.10.X
+- Client core= based on Firo 14.1X.X
 - Client name=bitcoinzero.qt
 - Conf file=bitcoinzero.conf
 
