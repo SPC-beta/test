@@ -28,7 +28,8 @@ static const int64_t hs_metrics_circ_build_time_buckets[] =
   60000  /* 60s */
 };
 
-#define hs_metrics_circ_build_time_buckets_size ARRAY_LENGTH(hs_metrics_circ_build_time_buckets)
+static const size_t hs_metrics_circ_build_time_buckets_size =
+  ARRAY_LENGTH(hs_metrics_circ_build_time_buckets);
 
 /** The base metrics that is a static array of metrics that are added to every
  * single new stores.
@@ -102,6 +103,18 @@ const hs_metrics_entry_t base_metrics[] =
     .buckets = hs_metrics_circ_build_time_buckets,
     .bucket_count = hs_metrics_circ_build_time_buckets_size,
     .help = "The rendezvous circuit build time in milliseconds",
+  },
+  {
+    .key = HS_METRICS_POW_NUM_PQUEUE_RDV,
+    .type = METRICS_TYPE_GAUGE,
+    .name = METRICS_NAME(hs_rdv_pow_pqueue_count),
+    .help = "Number of requests waiting in the proof of work priority queue",
+  },
+  {
+    .key = HS_METRICS_POW_SUGGESTED_EFFORT,
+    .type = METRICS_TYPE_GAUGE,
+    .name = METRICS_NAME(hs_pow_suggested_effort),
+    .help = "Suggested effort for requests with a proof of work client puzzle",
   },
 };
 

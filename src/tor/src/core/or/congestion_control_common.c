@@ -23,6 +23,8 @@
 #include "core/or/congestion_control_nola.h"
 #include "core/or/congestion_control_westwood.h"
 #include "core/or/congestion_control_st.h"
+#include "core/or/conflux.h"
+#include "core/or/conflux_util.h"
 #include "core/or/trace_probes_cc.h"
 #include "lib/time/compat_time.h"
 #include "feature/nodelist/networkstatus.h"
@@ -702,7 +704,7 @@ circuit_has_active_streams(const circuit_t *circ,
     if (conn->base_.marked_for_close)
       continue;
 
-    if (!layer_hint || conn->cpath_layer == layer_hint) {
+    if (edge_uses_cpath(conn, layer_hint)) {
       if (connection_get_inbuf_len(TO_CONN(conn)) > 0) {
         log_info(LD_CIRC, "CC: More in edge inbuf...");
         return 1;
@@ -953,11 +955,11 @@ congestion_control_update_circuit_bdp(congestion_control_t *cc,
   if (CIRCUIT_IS_ORIGIN(circ)) {
     /* origin circs use n_chan */
     chan_q = circ->n_chan_cells.n;
-    blocked_on_chan = circ->streams_blocked_on_n_chan;
+    blocked_on_chan = circ->circuit_blocked_on_n_chan;
   } else {
     /* Both onion services and exits use or_circuit and p_chan */
     chan_q = CONST_TO_OR_CIRCUIT(circ)->p_chan_cells.n;
-    blocked_on_chan = circ->streams_blocked_on_p_chan;
+    blocked_on_chan = circ->circuit_blocked_on_p_chan;
   }
 
   /* If we have no EWMA RTT, it is because monotime has been stalled
@@ -1188,7 +1190,7 @@ congestion_control_update_circuit_bdp(congestion_control_t *cc,
  */
 int
 congestion_control_dispatch_cc_alg(congestion_control_t *cc,
-                                   const circuit_t *circ,
+                                   circuit_t *circ,
                                    const crypt_path_t *layer_hint)
 {
   int ret = -END_CIRC_REASON_INTERNAL;
@@ -1217,6 +1219,10 @@ congestion_control_dispatch_cc_alg(congestion_control_t *cc,
            cc->cwnd, cwnd_max);
     cc->cwnd = cwnd_max;
   }
+
+  /* If we have a non-zero RTT measurement, update conflux. */
+  if (circ->conflux && cc->ewma_rtt_usec)
+    conflux_update_rtt(circ->conflux, circ, cc->ewma_rtt_usec);
 
   return ret;
 }
