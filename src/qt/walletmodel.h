@@ -293,7 +293,7 @@ private:
     CAmount cachedUnconfirmedPrivateBalance;
     EncryptionStatus cachedEncryptionStatus;
     int cachedNumBlocks;
-
+    QTimer *pollTimer;
     int cachedNumISLocks;
 
     void subscribeToCoreSignals();
