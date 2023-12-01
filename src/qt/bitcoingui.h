@@ -174,14 +174,14 @@ private:
 Q_SIGNALS:
     /** Signal raised when a URI was entered or dragged to the GUI */
     void receivedURI(const QString &uri);
+    /** Restart handling */
+    void requestedRestart(QStringList args);
 
 public Q_SLOTS:
     /** Set number of connections shown in the UI */
     void setNumConnections(int count);
     /** Get restart command-line parameters and request restart */
     void handleRestart(QStringList args);
-    /** Restart handling */
-    void requestedRestart(QStringList args);//xxxx
     /** Set network state shown in the UI */
     void setNetworkActive(bool networkActive);
     /** Set number of blocks and last block date shown in the UI */
