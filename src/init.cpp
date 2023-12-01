@@ -1478,7 +1478,7 @@ bool AppInitParameterInteraction()
 
 static bool LockDataDirectory(bool probeOnly)
 {
-	MilliSleep(1500);
+    MilliSleep(2000);
     std::string strDataDir = GetDataDir().string();
 
     // Make sure only a single Bitcoin process is using the data directory.
