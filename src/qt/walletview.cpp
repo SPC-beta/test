@@ -133,7 +133,7 @@ void WalletView::setupTransactionPage()
         exportButton->setIcon(platformStyle->SingleColorIcon(":/icons/export"));
     }
 
-    connect(exportButton, &QPushButton::clicked, firoTransactionList, &TransactionView::exportClicked);
+    connect(exportButton, &QPushButton::clicked, BZXTransactionList, &TransactionView::exportClicked);
 
     auto exportLayout = new QHBoxLayout();
     exportLayout->addStretch();
