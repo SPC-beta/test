@@ -101,8 +101,6 @@ The following can be set when running make: `make FOO=bar`
 <dd>Don't download/build/cache libs needed to enable the wallet</dd>
 <dt>NO_BDB</dt>
 <dd>Don't download/build/cache BerkeleyDB</dd>
-<dt>NO_SQLITE</dt>
-<dd>Don't download/build/cache SQLite</dd>
 <dt>NO_UPNP</dt>
 <dd>Don't download/build/cache packages needed for enabling upnp</dd>
 <dt>ALLOW_HOST_PACKAGES</dt>
