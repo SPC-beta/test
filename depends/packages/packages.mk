@@ -1,7 +1,7 @@
 packages:=boost openssl libevent gmp zlib backtrace cmake bls-dash
 darwin_packages:=zeromq
 linux_packages:=zeromq
-native_packages := native_ccache native_comparisontool
+native_packages := native_ccache native_comparisontool native_cmake
 
 qt_packages = qrencode zlib
 
