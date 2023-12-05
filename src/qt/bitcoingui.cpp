@@ -121,6 +121,7 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     signMessageAction(0),
     verifyMessageAction(0),
     aboutAction(0),
+    openRepairAction(0),
     receiveCoinsAction(0),
     receiveCoinsMenuAction(0),
     optionsAction(0),
@@ -129,7 +130,6 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     backupWalletAction(0),
     changePassphraseAction(0),
     aboutQtAction(0),
-    openRepairAction(0),
     openRPCConsoleAction(0),
     openAction(0),
     showHelpMessageAction(0),
@@ -447,12 +447,13 @@ void BitcoinGUI::createActions()
     aboutAction->setStatusTip(tr("Show information about %1").arg(tr(PACKAGE_NAME)));
     aboutAction->setMenuRole(QAction::AboutRole);
     aboutAction->setEnabled(false);
+    openRepairAction = new QAction(tr("Wallet &Repair"), this);
+    openRepairAction->setStatusTip(tr("Show wallet repair options"));
+    openRepairAction->setMenuRole(QAction::OpenRepairRole);
+    openRepairAction->setEnabled(false);
     aboutQtAction = new QAction(tr("About &Qt"), this);
     aboutQtAction->setStatusTip(tr("Show information about Qt"));
     aboutQtAction->setMenuRole(QAction::AboutQtRole);
-    openRepairAction = new QAction(tr("Wallet &Repair"), this);
-    openRepairAction->setStatusTip(tr("Show wallet repair options"));
-    openRepairAction->setMenuRole(QAction::WalletRepairRole);
     optionsAction = new QAction(tr("&Options..."), this);
     optionsAction->setStatusTip(tr("Modify configuration options for %1").arg(tr(PACKAGE_NAME)));
     optionsAction->setMenuRole(QAction::PreferencesRole);
@@ -491,8 +492,8 @@ void BitcoinGUI::createActions()
 
     connect(quitAction, &QAction::triggered, qApp, QApplication::quit);
     connect(aboutAction, &QAction::triggered, this, &BitcoinGUI::aboutClicked);
-    connect(aboutQtAction, &QAction::triggered, qApp, QApplication::aboutQt);
     connect(openRepairAction, &QAction::triggered, this, &BitcoinGUI::showRepair);
+    connect(aboutQtAction, &QAction::triggered, qApp, QApplication::aboutQt);
     connect(optionsAction, &QAction::triggered, this, &BitcoinGUI::optionsClicked);
     connect(toggleHideAction, &QAction::triggered, this, &BitcoinGUI::toggleHidden);
     connect(showHelpMessageAction, &QAction::triggered, this, &BitcoinGUI::showHelpMessageClicked);
@@ -559,8 +560,8 @@ void BitcoinGUI::createMenuBar()
     help->addAction(showHelpMessageAction);
     help->addSeparator();
     help->addAction(aboutAction);
-    help->addAction(aboutQtAction);
     help->addAction(openRepairAction);
+    help->addAction(aboutQtAction);
 }
 
 void BitcoinGUI::createToolBars()
@@ -1259,6 +1260,7 @@ void BitcoinGUI::showEvent(QShowEvent *event)
     // enable the debug window when the main window shows up
     openRPCConsoleAction->setEnabled(true);
     aboutAction->setEnabled(true);
+    openRepairAction->setEnabled(true);
     optionsAction->setEnabled(true);
 }
 

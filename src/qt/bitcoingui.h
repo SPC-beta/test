@@ -113,6 +113,7 @@ private:
     QAction *signMessageAction;
     QAction *verifyMessageAction;
     QAction *aboutAction;
+    QAction *openRepairAction;
     QAction *receiveCoinsAction;
     QAction *receiveCoinsMenuAction;
     QAction *optionsAction;
@@ -121,7 +122,6 @@ private:
     QAction *backupWalletAction;
     QAction *changePassphraseAction;
     QAction *aboutQtAction;
-    QAction *openRepairAction;
     QAction *openRPCConsoleAction;
     QAction *openAction;
     QAction *showHelpMessageAction;
