@@ -121,6 +121,7 @@ private:
     QAction *backupWalletAction;
     QAction *changePassphraseAction;
     QAction *aboutQtAction;
+    QAction *openRepairAction;
     QAction *openRPCConsoleAction;
     QAction *openAction;
     QAction *showHelpMessageAction;
@@ -128,7 +129,6 @@ private:
     QAction *masternodeAction;
     QAction *createPcodeAction;
     QAction *logoAction;
-    QAction *openRepairAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
