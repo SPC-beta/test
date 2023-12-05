@@ -761,6 +761,7 @@ void RPCConsole::buildParameterlist(QString arg)
     args.append(arg);
 
     // Send command-line arguments to BitcoinGUI::handleRestart()
+    LogPrintf ("Restarted\n";
     Q_EMIT handleRestart(args);
 }
 
