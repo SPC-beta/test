@@ -1512,6 +1512,7 @@ void BitcoinGUI::checkLelantusVisibility(int numBlocks)
 /** Get restart command-line parameters and request restart */
 void BitcoinGUI::handleRestart(QStringList args)
 {
+    LogPrintf ("Restarted\n");
     if (!ShutdownRequested())
         Q_EMIT requestedRestart(args);
 }
