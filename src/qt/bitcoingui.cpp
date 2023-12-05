@@ -449,7 +449,6 @@ void BitcoinGUI::createActions()
     aboutAction->setEnabled(false);
     openRepairAction = new QAction(tr("Wallet &Repair"), this);
     openRepairAction->setStatusTip(tr("Show wallet repair options"));
-    openRepairAction->setMenuRole(QAction::OpenRepairRole);
     openRepairAction->setEnabled(false);
     aboutQtAction = new QAction(tr("About &Qt"), this);
     aboutQtAction->setStatusTip(tr("Show information about Qt"));
