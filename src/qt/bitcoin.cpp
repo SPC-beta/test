@@ -310,10 +310,12 @@ void BitcoinCore::initialize()
 
 void BitcoinCore::restart(QStringList args)
 {
+    LogPrintf ("Restarted1\n");
     if(execute_restart) { // Only restart 1x, no matter how often a user clicks on a restart-button
         execute_restart = false;
         try
         {
+            LogPrintf ("Restarted2\n");
             qDebug() << __func__ << ": Running Restart in thread";
             Interrupt(threadGroup);
             threadGroup.join_all();
