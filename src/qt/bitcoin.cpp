@@ -445,7 +445,7 @@ void BitcoinApplication::startThread()
     /*  make sure executor object is deleted in its own thread */
     connect(this, &BitcoinApplication::stopThread, executor, &QObject::deleteLater);
     connect(this, &BitcoinApplication::stopThread, coreThread, &QThread::quit);
-    connect(this, &BitcoinApplication::requestedRestart, executor, &BitcoinCore::restart);
+    connect(window, &BitcoinGUI::requestedRestart, executor, &BitcoinCore::restart);
     coreThread->start();
 }
 
