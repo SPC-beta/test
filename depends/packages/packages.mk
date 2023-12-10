@@ -3,8 +3,7 @@ darwin_packages:=zeromq
 linux_packages:=zeromq
 native_packages := native_ccache native_comparisontool native_cmake
 
-qt_native_packages = native_protobuf
-qt_packages = qrencode protobuf zlib
+qt_packages = qrencode zlib
 
 qt_x86_64_linux_packages:=qt expat dbus libxcb xcb_proto xproto libXau freetype fontconfig
 qt_i686_linux_packages:=$(qt_x86_64_linux_packages)
