@@ -302,6 +302,10 @@ PaymentServer::PaymentServer(QObject* parent, bool startLocalServer) :
     netManager(0),
     optionsModel(0)
 {
+    // Verify that the version of the library that we linked against is
+    // compatible with the version of the headers we compiled against.
+    GOOGLE_PROTOBUF_VERIFY_VERSION;
+
     // Install global event filter to catch QFileOpenEvents
     // on Mac: sent when you click BZX: links
     // other OSes: helpful when dealing with payment request files
@@ -331,6 +335,7 @@ PaymentServer::PaymentServer(QObject* parent, bool startLocalServer) :
 
 PaymentServer::~PaymentServer()
 {
+    google::protobuf::ShutdownProtobufLibrary();
 }
 
 //
