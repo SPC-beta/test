@@ -53,24 +53,25 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
         LogPrintf ("aboutClicked\n");
         setWindowTitle(tr("About %1").arg(PACKAGE_NAME));
 
+        std::string licenseInfo = LicenseInfo();
         /// HTML-format the license message from the core
-        QString licenseInfo = QString::fromStdString(LicenseInfo());
-        QString licenseInfoHTML = licenseInfo;
+        QString licenseInfoHTML = QString::fromStdString(LicenseInfo());
         // Make URLs clickable
         QRegExp uri("<(.*)>", Qt::CaseSensitive, QRegExp::RegExp2);
         uri.setMinimal(true); // use non-greedy matching
         licenseInfoHTML.replace(uri, "<a href=\"\\1\">\\1</a>");
         // Replace newlines with HTML breaks
-        licenseInfoHTML.replace("\n\n", "<br><br>");
+        licenseInfoHTML.replace("\n", "<br>");
 
         ui->aboutMessage->setTextFormat(Qt::RichText);
         ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        text = version + "\n" + licenseInfo;
+        text = version + "\n" + QString::fromStdString(FormatParagraph(licenseInfo));
         ui->aboutMessage->setText(version + "<br><br>" + licenseInfoHTML);
         ui->aboutMessage->setWordWrap(true);
         ui->helpMessage->setVisible(false);
     }
-    else {
+    else
+    {
         setWindowTitle(tr("Command-line options"));
         QString header = tr("Usage:") + "\n" +
             "  bitcoinzero-qt [" + tr("command-line options") + "]                     " + "\n";
