@@ -835,7 +835,6 @@ void BitcoinGUI::showDebugWindowActivateConsole()
 
 void BitcoinGUI::showHelpMessageClicked()
 {
-    LogPrintf ("aboutClicked2\n");
     helpMessageDialog->show();
 }
 
