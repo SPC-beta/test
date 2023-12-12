@@ -1,11 +1,12 @@
-package=expat
-$(package)_version=2.1.1
-$(package)_download_path=https://github.com/libexpat/libexpat/releases/download/R_2_2_6/
+package=xtrans
+$(package)_version=1.3.4
+$(package)_download_path=http://xorg.freedesktop.org/releases/individual/lib/
 $(package)_file_name=$(package)-$($(package)_version).tar.bz2
-$(package)_sha256_hash=aff584e5a2f759dcfc6d48671e9529f6afe1e30b0cd6a4cec200cbe3f793de67
+$(package)_sha256_hash=054d4ee3efd52508c753e9f7bc655ef185a29bd2850dd9e2fc2ccc33544f583a
+$(package)_dependencies=
 
 define $(package)_set_vars
-$(package)_config_opts=--disable-static
+$(package)_config_opts_linux=--with-pic --disable-static
 endef
 
 define $(package)_config_cmds
