@@ -643,6 +643,7 @@ int main(int argc, char *argv[])
     // but before showing splash screen.
     if (IsArgSet("-?") || IsArgSet("-h") || IsArgSet("-help") || IsArgSet("-version"))
     {
+        LogPrintf ("aboutClicked1\n");
         HelpMessageDialog help(NULL, IsArgSet("-version"));
         help.showOrPrint();
         return EXIT_SUCCESS;

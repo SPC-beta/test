@@ -811,12 +811,12 @@ void BitcoinGUI::optionsClicked()
 
 void BitcoinGUI::aboutClicked()
 {
-    /*if(!clientModel)
+    if(!clientModel)
         return;
 
     HelpMessageDialog dlg(this, true);
-    dlg.exec();*/
-    LogPrintf ("aboutClicked\n");
+    dlg.exec();
+
 }
 
 void BitcoinGUI::showDebugWindow()
@@ -835,6 +835,7 @@ void BitcoinGUI::showDebugWindowActivateConsole()
 
 void BitcoinGUI::showHelpMessageClicked()
 {
+    LogPrintf ("aboutClicked2\n");
     helpMessageDialog->show();
 }
 

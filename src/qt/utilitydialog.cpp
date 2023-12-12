@@ -34,6 +34,8 @@
 HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
     QDialog(parent),
     ui(new Ui::HelpMessageDialog)
+
+  LogPrintf ("aboutClicked3\n");
 {
     ui->setupUi(this);
 
@@ -139,12 +141,14 @@ HelpMessageDialog::~HelpMessageDialog()
 
 void HelpMessageDialog::printToConsole()
 {
+    LogPrintf ("aboutClicked4\n");
     // On other operating systems, the expected action is to print the message to the console.
     fprintf(stdout, "%s\n", qPrintable(text));
 }
 
 void HelpMessageDialog::showOrPrint()
 {
+    LogPrintf ("aboutClicked5\n");
 #if defined(WIN32)
     // On Windows, show a message box, as there is no stderr/stdout in windowed applications
     exec();
