@@ -35,8 +35,8 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
     QDialog(parent),
     ui(new Ui::HelpMessageDialog)
 
-  LogPrintf ("aboutClicked3\n");
 {
+    LogPrintf ("aboutClicked3\n");
     ui->setupUi(this);
 
     QString version = tr(PACKAGE_NAME) + " " + tr("version") + " " + QString::fromStdString(FormatFullVersion());
@@ -50,7 +50,8 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
 #endif
 
     if (about)
-    {
+    {  LogPrintf ("aboutClicked3.5\n");
+
         setWindowTitle(tr("About %1").arg(tr(PACKAGE_NAME)));
 
         /// HTML-format the license message from the core
