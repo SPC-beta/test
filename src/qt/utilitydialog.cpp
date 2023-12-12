@@ -36,7 +36,6 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
     ui(new Ui::HelpMessageDialog)
 
 {
-    LogPrintf ("aboutClicked3\n");
     ui->setupUi(this);
 
     QString version = tr(PACKAGE_NAME) + " " + tr("version") + " " + QString::fromStdString(FormatFullVersion());
@@ -50,7 +49,7 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
 #endif
 
     if (about)
-    {  LogPrintf ("aboutClicked3.5\n");
+    {  LogPrintf ("aboutClicked\n");
 
         setWindowTitle(tr("About %1").arg(tr(PACKAGE_NAME)));
 
@@ -70,7 +69,8 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
         ui->aboutMessage->setText(version + "<br><br>" + licenseInfoHTML);
         ui->aboutMessage->setWordWrap(true);
         ui->helpMessage->setVisible(false);
-    } else {
+    }
+    else {
         setWindowTitle(tr("Command-line options"));
         QString header = tr("Usage:") + "\n" +
             "  bitcoinzero-qt [" + tr("command-line options") + "]                     " + "\n";
