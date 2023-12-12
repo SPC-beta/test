@@ -491,7 +491,7 @@ void BitcoinGUI::createActions()
 
     connect(quitAction, &QAction::triggered, qApp, QApplication::quit);
     connect(rpcConsole, &RPCConsole::handleRestart, this, &BitcoinGUI::handleRestart);
-    connect(aboutAction, &QAction::triggered, this, QApplication::aboutClicked);
+    connect(aboutAction, &QAction::triggered, this, &BitcoinGUI::aboutClicked);
     connect(openRepairAction, &QAction::triggered, this, &BitcoinGUI::showRepair);
     connect(aboutQtAction, &QAction::triggered, qApp, QApplication::aboutQt);
     connect(optionsAction, &QAction::triggered, this, &BitcoinGUI::optionsClicked);
@@ -811,11 +811,12 @@ void BitcoinGUI::optionsClicked()
 
 void BitcoinGUI::aboutClicked()
 {
-    if(!clientModel)
+    /*if(!clientModel)
         return;
 
     HelpMessageDialog dlg(this, true);
-    dlg.exec();
+    dlg.exec();*/
+    LogPrintf ("aboutClicked\n");
 }
 
 void BitcoinGUI::showDebugWindow()
