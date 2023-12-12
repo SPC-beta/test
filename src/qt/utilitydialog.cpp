@@ -49,9 +49,9 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
 #endif
 
     if (about)
-    {  LogPrintf ("aboutClicked\n");
-
-        setWindowTitle(tr("About %1").arg(tr(PACKAGE_NAME)));
+    {
+        LogPrintf ("aboutClicked\n");
+        setWindowTitle(tr("About %1").arg(PACKAGE_NAME));
 
         /// HTML-format the license message from the core
         QString licenseInfo = QString::fromStdString(LicenseInfo());
@@ -61,7 +61,7 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
         uri.setMinimal(true); // use non-greedy matching
         licenseInfoHTML.replace(uri, "<a href=\"\\1\">\\1</a>");
         // Replace newlines with HTML breaks
-        licenseInfoHTML.replace("\n", "<br>");
+        licenseInfoHTML.replace("\n\n", "<br><br>");
 
         ui->aboutMessage->setTextFormat(Qt::RichText);
         ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
