@@ -491,7 +491,7 @@ void BitcoinGUI::createActions()
 
     connect(quitAction, &QAction::triggered, qApp, QApplication::quit);
     connect(rpcConsole, &RPCConsole::handleRestart, this, &BitcoinGUI::handleRestart);
-    connect(aboutAction, &QAction::triggered, this, &BitcoinGUI::aboutClicked);
+    connect(aboutAction, &QAction::triggered, this, QApplication::aboutClicked);
     connect(openRepairAction, &QAction::triggered, this, &BitcoinGUI::showRepair);
     connect(aboutQtAction, &QAction::triggered, qApp, QApplication::aboutQt);
     connect(optionsAction, &QAction::triggered, this, &BitcoinGUI::optionsClicked);
