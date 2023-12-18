@@ -614,6 +614,12 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
         // TODO: Maybe recheck connections/IBD and (if something wrong) send an expires-immediately template to stop miners?
     }
 
+    const struct BIP9DeploymentInfo& segwit_info = VersionBitsDeploymentInfo[Consensus::DEPLOYMENT_SEGWIT];
+    // If the caller is indicating segwit support, then allow CreateNewBlock()
+    // to select witness transactions, after segwit activates (otherwise
+    // don't).
+    bool fSupportsSegwit = setClientRules.find(segwit_info.name) != setClientRules.end();
+
 
     // Update block
     static CBlockIndex* pindexPrev;
@@ -811,6 +817,10 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
 
     if (pindexPrev->nHeight+1 >= Params().GetConsensus().DIP0003Height) {
         result.push_back(Pair("coinbase_payload", HexStr(pblock->vtx[0]->vExtraPayload)));
+    }
+
+    if (!pblocktemplate->vchCoinbaseCommitment.empty() && fSupportsSegwit) {
+        result.push_back(Pair("default_witness_commitment", HexStr(pblocktemplate->vchCoinbaseCommitment.begin(), pblocktemplate->vchCoinbaseCommitment.end())));
     }
 
     return result;
