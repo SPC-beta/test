@@ -4147,7 +4147,7 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
                 {
                     // Fill a vout to ourself
                     // TODO: pass in scriptChange instead of reservekey so
-                    // change transaction isn't always pay-to-dash-address
+                    // change transaction isn't always pay-to-BZX-address
                     CScript scriptChange;
 
                     // coin control: send change to custom address
@@ -4269,6 +4269,7 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
                 // Remove scriptSigs to eliminate the fee calculation dummy signatures
                 for (auto& vin : txNew.vin) {
                     vin.scriptSig = CScript();
+                    vin.scriptWitness.SetNull();
                 }
 
                 // Allow to override the default confirmation target over the CoinControl instance
@@ -4971,6 +4972,7 @@ bool CWallet::CreateLelantusMintTransactions(
                     // Remove scriptSigs to eliminate the fee calculation dummy signatures
                     for (auto &vin : tx.vin) {
                         vin.scriptSig = CScript();
+                        vin.scriptWitness.SetNull();
                     }
 
                     // Can we complete this as a free transaction?

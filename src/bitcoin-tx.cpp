@@ -290,10 +290,17 @@ static void MutateTxAddOutPubKey(CMutableTransaction& tx, const std::string& str
     CBitcoinAddress addr(scriptPubKey);
 
     // Extract and validate FLAGS
+    bool bSegWit = false;
     bool bScriptHash = false;
     if (vStrInputParts.size() == 3) {
         std::string flags = vStrInputParts[2];
+        bSegWit = (flags.find("W") != std::string::npos);
         bScriptHash = (flags.find("S") != std::string::npos);
+    }
+
+    if (bSegWit) {
+        // Call GetScriptForWitness() to build a P2WSH scriptPubKey
+        scriptPubKey = GetScriptForWitness(scriptPubKey);
     }
 
     if (bScriptHash) {
@@ -345,9 +352,11 @@ static void MutateTxAddOutMultiSig(CMutableTransaction& tx, const std::string& s
     }
 
     // Extract FLAGS
+    bool bSegWit = false;
     bool bScriptHash = false;
     if (vStrInputParts.size() == numkeys + 4) {
         std::string flags = vStrInputParts.back();
+        bSegWit = (flags.find("W") != std::string::npos);
         bScriptHash = (flags.find("S") != std::string::npos);
     }
     else if (vStrInputParts.size() > numkeys + 4) {
@@ -356,6 +365,12 @@ static void MutateTxAddOutMultiSig(CMutableTransaction& tx, const std::string& s
     }
 
     CScript scriptPubKey = GetScriptForMultisig(required, pubkeys);
+
+
+    if (bSegWit) {
+        // Call GetScriptForWitness() to build a P2WSH scriptPubKey
+        scriptPubKey = GetScriptForWitness(scriptPubKey);
+    }
 
     if (bScriptHash) {
         // Get the address for the redeem script, then call
@@ -412,11 +427,19 @@ static void MutateTxAddOutScript(CMutableTransaction& tx, const std::string& str
     CScript scriptPubKey = ParseScript(strScript);
 
     // Extract FLAGS
+    bool bSegWit = false;
     bool bScriptHash = false;
     if (vStrInputParts.size() == 3) {
         std::string flags = vStrInputParts.back();
+        bSegWit = (flags.find("W") != std::string::npos);
         bScriptHash = (flags.find("S") != std::string::npos);
     }
+
+
+    if (bSegWit) {
+      scriptPubKey = GetScriptForWitness(scriptPubKey);
+    }
+
     if (bScriptHash) {
       CBitcoinAddress addr(scriptPubKey);
       scriptPubKey = GetScriptForDestination(addr.Get());
@@ -622,7 +645,7 @@ static void MutateTxSign(CMutableTransaction& tx, const std::string& flagStr)
             sigdata = CombineSignatures(prevPubKey, MutableTransactionSignatureChecker(&mergedTx, i, amount), sigdata, DataFromTransaction(txv, i));
         UpdateTransaction(mergedTx, i, sigdata);
 
-        if (!VerifyScript(txin.scriptSig, prevPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, MutableTransactionSignatureChecker(&mergedTx, i, amount)))
+        if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, MutableTransactionSignatureChecker(&mergedTx, i, amount)))
             fComplete = false;
     }
 

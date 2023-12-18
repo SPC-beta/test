@@ -1258,6 +1258,7 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     softforks.push_back(SoftForkDesc("DIP3", 4, tip, consensusParams));
     softforks.push_back(SoftForkDesc("DIP3Enforcement", 5, tip, consensusParams));
     softforks.push_back(SoftForkDesc("DIP8", 6, tip, consensusParams));
+    BIP9SoftForkDescPushBack(bip9_softforks, "segwit", consensusParams, Consensus::DEPLOYMENT_SEGWIT);
     obj.push_back(Pair("softforks",             softforks));
     obj.push_back(Pair("bip9_softforks", bip9_softforks));
 

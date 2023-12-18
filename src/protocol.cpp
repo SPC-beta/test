@@ -29,6 +29,9 @@ namespace NetMsgType {
     const char *PING="ping";
     const char *PONG="pong";
     const char *NOTFOUND="notfound";
+    const char *FILTERLOAD="filterload";
+    const char *FILTERADD="filteradd";
+    const char *FILTERCLEAR="filterclear";
     const char *REJECT="reject";
     const char *SENDHEADERS="sendheaders";
     const char *FEEFILTER="feefilter";
@@ -77,6 +80,9 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::PING,
     NetMsgType::PONG,
     NetMsgType::NOTFOUND,
+    NetMsgType::FILTERLOAD,
+    NetMsgType::FILTERADD,
+    NetMsgType::FILTERCLEAR,
     NetMsgType::REJECT,
     NetMsgType::SENDHEADERS,
     NetMsgType::FEEFILTER,
@@ -198,6 +204,8 @@ bool operator<(const CInv& a, const CInv& b)
 std::string CInv::GetCommand() const
 {
     std::string cmd;
+    if (type & MSG_WITNESS_FLAG)
+        cmd.append("witness-");
     int masked = type & MSG_TYPE_MASK;
     // TODO: switch(masked)
     switch (type)
