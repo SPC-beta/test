@@ -3205,7 +3205,6 @@ bool SendMessages(CNode* pto, CConnman& connman, const std::atomic<bool>& interr
             pto->nPingUsecStart = GetTimeMicros();
             pto->nPingNonceSent = nonce;
             connman.PushMessage(pto, msgMaker.Make(NetMsgType::PING, nonce));
-            }
         }
 
         TRY_LOCK(cs_main, lockMain); // Acquire cs_main for IsInitialBlockDownload() and CNodeState()
