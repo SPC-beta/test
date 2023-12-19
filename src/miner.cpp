@@ -911,7 +911,6 @@ void static BZXMiner(const CChainParams &chainparams) {
                 uint256 thash;
                 while (true)
                 {
-                    fGenerate = true;
                     lyra2z_hash(BEGIN(pblock->nVersion), BEGIN(thash));
                     boost::this_thread::interruption_point();
                     auto powTarget = UintToArith256(thash);
