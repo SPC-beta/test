@@ -301,11 +301,11 @@ UniValue getgenerate(const JSONRPCRequest& request)
 
     if (GetBoolArg("-gen", DEFAULT_GENERATE))
     {
-    return false;
+    return true;
     }
     else
     {
-    return true;
+    return false;
     }
 }
 
