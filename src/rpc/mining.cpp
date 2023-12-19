@@ -298,7 +298,7 @@ UniValue getgenerate(const JSONRPCRequest& request)
         );
 
     LOCK(cs_main);
-
+    bool fGenerate = request.params[0].get_bool();
     if (fGenerate = true)
     {
     return true;
