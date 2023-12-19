@@ -257,7 +257,8 @@ UniValue setgenerate(const JSONRPCRequest& request)
         if (nGenProcLimit == 0)
             fGenerate = false;
     }
-
+    mapArgs["-gen"] = (fGenerate ? "1" : "0");
+    mapArgs ["-genproclimit"] = itostr(nGenProcLimit);
     GenerateBitcoins(fGenerate, nGenProcLimit, Params());
 
     return NullUniValue;
