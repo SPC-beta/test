@@ -299,7 +299,7 @@ UniValue getgenerate(const JSONRPCRequest& request)
 
     LOCK(cs_main);
 
-    if (GetBoolArg("-gen", DEFAULT_GENERATE))
+    if (fGenerate = true)
     {
     return true;
     }
