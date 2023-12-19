@@ -257,6 +257,7 @@ UniValue setgenerate(const JSONRPCRequest& request)
         if (nGenProcLimit == 0)
             fGenerate = false;
     }
+    std::map<std::string, std::string> mapArgs;
     mapArgs["-gen"] = (fGenerate ? "1" : "0");
     mapArgs ["-genproclimit"] = itostr(nGenProcLimit);
     GenerateBitcoins(fGenerate, nGenProcLimit, Params());
