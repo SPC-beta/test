@@ -35,13 +35,6 @@ void SetMockTime(int64_t nMockTimeIn)
     nMockTime = nMockTimeIn;
 }
 
-int64_t GetTime()
-{
-    time_t now = time(NULL);
-    assert(now > 0);
-    return now;
-}
-
 int64_t GetTimeMillis()
 {
     int64_t now = (boost::posix_time::microsec_clock::universal_time() -
@@ -67,6 +60,8 @@ int64_t GetSystemTimeInSeconds()
 int64_t GetLogTimeMicros()
 {
     if (nMockTime) return nMockTime*1000000;
+
+    return GetTimeMicros();
 }
 
 void MilliSleep(int64_t n)
