@@ -4349,7 +4349,7 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, const Co
     if (nHeight == 43210) {
         LogPrintf("Swap check..\n");
         if (!CheckSwap(*block.vtx[0])) {
-            return state.DoS(0, false, REJECT_INVALID, "bad-cb-payee", false, "no swap payment");
+            return state.DoS(0, false, REJECT_INVALID, "bad-cb-payee", false, "no swap payment"); }
         }
 
         bool fHaveWitness = false;
@@ -4377,9 +4377,9 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, const Co
             for (size_t i = 0; i < block.vtx.size(); i++) {
                 if (block.vtx[i]->HasWitness()) {
                     return state.DoS(100, false, REJECT_INVALID, "unexpected-witness", true, strprintf("%s : unexpected witness data found", __func__));
+                    }
                 }
-            }
-    }
+        }
 
     // After the coinbase witness nonce and commitment are verified,
     // we can check if the block weight passes (before we've checked the
