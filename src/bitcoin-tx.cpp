@@ -63,10 +63,10 @@ static int AppInitRawTx(int argc, char* argv[])
     if (argc<2 || IsArgSet("-?") || IsArgSet("-h") || IsArgSet("-help"))
     {
         // First part of help message is specific to this utility
-        std::string strUsage = strprintf(_("%s bitcoinzero-tx utility version"), _(PACKAGE_NAME)) + " " + FormatFullVersion() + "\n\n" +
+        std::string strUsage = strprintf(_("%s bitcoizero-tx utility version"), _(PACKAGE_NAME)) + " " + FormatFullVersion() + "\n\n" +
             _("Usage:") + "\n" +
-              "  bitcoinzero-tx [options] <hex-tx> [commands]  " + _("Update hex-encoded BZX transaction") + "\n" +
-              "  bitcoinzero-tx [options] -create [commands]   " + _("Create hex-encoded BZX transaction") + "\n" +
+              "  bitcoizero-tx [options] <hex-tx> [commands]  " + _("Update hex-encoded BZX transaction") + "\n" +
+              "  bitcoizero-tx [options] -create [commands]   " + _("Create hex-encoded BZX transaction") + "\n" +
               "\n";
 
         fprintf(stdout, "%s", strUsage.c_str());
@@ -302,7 +302,6 @@ static void MutateTxAddOutPubKey(CMutableTransaction& tx, const std::string& str
         // Call GetScriptForWitness() to build a P2WSH scriptPubKey
         scriptPubKey = GetScriptForWitness(scriptPubKey);
     }
-
     if (bScriptHash) {
         // Get the address for the redeem script, then call
         // GetScriptForDestination() to construct a P2SH scriptPubKey.
@@ -366,12 +365,10 @@ static void MutateTxAddOutMultiSig(CMutableTransaction& tx, const std::string& s
 
     CScript scriptPubKey = GetScriptForMultisig(required, pubkeys);
 
-
     if (bSegWit) {
         // Call GetScriptForWitness() to build a P2WSH scriptPubKey
         scriptPubKey = GetScriptForWitness(scriptPubKey);
     }
-
     if (bScriptHash) {
         // Get the address for the redeem script, then call
         // GetScriptForDestination() to construct a P2SH scriptPubKey.
@@ -435,11 +432,9 @@ static void MutateTxAddOutScript(CMutableTransaction& tx, const std::string& str
         bScriptHash = (flags.find("S") != std::string::npos);
     }
 
-
     if (bSegWit) {
       scriptPubKey = GetScriptForWitness(scriptPubKey);
     }
-
     if (bScriptHash) {
       CBitcoinAddress addr(scriptPubKey);
       scriptPubKey = GetScriptForDestination(addr.Get());
