@@ -3419,7 +3419,6 @@ CNode::CNode(NodeId idIn, ServiceFlags nLocalServicesIn, int nMyStartingHeightIn
     fGetAddr = false;
     nNextLocalAddrSend = 0;
     nNextAddrSend = 0;
-    nNextAddrSend = 0;
     nAddrTokenBucket = 1; // initialize to 1 to allow self-announcement
     nAddrTokenTimestamp = GetTimeMicros();
     nProcessedAddrs = 0;
