@@ -298,7 +298,15 @@ UniValue getgenerate(const JSONRPCRequest& request)
         );
 
     LOCK(cs_main);
-    return GetBoolArg("-gen", DEFAULT_GENERATE);
+
+    if (GetBoolArg("-gen", DEFAULT_GENERATE))
+    {
+    return false;
+    }
+    else
+    {
+    return true;
+    }
 }
 
 UniValue getmininginfo(const JSONRPCRequest& request)
