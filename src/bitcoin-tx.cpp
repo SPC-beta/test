@@ -63,10 +63,10 @@ static int AppInitRawTx(int argc, char* argv[])
     if (argc<2 || IsArgSet("-?") || IsArgSet("-h") || IsArgSet("-help"))
     {
         // First part of help message is specific to this utility
-        std::string strUsage = strprintf(_("%s bitcoizero-tx utility version"), _(PACKAGE_NAME)) + " " + FormatFullVersion() + "\n\n" +
+        std::string strUsage = strprintf(_("%s bitcoinzero-tx utility version"), _(PACKAGE_NAME)) + " " + FormatFullVersion() + "\n\n" +
             _("Usage:") + "\n" +
-              "  bitcoizero-tx [options] <hex-tx> [commands]  " + _("Update hex-encoded BZX transaction") + "\n" +
-              "  bitcoizero-tx [options] -create [commands]   " + _("Create hex-encoded BZX transaction") + "\n" +
+              "  bitcoinzero-tx [options] <hex-tx> [commands]  " + _("Update hex-encoded BZX transaction") + "\n" +
+              "  bitcoinzero-tx [options] -create [commands]   " + _("Create hex-encoded BZX transaction") + "\n" +
               "\n";
 
         fprintf(stdout, "%s", strUsage.c_str());
