@@ -667,12 +667,14 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
     bool isInWhitelist = Params().GetConsensus().txidWhitelist.count(tx.GetHash()) > 0;
     if (!isInWhitelist) {
         for (const auto& vin : tx.vin) {
+            if (nHeight >= 13900) {
                 if (txid_blacklist.count(vin.prevout.hash.GetHex()) > 0) {
                         return state.DoS(100, error("Spending this tx is temporarily disabled\n"
                                                     "Contact Devs: http://www.specialcoins-discord.ovh/\n"),
                                      REJECT_INVALID, "bad-txns-blocked-tx");
                 }
             }
+        }
     }
 
     return true;
