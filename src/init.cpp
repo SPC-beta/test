@@ -802,7 +802,7 @@ void ThreadImport(std::vector <boost::filesystem::path> vImportFiles) {
 
 #ifdef ENABLE_WALLET
     if (!GetBoolArg("-disablewallet", false) && pwalletMain->zwallet) {
-        //Load mint hashes to memory
+        //Load privcoin mint hashes to memory
         LogPrintf("Loading mints to wallet..\n");
         pwalletMain->zwallet->GetTracker().Init();
         pwalletMain->zwallet->LoadMintPoolFromDB();
@@ -1920,17 +1920,16 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 
         if (!fLoaded) {
             // first suggest a reindex
-            if (!fReset) {
-                bool fRet = true;
-                if (fRet) {
+            if (!fReset)
+            {
+                {
                     SoftSetBoolArg("-zapwallettxes", true);
                     fReindex = true;
                     fRequestShutdown = false;
-                } else {
-                    LogPrintf("Aborted block database rebuild. Exiting.\n");
-                    return false;
                 }
-            } else {
+            }
+            else
+            {
                 return InitError(strLoadError);
             }
         }
