@@ -688,12 +688,12 @@ std::string HelpMessage(HelpMessageMode mode)
 
 std::string LicenseInfo()
 {
-    const std::string URL_SOURCE_CODE = "<https://github.com/BZXorg/BZX>";
-    const std::string URL_WEBSITE = "<https://BZX.org/>";
+    const std::string URL_SOURCE_CODE = "<https://github.com/SpecialCoins/BitcoinZero>";
+    const std::string URL_WEBSITE = "<https://bzx.world//>";
 
-    std::string copyright = CopyrightHolders(strprintf(_("Copyright (C) %i-%i"), 2016, COPYRIGHT_YEAR) + " ");
+    std::string copyright = CopyrightHolders(strprintf(_("Copyright (C) %i-%i"), 2020, COPYRIGHT_YEAR) + " ");
     
-    const std::string bitcoinStr = strprintf("%i-%i The Bitcoin Core", 2016, COPYRIGHT_YEAR);
+    const std::string bitcoinStr = strprintf("%i-%i The Bitcoin Core", 2016, 2020);
     if (copyright.find(bitcoinStr) != std::string::npos) {
         copyright.replace(copyright.find(bitcoinStr), sizeof("2016") - 1, "2009");
     }
