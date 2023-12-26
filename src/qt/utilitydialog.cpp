@@ -50,12 +50,11 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
 
     if (about)
     {
-        LogPrintf ("aboutClicked\n");
-        setWindowTitle(tr("About %1").arg(PACKAGE_NAME));
+        setWindowTitle(tr("About %1").arg(tr(PACKAGE_NAME)));
 
-        std::string licenseInfo = LicenseInfo();
         /// HTML-format the license message from the core
-        QString licenseInfoHTML = QString::fromStdString(LicenseInfo());
+        QString licenseInfo = QString::fromStdString(LicenseInfo());
+        QString licenseInfoHTML = licenseInfo;
         // Make URLs clickable
         QRegExp uri("<(.*)>", Qt::CaseSensitive, QRegExp::RegExp2);
         uri.setMinimal(true); // use non-greedy matching
@@ -65,7 +64,7 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
 
         ui->aboutMessage->setTextFormat(Qt::RichText);
         ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        text = version + "\n" + QString::fromStdString(FormatParagraph(licenseInfo));
+        text = version + "\n" + licenseInfo;
         ui->aboutMessage->setText(version + "<br><br>" + licenseInfoHTML);
         ui->aboutMessage->setWordWrap(true);
         ui->helpMessage->setVisible(false);
