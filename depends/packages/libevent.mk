@@ -19,7 +19,6 @@ define $(package)_set_vars
   $(package)_config_opts_netbsd=--with-pic
   $(package)_config_opts_openbsd=--with-pic
   $(package)_config_opts_android=--with-pic
-  $(package)_cppflags_mingw32=-D_WIN32_WINNT=0x0601
 endef
 
 define $(package)_preprocess_cmds
