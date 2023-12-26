@@ -1,6 +1,8 @@
-packages:=boost openssl libevent gmp backtrace cmake bls-dash
+packages:=boost openssl libevent gmp backtrace bls-dash
 darwin_packages:=zeromq
 linux_packages:=zeromq
+
+native_packages := native_cmake
 
 qt_native_packages = native_protobuf
 qt_packages = qrencode protobuf zlib
