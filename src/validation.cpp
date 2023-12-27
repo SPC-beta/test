@@ -3014,7 +3014,7 @@ bool static FlushStateToDisk(CValidationState &state, FlushStateMode mode, int n
     }
     int64_t nMempoolSizeMax = GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
     int64_t cacheSize = pcoinsTip->DynamicMemoryUsage() * DB_PEAK_USAGE_FACTOR;
-    cacheSize += evoDb->GetMemoryUsage() * EVO_DB_USAGE_FACTOR * DB_PEAK_USAGE_FACTOR;
+    int64_t cacheSize += evoDb->GetMemoryUsage() * EVO_DB_USAGE_FACTOR * DB_PEAK_USAGE_FACTOR;
     int64_t cacheSize = pcoinsTip->DynamicMemoryUsage();
     cacheSize += evoDb->GetMemoryUsage();
     int64_t nTotalSpace = nCoinCacheUsage + std::max<int64_t>(nMempoolSizeMax - nMempoolUsage, 0);
