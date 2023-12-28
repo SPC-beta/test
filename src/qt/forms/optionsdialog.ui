@@ -20,7 +20,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tabMain">
       <attribute name="title">
@@ -174,14 +174,14 @@
            </widget>
           </item>
           <item>
-            <widget class="QCheckBox" name="enableRapAddresses">
-             <property name="toolTip">
-                <string>Whether to show RAP addresses or not.</string>
-             </property>
-             <property name="text">
-                <string>Display RAP addresses</string>
-             </property>
-            </widget>
+           <widget class="QCheckBox" name="enableRapAddresses">
+            <property name="toolTip">
+             <string>Whether to show RAP addresses or not.</string>
+            </property>
+            <property name="text">
+             <string>Display RAP addresses</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -237,6 +237,9 @@
          <property name="text">
           <string>Map port using &amp;UPnP</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
@@ -246,6 +249,9 @@
          </property>
          <property name="text">
           <string>Allow incoming connections</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
