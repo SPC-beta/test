@@ -1827,7 +1827,7 @@ void CConnman::ThreadDNSAddressSeed()
         for (auto pnode : vNodes) {
             nRelevant += pnode->fSuccessfullyConnected && ((pnode->nServices & nRelevantServices) == nRelevantServices);
         }
-        if (nRelevant >= 3) {
+        if (nRelevant >= 4) {
             LogPrintf("P2P peers available. Skipped DNS seeding.\n");
             return;
         }
