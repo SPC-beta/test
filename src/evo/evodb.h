@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_EVODB_H
-#define BZX_EVODB_H
+#ifndef DASH_EVODB_H
+#define DASH_EVODB_H
 
 #include "dbwrapper.h"
 #include "sync.h"
@@ -91,4 +91,4 @@ public:
 
 extern CEvoDB* evoDb;
 
-#endif //BZX_EVODB_H
+#endif //DASH_EVODB_H

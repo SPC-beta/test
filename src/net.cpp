@@ -709,9 +709,6 @@ void CNode::copyStats(CNodeStats &stats)
         X(nRecvBytes);
     }
     X(fWhitelisted);
-    X(minFeeFilter);
-    X(nProcessedAddrs);
-    X(nRatelimitedAddrs);
 
     // It is common for nodes with good ping times to suddenly become lagged,
     // due to a new block arriving or other large transfer.
@@ -1827,7 +1824,7 @@ void CConnman::ThreadDNSAddressSeed()
         for (auto pnode : vNodes) {
             nRelevant += pnode->fSuccessfullyConnected && ((pnode->nServices & nRelevantServices) == nRelevantServices);
         }
-        if (nRelevant >= 4) {
+        if (nRelevant >= 2) {
             LogPrintf("P2P peers available. Skipped DNS seeding.\n");
             return;
         }
@@ -3419,10 +3416,6 @@ CNode::CNode(NodeId idIn, ServiceFlags nLocalServicesIn, int nMyStartingHeightIn
     fGetAddr = false;
     nNextLocalAddrSend = 0;
     nNextAddrSend = 0;
-    nAddrTokenBucket = 1; // initialize to 1 to allow self-announcement
-    nAddrTokenTimestamp = GetTimeMicros();
-    nProcessedAddrs = 0;
-    nRatelimitedAddrs = 0;
     nNextInvSend = 0;
     fRelayTxes = false;
     fSentAddr = false;

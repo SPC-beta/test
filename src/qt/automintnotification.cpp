@@ -36,7 +36,8 @@ void AutomintNotification::setModel(WalletModel *model)
             return;
         }
 
-        connect(this, &AutomintNotification::ackMintAll, automintModel, &AutoMintModel::ackMintAll);
+        connect(this, SIGNAL(ackMintAll(AutoMintAck, CAmount, QString)),
+            automintModel, SLOT(ackMintAll(AutoMintAck, CAmount, QString)));
     }
 }
 

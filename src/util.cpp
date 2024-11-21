@@ -615,16 +615,13 @@ void ReadConfigFile(const std::string& confPath)
            if (configFile != NULL)
            {
                std::string strHeader =
-                       "addnode=51.91.156.251\n"
-                       "addnode=51.91.156.249\n"
-                       "addnode=bzx.pool4u.net:29149\n"
                        "#reindex=1\n"
                        "#rescan=1\n"
                        "#zapwallettxes=2\n"
                        "#rpcuser=xxxx\n"
                        "#rpcpassword=xxxx\n"
                        "#rpcallowip=xxxx\n"
-                       "#usemnemonic=0\n";
+                       "#usemnemonic=1\n";
                fwrite(strHeader.c_str(), std::strlen(strHeader.c_str()), 1, configFile);
                fclose(configFile);
            }

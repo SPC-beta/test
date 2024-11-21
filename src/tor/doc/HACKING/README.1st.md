@@ -24,15 +24,15 @@ that you don't miss any steps!
 ## Additional Information
 
 For full information on how Tor is supposed to work, look at the files in
-[Tor specification](https://gitlab.torproject.org/tpo/core/torspec).
+[Tor specification](https://gitweb.torproject.org/torspec.git/tree).
 
 For an explanation of how to change Tor's design to work differently, look at
-[the Tor proposal process](https://gitlab.torproject.org/tpo/core/torspec/-/blob/main/proposals/001-process.txt).
+[the Tor proposal process](https://gitweb.torproject.org/torspec.git/plain/proposals/001-process.txt).
 
 For the latest version of the code, get a copy of git, and
 
 ```console
-$ git clone https://gitlab.torproject.org/tpo/core/tor.git
+$ git clone https://git.torproject.org/git/tor
 ```
 
 For a copy of Tor's original design paper, see

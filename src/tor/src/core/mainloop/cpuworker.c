@@ -14,8 +14,7 @@
  * Right now, we use this infrastructure
  *  <ul><li>for processing onionskins in onion.c
  *      <li>for compressing consensuses in consdiffmgr.c,
- *      <li>for calculating diffs and compressing them in consdiffmgr.c.
- *      <li>and for solving onion service PoW challenges in pow.c.
+ *      <li>and for calculating diffs and compressing them in consdiffmgr.c.
  *  </ul>
  **/
 #include "core/or/or.h"
@@ -118,7 +117,7 @@ cpuworker_consensus_has_changed(const networkstatus_t *ns)
  * during Tor's lifetime.
  */
 void
-cpuworker_init(void)
+cpu_init(void)
 {
   if (!replyqueue) {
     replyqueue = replyqueue_new(0);

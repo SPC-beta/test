@@ -30,7 +30,6 @@ public:
 static const CRPCConvertParam vRPCConvertParams[] =
 {
     { "stop", 0 },
-    { "setmocktime", 0, "timestamp" },
     { "getaddednodeinfo", 0 },
     { "generate", 0, "nblocks" },
     { "generate", 1, "maxtries" },
@@ -79,9 +78,6 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getblocktemplate", 0, "template_request" },
     { "listsinceblock", 1, "target_confirmations" },
     { "listsinceblock", 2, "include_watchonly" },
-    { "sendmany", 1, "amounts" },
-    { "sendmany", 2, "minconf" },
-    { "sendmany", 4, "subtractfeefrom" },
     { "addmultisigaddress", 0, "nrequired" },
     { "addmultisigaddress", 1, "keys" },
     { "createmultisig", 0, "nrequired" },

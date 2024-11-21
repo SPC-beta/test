@@ -50,10 +50,10 @@ MPQRImageWidget::MPQRImageWidget(QWidget *parent):
 {
     contextMenu = new QMenu();
     QAction *saveImageAction = new QAction(tr("&Save Image..."), this);
-    connect(saveImageAction, &QAction::triggered, this, &MPQRImageWidget::saveImage);
+    connect(saveImageAction, SIGNAL(triggered()), this, SLOT(saveImage()));
     contextMenu->addAction(saveImageAction);
     QAction *copyImageAction = new QAction(tr("&Copy Image"), this);
-    connect(copyImageAction, &QAction::triggered, this, &MPQRImageWidget::copyImage);
+    connect(copyImageAction, SIGNAL(triggered()), this, SLOT(copyImage()));
     contextMenu->addAction(copyImageAction);
 }
 
@@ -116,7 +116,7 @@ LookupAddressDialog::LookupAddressDialog(QWidget *parent) :
 #endif
 
     // connect actions
-    connect(ui->searchButton, &QPushButton::clicked, this, &LookupAddressDialog::searchButtonClicked);
+    connect(ui->searchButton, SIGNAL(clicked()), this, SLOT(searchButtonClicked()));
 
     // hide balance labels
     QLabel* balances[] = { ui->propertyLabel1, ui->propertyLabel2, ui->propertyLabel3, ui->propertyLabel4, ui->propertyLabel5, ui->propertyLabel6, ui->propertyLabel7, ui->propertyLabel8, ui->propertyLabel9, ui->propertyLabel10 };

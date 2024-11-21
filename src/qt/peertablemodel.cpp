@@ -121,7 +121,7 @@ PeerTableModel::PeerTableModel(ClientModel *parent) :
 
     // set up timer for auto refresh
     timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &PeerTableModel::refresh);
+    connect(timer, SIGNAL(timeout()), SLOT(refresh()));
     timer->setInterval(MODEL_UPDATE_DELAY);
 
     // load initial data

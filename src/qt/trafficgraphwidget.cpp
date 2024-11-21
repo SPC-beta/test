@@ -30,7 +30,7 @@ TrafficGraphWidget::TrafficGraphWidget(QWidget *parent) :
     clientModel(0)
 {
     timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &TrafficGraphWidget::updateRates);
+    connect(timer, SIGNAL(timeout()), SLOT(updateRates()));
 }
 
 void TrafficGraphWidget::setClientModel(ClientModel *model)

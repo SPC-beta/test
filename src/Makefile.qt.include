@@ -414,7 +414,8 @@ RES_ICONS = \
   qt/res/icons/ext_add_light.png
 
 RES_CSS = \
-  qt/res/css/BZX.css
+  qt/res/css/BZX.css \
+  qt/res/css/BZX_low.css
 
 RES_FONTS = \
   qt/res/fonts/Saira_SemiCondensed-Bold.ttf \

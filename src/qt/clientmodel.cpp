@@ -43,7 +43,7 @@ ClientModel::ClientModel(OptionsModel *_optionsModel, QObject *parent) :
     peerTableModel = new PeerTableModel(this);
     banTableModel = new BanTableModel(this);
     pollTimer = new QTimer(this);
-    connect(pollTimer, &QTimer::timeout, this, &ClientModel::updateTimer);
+    connect(pollTimer, SIGNAL(timeout()), this, SLOT(updateTimer()));
     pollTimer->start(MODEL_UPDATE_DELAY);
 
     subscribeToCoreSignals();

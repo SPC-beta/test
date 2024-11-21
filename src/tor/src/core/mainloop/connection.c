@@ -187,6 +187,7 @@ static int connection_reached_eof(connection_t *conn);
 static int connection_buf_read_from_socket(connection_t *conn,
                                            ssize_t *max_to_read,
                                            int *socket_error);
+static int connection_process_inbuf(connection_t *conn, int package_partial);
 static void client_check_address_changed(tor_socket_t sock);
 static void set_constrained_socket_buffers(tor_socket_t sock, int size);
 
@@ -3743,16 +3744,9 @@ void
 connection_read_bw_exhausted(connection_t *conn, bool is_global_bw)
 {
   (void)is_global_bw;
-  // Double-calls to stop-reading are correlated with stalling for
-  // ssh uploads. Might as well prevent this from happening,
-  // especially the read_blocked_on_bw flag. That was clearly getting
-  // set when it should not be, during an already-blocked XOFF
-  // condition.
-  if (!CONN_IS_EDGE(conn) || !TO_EDGE_CONN(conn)->xoff_received) {
-    conn->read_blocked_on_bw = 1;
-    connection_stop_reading(conn);
-    reenable_blocked_connection_schedule();
-  }
+  conn->read_blocked_on_bw = 1;
+  connection_stop_reading(conn);
+  reenable_blocked_connection_schedule();
 }
 
 /**
@@ -3929,17 +3923,10 @@ reenable_blocked_connections_cb(mainloop_event_t *ev, void *arg)
   (void)ev;
   (void)arg;
   SMARTLIST_FOREACH_BEGIN(get_connection_array(), connection_t *, conn) {
-    /* For conflux, we noticed logs of connection_start_reading() called
-     * multiple times while we were blocked from a previous XOFF, and this
-     * was log was correlated with stalls during ssh uploads. So we added
-     * this additional check, to avoid connection_start_reading() without
-     * getting an XON. The most important piece is always allowing
-     * the read_blocked_on_bw to get cleared, either way. */
-    if (conn->read_blocked_on_bw == 1 &&
-        (!CONN_IS_EDGE(conn) || !TO_EDGE_CONN(conn)->xoff_received)) {
+    if (conn->read_blocked_on_bw == 1) {
       connection_start_reading(conn);
+      conn->read_blocked_on_bw = 0;
     }
-    conn->read_blocked_on_bw = 0;
     if (conn->write_blocked_on_bw == 1) {
       connection_start_writing(conn);
       conn->write_blocked_on_bw = 0;
@@ -5211,7 +5198,7 @@ set_constrained_socket_buffers(tor_socket_t sock, int size)
  * connection_*_process_inbuf() function. It also passes in
  * package_partial if wanted.
  */
-int
+static int
 connection_process_inbuf(connection_t *conn, int package_partial)
 {
   tor_assert(conn);

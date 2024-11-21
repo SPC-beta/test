@@ -13,10 +13,6 @@
 
 #include <exception>
 
-static const int SERIALIZE_TRANSACTION_NO_WITNESS = 0x40000000;
-
-static const int WITNESS_SCALE_FACTOR = 4;
-
 class CBadTxIn : public std::exception
 {
 };
@@ -92,7 +88,6 @@ public:
     CScript scriptSig;
     uint32_t nSequence;
     CScript prevPubKey;
-    CScriptWitness scriptWitness; //! Only serialized through CTransaction
 
     /* Setting nSequence to this value for every input in a transaction
      * disables nLockTime. */
@@ -203,32 +198,11 @@ public:
 
     CAmount GetDustThreshold(const CFeeRate &minRelayTxFee) const
     {
-        // "Dust" is defined in terms of CTransaction::minRelayTxFee,
-        // which has units satoshis-per-kilobyte.
-        // If you'd pay more than 1/3 in fees
-        // to spend something, then we consider it dust.
-        // A typical spendable non-segwit txout is 34 bytes big, and will
-        // need a CTxIn of at least 148 bytes to spend:
-        // so dust is a spendable txout less than
-        // 546*minRelayTxFee/1000 (in satoshis).
-        // A typical spendable segwit txout is 31 bytes big, and will
-        // need a CTxIn of at least 67 bytes to spend:
-        // so dust is a spendable txout less than
-        // 294*minRelayTxFee/1000 (in satoshis).
         if (scriptPubKey.IsUnspendable())
             return 0;
 
         size_t nSize = GetSerializeSize(*this, SER_DISK, 0);
-        int witnessversion = 0;
-        std::vector<unsigned char> witnessprogram;
-
-        if (scriptPubKey.IsWitnessProgram(witnessversion, witnessprogram)) {
-            // sum the sizes of the parts of a transaction input
-            // with 75% segwit discount applied to the script size.
-            nSize += (32 + 4 + 1 + (107 / WITNESS_SCALE_FACTOR) + 4);
-        } else {
-            nSize += (32 + 4 + 1 + 107 + 4); // the 148 mentioned above
-        }
+        nSize += (32 + 4 + 1 + 107 + 4); // the 148 mentioned above
 
         return 3 * minRelayTxFee.GetFee(nSize);
     }
@@ -287,7 +261,6 @@ struct CMutableTransaction;
  */
 template<typename Stream, typename TxType>
 inline void UnserializeTransaction(TxType& tx, Stream& s) {
-    const bool fAllowWitness = !(s.GetVersion() & SERIALIZE_TRANSACTION_NO_WITNESS);
 
     int32_t n32bitVersion;
     s >> n32bitVersion;
@@ -299,24 +272,7 @@ inline void UnserializeTransaction(TxType& tx, Stream& s) {
     tx.vout.clear();
     /* Try to read the vin. In case the dummy is there, this will be read as an empty vector. */
     s >> tx.vin;
-    if (tx.vin.size() == 0 && fAllowWitness) {
-        /* We read a dummy or an empty vin. */
-        s >> flags;
-        if (flags != 0) {
-            s >> tx.vin;
-            s >> tx.vout;
-        }
-    } else {
-        /* We read a non-empty vin. Assume a normal vout follows. */
-        s >> tx.vout;
-    }
-    if ((flags & 1) && fAllowWitness) {
-        /* The witness flag is present, and we support witnesses. */
-        flags ^= 1;
-        for (size_t i = 0; i < tx.vin.size(); i++) {
-            s >> tx.vin[i].scriptWitness.stack;
-        }
-    }
+    s >> tx.vout;
     if (flags) {
         /* Unknown flag in the serialization */
         throw std::ios_base::failure("Unknown transaction optional data");
@@ -330,18 +286,11 @@ inline void UnserializeTransaction(TxType& tx, Stream& s) {
 
 template<typename Stream, typename TxType>
 inline void SerializeTransaction(const TxType& tx, Stream& s) {
-    const bool fAllowWitness = !(s.GetVersion() & SERIALIZE_TRANSACTION_NO_WITNESS);
 
     int32_t n32bitVersion = tx.nVersion | (tx.nType << 16);
     s << n32bitVersion;
     unsigned char flags = 0;
     // Consistency check
-    if (fAllowWitness) {
-        /* Check whether witnesses need to be serialized. */
-        if (tx.HasWitness()) {
-            flags |= 1;
-        }
-    }
     if (flags) {
         /* Use extended format in case witnesses are to be serialized. */
         std::vector<CTxIn> vinDummy;
@@ -350,11 +299,6 @@ inline void SerializeTransaction(const TxType& tx, Stream& s) {
     }
     s << tx.vin;
     s << tx.vout;
-    if (flags & 1) {
-        for (size_t i = 0; i < tx.vin.size(); i++) {
-            s << tx.vin[i].scriptWitness.stack;
-        }
-    }
     s << tx.nLockTime;
     if (tx.nVersion == 3 && tx.nType != TRANSACTION_NORMAL)
         s << tx.vExtraPayload;
@@ -483,15 +427,6 @@ public:
 
     std::string ToString() const;
 
-    bool HasWitness() const
-    {
-        for (size_t i = 0; i < vin.size(); i++) {
-            if (!vin[i].scriptWitness.IsNull()) {
-                return true;
-            }
-        }
-        return false;
-    }
 };
 
 /** A mutable version of CTransaction. */
@@ -539,15 +474,6 @@ struct CMutableTransaction
         return !(a == b);
     }
 
-    bool HasWitness() const
-    {
-        for (size_t i = 0; i < vin.size(); i++) {
-            if (!vin[i].scriptWitness.IsNull()) {
-                return true;
-            }
-        }
-        return false;
-    }
 };
 
 typedef std::shared_ptr<const CTransaction> CTransactionRef;

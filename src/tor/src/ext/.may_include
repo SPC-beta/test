@@ -8,5 +8,3 @@ tinytest*.h
 ext/siphash.h
 ext/byteorder.h
 ext/tor_readpassphrase.h
-
-ext/equix/hashx/src/blake2.h

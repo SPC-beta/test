@@ -11,14 +11,8 @@ define $(package)_set_vars
   $(package)_config_opts_linux=--with-pic
 endef
 
-define $(package)_preprocess_cmds
-   cp -f $(BASEDIR)/config.guess $(BASEDIR)/config.sub . &&\
-   cp -f $(BASEDIR)/config.guess $(BASEDIR)/config.sub gtest/build-aux
-endef
-
 define $(package)_config_cmds
-  $($(package)_autoconf) &&\
-  sed -i.old 's/-lstdc++ //g' libtool config.status
+  $($(package)_autoconf)
 endef
 
 define $(package)_build_cmds
@@ -31,5 +25,5 @@ define $(package)_stage_cmds
 endef
 
 define $(package)_postprocess_cmds
-  rm lib/libprotoc.a lib/*.la
+  rm lib/libprotoc.a
 endef

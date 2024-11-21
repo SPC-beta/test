@@ -109,13 +109,14 @@ TXHistoryDialog::TXHistoryDialog(QWidget *parent) :
     contextMenu->addAction(copyTxIDAction);
     contextMenu->addAction(showDetailsAction);
     // Connect actions
-    connect(ui->txHistoryTable, &QWidget::customContextMenuRequested, this, &TXHistoryDialog::contextualMenu);
-    connect(ui->txHistoryTable, &QAbstractItemView::doubleClicked, this, &TXHistoryDialog::showDetails);
-    connect(ui->txHistoryTable->horizontalHeader(), &QHeaderView::sectionClicked, this, &TXHistoryDialog::checkSort);
-    connect(copyAddressAction, &QAction::triggered, this, &TXHistoryDialog::copyAddress);
-    connect(copyAmountAction, &QAction::triggered, this, &TXHistoryDialog::copyAmount);
-    connect(copyTxIDAction, &QAction::triggered, this, &TXHistoryDialog::copyTxID);
-    connect(showDetailsAction, &QAction::triggered, this, &TXHistoryDialog::showDetails);
+    connect(ui->txHistoryTable, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
+    connect(ui->txHistoryTable, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(showDetails()));
+    connect(ui->txHistoryTable->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(checkSort(int)));
+    connect(copyAddressAction, SIGNAL(triggered()), this, SLOT(copyAddress()));
+    connect(copyAmountAction, SIGNAL(triggered()), this, SLOT(copyAmount()));
+    connect(copyTxIDAction, SIGNAL(triggered()), this, SLOT(copyTxID()));
+    connect(showDetailsAction, SIGNAL(triggered()), this, SLOT(showDetails()));
+    // Perform initial population and update of history table
 
     UpdateHistory();
     // since there is no model we can't do this before we add some data, so now let's do the resizing
@@ -162,9 +163,9 @@ void TXHistoryDialog::setClientModel(ClientModel *model)
 {
     this->clientModel = model;
     if (model != NULL) {
-        connect(model, &ClientModel::refreshElysiumBalance, this, &TXHistoryDialog::UpdateHistory);
-        connect(model, &ClientModel::numBlocksChanged, this, &TXHistoryDialog::UpdateConfirmations);
-        connect(model, &ClientModel::reinitElysiumState, this, &TXHistoryDialog::ReinitTXHistoryTable);
+        connect(model, SIGNAL(refreshElysiumBalance()), this, SLOT(UpdateHistory()));
+        connect(model, SIGNAL(numBlocksChanged(int,QDateTime,double,bool)), this, SLOT(UpdateConfirmations()));
+        connect(model, SIGNAL(reinitElysiumState()), this, SLOT(ReinitTXHistoryTable()));
     }
 }
 

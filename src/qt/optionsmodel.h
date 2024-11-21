@@ -50,7 +50,6 @@ public:
         TorSetup,               // bool
         AutoAnonymize,          // bool
         LelantusPage,           // bool
-        enableRapAddresses,     // bool
         OptionIDRowCount,
     };
 
@@ -71,7 +70,6 @@ public:
     QString getThirdPartyTxUrls() { return strThirdPartyTxUrls; }
     bool getProxySettings(QNetworkProxy& proxy) const;
     bool getCoinControlFeatures() { return fCoinControlFeatures; }
-    bool getRapAddresses() { return fenableRapAddresses; }
     const QString& getOverriddenByCommandLine() { return strOverriddenByCommandLine; }
     bool getAutoAnonymize() { return fAutoAnonymize; }
     bool getLelantusPage() {return fLelantusPage; }
@@ -91,7 +89,6 @@ private:
     bool fCoinControlFeatures;
     bool fAutoAnonymize;
     bool fLelantusPage;
-    bool fenableRapAddresses;
 
     /* settings that were overridden by command-line */
     QString strOverriddenByCommandLine;
@@ -102,7 +99,6 @@ private:
 Q_SIGNALS:
     void displayUnitChanged(int unit);
     void coinControlFeaturesChanged(bool);
-    void enableRapAddressesChanged(bool);
     void autoAnonymizeChanged(bool);
     void lelantusPageChanged(bool);
     void hideTrayIconChanged(bool);

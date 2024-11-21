@@ -86,6 +86,7 @@ namespace GUIUtil {
 
 static QString stylesheetDirectory = ":css";
 static QString BZXTheme = "BZXTheme";
+static QString BZXLowTheme = "BZXLowTheme";
 static CCriticalSection cs_css;
 
 QString dateTimeStr(const QDateTime &date)
@@ -490,15 +491,15 @@ bool ToolTipToRichTextFilter::eventFilter(QObject *obj, QEvent *evt)
 
 void TableViewLastColumnResizingFixer::connectViewHeadersSignals()
 {
-    connect(tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &TableViewLastColumnResizingFixer::on_sectionResized);
-    connect(tableView->horizontalHeader(), &QHeaderView::geometriesChanged, this, &TableViewLastColumnResizingFixer::on_geometriesChanged);
+    connect(tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(on_sectionResized(int,int,int)));
+    connect(tableView->horizontalHeader(), SIGNAL(geometriesChanged()), this, SLOT(on_geometriesChanged()));
 }
 
 // We need to disconnect these while handling the resize events, otherwise we can enter infinite loops.
 void TableViewLastColumnResizingFixer::disconnectViewHeadersSignals()
 {
-    disconnect(tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &TableViewLastColumnResizingFixer::on_sectionResized);
-    disconnect(tableView->horizontalHeader(), &QHeaderView::geometriesChanged, this, &TableViewLastColumnResizingFixer::on_geometriesChanged);
+    disconnect(tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(on_sectionResized(int,int,int)));
+    disconnect(tableView->horizontalHeader(), SIGNAL(geometriesChanged()), this, SLOT(on_geometriesChanged()));
 }
 
 // Setup the resize mode, handles compatibility for Qt5 and below as the method signatures changed.
@@ -846,6 +847,29 @@ bool SetStartOnSystemStartup(bool fAutoStart) { return false; }
 
 #endif
 
+void saveWindowGeometry(const QString& strSetting, QWidget *parent)
+{
+    QSettings settings;
+    settings.setValue(strSetting + "Pos", parent->pos());
+    settings.setValue(strSetting + "Size", parent->size());
+}
+
+void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSize, QWidget *parent)
+{
+    QSettings settings;
+    QPoint pos = settings.value(strSetting + "Pos").toPoint();
+    QSize size = settings.value(strSetting + "Size", defaultSize).toSize();
+
+    if (!pos.x() && !pos.y()) {
+        QRect screen = QApplication::desktop()->screenGeometry();
+        pos.setX((screen.width() - size.width()) / 2);
+        pos.setY((screen.height() - size.height()) / 2);
+    }
+
+    parent->resize(size);
+    parent->move(pos);
+}
+
 void setClipboard(const QString& str)
 {
     QApplication::clipboard()->setText(str, QClipboard::Clipboard);
@@ -911,12 +935,6 @@ QString formatServicesStr(quint64 mask)
                 break;
             case NODE_GETUTXO:
                 strList.append("GETUTXO");
-                break;
-            case NODE_BLOOM:
-                strList.append("BLOOM");
-                break;
-            case NODE_WITNESS:
-                strList.append("WITNESS");
                 break;
             case NODE_XTHIN:
                 strList.append("XTHIN");
@@ -1014,6 +1032,18 @@ void loadTheme()
     stylesheet = std::make_unique<QString>(); 
 
     stylesheet->append(strStyle);
+
+
+    if (QApplication::desktop()->screenGeometry().height() <= 800) {
+        fileName = stylesheetDirectory + "/" + BZXLowTheme;
+        QFile qFile_(fileName);
+        if (!qFile_.open(QFile::ReadOnly)) {
+            throw std::runtime_error(strprintf("%s: Failed to open file: %s", __func__, fileName.toStdString()));
+        }
+
+        QString strLowStyle = QLatin1String(qFile_.readAll());
+        stylesheet->append(strLowStyle);
+    }
 
     qApp->setStyleSheet(*stylesheet);
 }

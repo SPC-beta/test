@@ -168,33 +168,6 @@ extern const char *PONG;
  */
 extern const char *NOTFOUND;
 /**
- * The filterload message tells the receiving peer to filter all relayed
- * transactions and requested merkle blocks through the provided filter.
- * @since protocol version 70001 as described by BIP37.
- *   Only available with service bit NODE_BLOOM since protocol version
- *   70011 as described by BIP111.
- * @see https://bitcoin.org/en/developer-reference#filterload
- */
-extern const char *FILTERLOAD;
-/**
- * The filteradd message tells the receiving peer to add a single element to a
- * previously-set bloom filter, such as a new public key.
- * @since protocol version 70001 as described by BIP37.
- *   Only available with service bit NODE_BLOOM since protocol version
- *   70011 as described by BIP111.
- * @see https://bitcoin.org/en/developer-reference#filteradd
- */
-extern const char *FILTERADD;
-/**
- * The filterclear message tells the receiving peer to remove a previously-set
- * bloom filter.
- * @since protocol version 70001 as described by BIP37.
- *   Only available with service bit NODE_BLOOM since protocol version
- *   70011 as described by BIP111.
- * @see https://bitcoin.org/en/developer-reference#filterclear
- */
-extern const char *FILTERCLEAR;
-/**
  * The reject message informs the receiving node that one of its previous
  * messages has been rejected.
  * @since protocol version 70002 as described by BIP61.
@@ -282,13 +255,6 @@ enum ServiceFlags : uint64_t {
     // Bitcoin Core does not support this but a patch set called Bitcoin XT does.
     // See BIP 64 for details on how this is implemented.
     NODE_GETUTXO = (1 << 1),
-    // NODE_BLOOM means the node is capable and willing to handle bloom-filtered connections.
-    // Bitcoin Core nodes used to support this by default, without advertising this bit,
-    // but no longer do as of protocol version 70011 (= NO_BLOOM_VERSION)
-    NODE_BLOOM = (1 << 2),
-    // NODE_WITNESS indicates that a node can be asked for blocks and transactions including
-    // witness data.
-    NODE_WITNESS = (1 << 3),
     // NODE_XTHIN means the node supports Xtreme Thinblocks
     // If this is turned off then the node will not service nor make xthin requests
     NODE_XTHIN = (1 << 4),
@@ -339,7 +305,6 @@ public:
 };
 
 /** getdata message type flags */
-const uint32_t MSG_WITNESS_FLAG = 1 << 30;
 const uint32_t MSG_TYPE_MASK    = 0xffffffff >> 2;
 
 /** getdata / inv message types.
@@ -355,10 +320,6 @@ enum GetDataMsg
     MSG_FILTERED_BLOCK = 3,  //!< Defined in BIP37
     MSG_CMPCT_BLOCK = 4,     //!< Defined in BIP152
 	MSG_DANDELION_TX = 5,    //!< Dandelion
-    MSG_WITNESS_BLOCK = MSG_BLOCK | MSG_WITNESS_FLAG, //!< Defined in BIP144
-    MSG_WITNESS_TX = MSG_TX | MSG_WITNESS_FLAG,       //!< Defined in BIP144
-    MSG_FILTERED_WITNESS_BLOCK = MSG_FILTERED_BLOCK | MSG_WITNESS_FLAG,
-    MSG_DANDELION_WITNESS_TX = MSG_DANDELION_TX | MSG_WITNESS_FLAG,
 
     MSG_QUORUM_FINAL_COMMITMENT = 21,
     MSG_QUORUM_CONTRIB = 23,

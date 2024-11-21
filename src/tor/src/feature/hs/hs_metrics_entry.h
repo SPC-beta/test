@@ -48,11 +48,11 @@ typedef enum {
   HS_METRICS_APP_WRITE_BYTES = 1,
   /** Number of bytes read from application to onion service. */
   HS_METRICS_APP_READ_BYTES = 2,
-  /** Number of established rendezvous. */
+  /** Number of established rendezsvous. */
   HS_METRICS_NUM_ESTABLISHED_RDV = 3,
-  /** Number of rendezvous circuits created. */
+  /** Number of rendezsvous circuits created. */
   HS_METRICS_NUM_RDV = 4,
-  /** Number of failed rendezvous. */
+  /** Number of failed rendezsvous. */
   HS_METRICS_NUM_FAILED_RDV = 5,
   /** Number of established introducton points. */
   HS_METRICS_NUM_ESTABLISHED_INTRO = 6,
@@ -62,10 +62,6 @@ typedef enum {
   HS_METRICS_INTRO_CIRC_BUILD_TIME = 8,
   /** Rendezvous circuit build time in milliseconds. */
   HS_METRICS_REND_CIRC_BUILD_TIME = 9,
-  /** Number of requests waiting in the proof of work priority queue. */
-  HS_METRICS_POW_NUM_PQUEUE_RDV = 10,
-  /** Suggested effort for requests with a proof of work client puzzle. */
-  HS_METRICS_POW_SUGGESTED_EFFORT = 11,
 } hs_metrics_key_t;
 
 /** The metadata of an HS metrics. */

@@ -39,11 +39,6 @@ class QProgressBar;
 class QProgressDialog;
 QT_END_NAMESPACE
 
-namespace GUIUtil {
-    class ClickableLabel;
-    class ClickableProgressBar;
-}
-
 /**
   Bitcoin GUI main class. This class represents the main window of the Bitcoin UI. It communicates with both the client and
   wallet models to give the user an up-to-date view of the current core state.
@@ -90,12 +85,12 @@ private:
     UnitDisplayStatusBarControl *unitDisplayControl;
     QLabel *labelWalletEncryptionIcon;
     QLabel *labelWalletHDStatusIcon;
-    GUIUtil::ClickableLabel *connectionsControl;
-    GUIUtil::ClickableLabel *labelBlocksIcon;
+    QLabel *connectionsControl;
+    QLabel *labelBlocksIcon;
     QLabel *labelElysiumPendingIcon;
     QLabel *labelElysiumPendingText;
     QLabel *progressBarLabel;
-    GUIUtil::ClickableProgressBar *progressBar;
+    QProgressBar *progressBar;
     QProgressDialog *progressDialog;
 
     QMenuBar *appMenuBar;
@@ -113,7 +108,6 @@ private:
     QAction *signMessageAction;
     QAction *verifyMessageAction;
     QAction *aboutAction;
-    QAction *openRepairAction;
     QAction *receiveCoinsAction;
     QAction *receiveCoinsMenuAction;
     QAction *optionsAction;
@@ -129,6 +123,7 @@ private:
     QAction *masternodeAction;
     QAction *createPcodeAction;
     QAction *logoAction;
+    QAction *openRepairAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
@@ -219,7 +214,7 @@ public Q_SLOTS:
     void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label);
 #endif // ENABLE_WALLET
 
-public Q_SLOTS:
+private Q_SLOTS:
 #ifdef ENABLE_WALLET
     /** Switch to overview (home) page */
     void gotoOverviewPage();
@@ -271,9 +266,7 @@ public Q_SLOTS:
 #endif
 
     /** Show window if hidden, unminimize when minimized, rise when obscured or show if hidden and fToggleHidden is true */
-    void showNormalIfMinimized() { showNormalIfMinimized(false); }
-    void showNormalIfMinimized(bool fToggleHidden);
-
+    void showNormalIfMinimized(bool fToggleHidden = false);
     /** Simply calls showNormalIfMinimized(true) for use in SLOT() macro */
     void toggleHidden();
 
@@ -296,9 +289,6 @@ public Q_SLOTS:
 
     /** Update Lelantus page visibility */
     void updateLelantusPage();
-
-    /** Update RAP Addresses page visibility */
-    void setRapAddressesVisible(bool);
 };
 
 class UnitDisplayStatusBarControl : public QLabel
