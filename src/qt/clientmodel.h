@@ -139,9 +139,6 @@ Q_SIGNALS:
     // Show progress dialog e.g. for verifychain
     void showProgress(const QString &title, int nProgress);
 
-    // Update progress bar label text
-    void updateProgressBarLabel(const QString &title);
-
 public Q_SLOTS:
     void updateTimer();
     void updateNumConnections(int numConnections);
