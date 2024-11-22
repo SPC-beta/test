@@ -279,9 +279,8 @@ void TransactionTableModel::updateConfirmations()
     // Invalidate status (number of confirmations) and (possibly) description
     //  for all rows. Qt is smart enough to only actually request the data for the
     //  visible rows.
-    int numRows = std::min(1000, priv->size()-1);
-    Q_EMIT dataChanged(index(0, Status), index(numRows, Status));
-    Q_EMIT dataChanged(index(0, ToAddress), index(numRows, ToAddress));
+    Q_EMIT dataChanged(index(0, Status), index(priv->size()-1, Status));
+    Q_EMIT dataChanged(index(0, ToAddress), index(priv->size()-1, ToAddress));
 }
 
 void TransactionTableModel::updateNumISLocks(int numISLocks)
