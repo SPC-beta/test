@@ -113,7 +113,7 @@ void OptionsModel::Init(bool resetSettings)
     // Wallet
 #ifdef ENABLE_WALLET
     if (!settings.contains("bSpendZeroConfChange"))
-        settings.setValue("bSpendZeroConfChange", false);
+        settings.setValue("bSpendZeroConfChange", true);
     if (!SoftSetBoolArg("-spendzeroconfchange", settings.value("bSpendZeroConfChange").toBool()))
         addOverriddenOption("-spendzeroconfchange");
 
