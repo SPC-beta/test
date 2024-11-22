@@ -40,21 +40,8 @@ void MakeSingleColorImage(QImage& img, const QColor& colorbase)
         for (int y = img.height(); y--; )
         {
             const QRgb rgb = img.pixel(x, y);
-            // set default pink
-            img.setPixel(x, y, qRgba(111, 7, 113, qAlpha(rgb))); //#6f0771
-        }
-    }
-}
-
-void MakeLockColorImage(QImage& img, const QColor& colorbase)
-{
-    img = img.convertToFormat(QImage::Format_ARGB32);
-    for (int x = img.width(); x--; )
-    {
-        for (int y = img.height(); y--; )
-        {
-            const QRgb rgb = img.pixel(x, y);
-            img.setPixel(x, y, qRgba(colorbase.red(), colorbase.green(), colorbase.blue(), qAlpha(rgb)));
+            // set default to bitcoinzero colour
+            img.setPixel(x, y, qRgba(111, 7, 113, qAlpha(rgb)));
         }
     }
 }
@@ -72,7 +59,6 @@ QIcon ColorizeIcon(const QIcon& ico, const QColor& colorbase)
     return new_ico;
 }
 
-
 QImage ColorizeImage(const QString& filename, const QColor& colorbase)
 {
     QImage img(filename);
@@ -80,21 +66,9 @@ QImage ColorizeImage(const QString& filename, const QColor& colorbase)
     return img;
 }
 
-QImage ColorizeLockImage(const QString& filename, const QColor& colorbase)
-{
-    QImage img(filename);
-    MakeLockColorImage(img, colorbase);
-    return img;
-}
-
 QIcon ColorizeIcon(const QString& filename, const QColor& colorbase)
 {
     return QIcon(QPixmap::fromImage(ColorizeImage(filename, colorbase)));
-}
-
-QIcon ColorizeLockIcon(const QString& filename, const QColor& colorbase)
-{
-    return QIcon(QPixmap::fromImage(ColorizeLockImage(filename, colorbase)));
 }
 
 }
@@ -144,13 +118,6 @@ QIcon PlatformStyle::SingleColorIcon(const QIcon& icon) const
     if (!colorizeIcons)
         return icon;
     return ColorizeIcon(icon, SingleColor());
-}
-
-QIcon PlatformStyle::LockIcon(const QString& filename) const
-{
-    if (!colorizeIcons)
-        return QIcon(filename);
-    return ColorizeLockIcon(filename, SingleColor());
 }
 
 QIcon PlatformStyle::TextColorIcon(const QString& filename) const
