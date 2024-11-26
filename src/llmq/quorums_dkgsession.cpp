@@ -83,7 +83,7 @@ CDKGPrematureCommitment::CDKGPrematureCommitment(const Consensus::LLMQParams& pa
 CDKGMember::CDKGMember(CDeterministicMNCPtr _dmn, size_t _idx) :
     dmn(_dmn),
     idx(_idx),
-    id(_dmn->proTxHash)
+    id(CBLSId::FromHash(_dmn->proTxHash))
 {
 
 }
@@ -974,13 +974,15 @@ void CDKGSession::SendCommitment(CDKGPendingMessages& pendingMessages)
     qc.quorumSig = skShare.Sign(commitmentHash);
 
     if (lieType == 3) {
-        std::vector<uint8_t> buf = qc.sig.ToByteVector();
+        std::vector<unsigned char> buf;
+        qc.sig.GetBuf(buf);
         buf[5]++;
-        qc.sig.SetByteVector(buf);
+        qc.sig.SetBuf(buf);
     } else if (lieType == 4) {
-        std::vector<uint8_t> buf = qc.quorumSig.ToByteVector();
+        std::vector<unsigned char> buf;
+        qc.quorumSig.GetBuf(buf);
         buf[5]++;
-        qc.quorumSig.SetByteVector(buf);
+        qc.quorumSig.SetBuf(buf);
     }
 
     t3.stop();
