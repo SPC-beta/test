@@ -1366,11 +1366,6 @@ QWidget .QFrame#frame .QLabel#label {
     margin-top: 10px;
 }
 
-
-QWidget .QFrame#frame .QPushButton#labelWalletStatus { 
-    qproperty-alignment: 'AlignVCenter | AlignLeft';
-}
-
 QWidget .QFrame#frame .QLabel#labelSpendable { 
     qproperty-alignment: 'AlignVCenter | AlignLeft';
     margin-left: 15px;
@@ -1487,10 +1482,6 @@ QWidget .QFrame#frame_2 .QLabel#label_4 {
     margin-right: 0px;
     min-height: 30px;
     font-weight: bold;
-}
-
-QWidget .QFrame#frame_2 .QPushButton#labelTransactionsStatus {
-    qproperty-alignment: 'AlignVCenter | AlignLeft';
 }
 
 QWidget .QFrame#frame_2 QListView {
