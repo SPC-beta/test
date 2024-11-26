@@ -229,21 +229,13 @@ public:
 
         for (const auto& str : lelantus::lelantus_blacklist) {
             GroupElement coin;
-            try {
-                coin.deserialize(ParseHex(str).data());
-            } catch (...) {
-                continue;
-            }
+            coin.deserialize(ParseHex(str).data());
             consensus.lelantusBlacklist.insert(coin);
         }
 
         for (const auto& str : sigma::sigma_blacklist) {
             GroupElement coin;
-            try {
-                coin.deserialize(ParseHex(str).data());
-            } catch (...) {
-                continue;
-            }
+            coin.deserialize(ParseHex(str).data());
             consensus.sigmaBlacklist.insert(coin);
         }
     }
