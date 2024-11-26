@@ -121,7 +121,7 @@ bool IntegerToDenomination(int64_t value, CoinDenomination& denom_out) {
 bool IntegerToDenomination(int64_t value, CoinDenomination& denom_out, CValidationState &state) {
     switch (value) {
         default:
-            return false;
+            return state.DoS(100, error("CheckSigmaTransaction : invalid denomination value, unable to convert to enum"));
         case 5 * CENT:
             denom_out = CoinDenomination::SIGMA_DENOM_0_05;
             break;
