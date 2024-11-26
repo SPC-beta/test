@@ -31,7 +31,6 @@
 #include <QMenu>
 #include <QPoint>
 #include <QScrollBar>
-#include <QSignalMapper>
 #include <QTableView>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -59,9 +58,6 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
         headerLayout->setSpacing(0);
         headerLayout->addSpacing(23);
     }
-
-    statusSpacer = new QSpacerItem(1, 1, QSizePolicy::MinimumExpanding);
-    headerLayout->addSpacerItem(statusSpacer);
 
     watchOnlyWidget = new QComboBox(this);
     watchOnlyWidget->setFixedWidth(24);
@@ -187,33 +183,28 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     contextMenu->addAction(resendAction);
     contextMenu->addAction(reconsiderBip47TxAction);
 
-    mapperThirdPartyTxUrls = new QSignalMapper(this);
-
     // Connect actions
-    connect(mapperThirdPartyTxUrls, SIGNAL(mapped(QString)), this, SLOT(openThirdPartyTxUrl(QString)));
-
-    connect(dateWidget, SIGNAL(activated(int)), this, SLOT(chooseDate(int)));
-    connect(typeWidget, SIGNAL(activated(int)), this, SLOT(chooseType(int)));
-    connect(watchOnlyWidget, SIGNAL(activated(int)), this, SLOT(chooseWatchonly(int)));
-    connect(instantsendWidget, SIGNAL(activated(int)), this, SLOT(chooseInstantSend(int)));
-    connect(addressWidget, SIGNAL(textChanged(QString)), this, SLOT(changedPrefix(QString)));
-    connect(amountWidget, SIGNAL(textChanged(QString)), this, SLOT(changedAmount(QString)));
-
-    connect(view, SIGNAL(doubleClicked(QModelIndex)), this, SIGNAL(doubleClicked(QModelIndex)));
-    connect(view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
-    connect(view->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(updateHeaderSizes(int,int,int)));
-
-    connect(abandonAction, SIGNAL(triggered()), this, SLOT(abandonTx()));
-    connect(copyAddressAction, SIGNAL(triggered()), this, SLOT(copyAddress()));
-    connect(copyLabelAction, SIGNAL(triggered()), this, SLOT(copyLabel()));
-    connect(copyAmountAction, SIGNAL(triggered()), this, SLOT(copyAmount()));
-    connect(copyTxIDAction, SIGNAL(triggered()), this, SLOT(copyTxID()));
-    connect(copyTxHexAction, SIGNAL(triggered()), this, SLOT(copyTxHex()));
-    connect(copyTxPlainText, SIGNAL(triggered()), this, SLOT(copyTxPlainText()));
-    connect(editLabelAction, SIGNAL(triggered()), this, SLOT(editLabel()));
-    connect(showDetailsAction, SIGNAL(triggered()), this, SLOT(showDetails()));
-    connect(resendAction, SIGNAL(triggered()), this, SLOT(rebroadcastTx()));
-    connect(reconsiderBip47TxAction, SIGNAL(triggered()), this, SLOT(reconsiderBip47Tx()));
+    connect(dateWidget, qOverload<int>(&QComboBox::activated), this, &TransactionView::chooseDate);
+    connect(typeWidget, qOverload<int>(&QComboBox::activated), this, &TransactionView::chooseType);
+    connect(watchOnlyWidget, qOverload<int>(&QComboBox::activated), this, &TransactionView::chooseWatchonly);
+    connect(instantsendWidget, qOverload<int>(&QComboBox::activated), this, &TransactionView::chooseInstantSend);
+    connect(addressWidget, &QLineEdit::textChanged, this, &TransactionView::changedPrefix);
+    connect(amountWidget, &QLineEdit::textChanged, this, &TransactionView::changedAmount);
+    connect(view, &QTableView::doubleClicked, this, &TransactionView::doubleClicked);
+    connect(view, &QTableView::customContextMenuRequested, this, &TransactionView::contextualMenu);
+    connect(view->horizontalHeader(), &QHeaderView::sectionResized, this, &TransactionView::updateHeaderSizes);
+    connect(abandonAction, &QAction::triggered, this, &TransactionView::abandonTx);
+    connect(copyAddressAction, &QAction::triggered, this, &TransactionView::copyAddress);
+    connect(copyLabelAction, &QAction::triggered, this, &TransactionView::copyLabel);
+    connect(copyAmountAction, &QAction::triggered, this, &TransactionView::copyAmount);
+    connect(copyTxIDAction, &QAction::triggered, this, &TransactionView::copyTxID);
+    connect(copyTxHexAction, &QAction::triggered, this, &TransactionView::copyTxHex);
+    connect(copyTxPlainText, &QAction::triggered, this, &TransactionView::copyTxPlainText);
+    connect(editLabelAction, &QAction::triggered, this, &TransactionView::editLabel);
+    connect(showDetailsAction, &QAction::triggered, this, &TransactionView::showDetails);
+    connect(this, &TransactionView::doubleClicked, this, &TransactionView::showDetails);
+    connect(resendAction, &QAction::triggered, this, &TransactionView::rebroadcastTx);
+    connect(reconsiderBip47TxAction, &QAction::triggered, this, &TransactionView::reconsiderBip47Tx);
 }
 
 void TransactionView::setModel(WalletModel *_model)
@@ -253,15 +244,15 @@ void TransactionView::setModel(WalletModel *_model)
             QStringList listUrls = _model->getOptionsModel()->getThirdPartyTxUrls().split("|", QString::SkipEmptyParts);
             for (int i = 0; i < listUrls.size(); ++i)
             {
-                QString host = QUrl(listUrls[i].trimmed(), QUrl::StrictMode).host();
+                QString url = listUrls[i].trimmed();
+                QString host = QUrl(url, QUrl::StrictMode).host();
                 if (!host.isEmpty())
                 {
                     QAction *thirdPartyTxUrlAction = new QAction(host, this); // use host as menu item label
                     if (i == 0)
                         contextMenu->addSeparator();
                     contextMenu->addAction(thirdPartyTxUrlAction);
-                    connect(thirdPartyTxUrlAction, SIGNAL(triggered()), mapperThirdPartyTxUrls, SLOT(map()));
-                    mapperThirdPartyTxUrls->setMapping(thirdPartyTxUrlAction, listUrls[i].trimmed());
+                    connect(thirdPartyTxUrlAction, &QAction::triggered, [this, url] { openThirdPartyTxUrl(url); });
                 }
             }
         }
@@ -270,7 +261,7 @@ void TransactionView::setModel(WalletModel *_model)
         updateWatchOnlyColumn(_model->haveWatchOnly());
 
         // Watch-only signal
-        connect(_model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyColumn(bool)));
+        connect(_model, &WalletModel::notifyWatchonlyChanged, this, &TransactionView::updateWatchOnlyColumn);
     }
 }
 
@@ -437,7 +428,7 @@ void TransactionView::updateHeaderSizes(int logicalIndex, int oldSize, int newSi
         {TransactionTableModel::Amount, amountWidget}
     };
 
-    if(logicalIndex < TransactionTableModel::ToAddress)
+    if(logicalIndex <= TransactionTableModel::ToAddress)
         return;
 
     for(std::pair<int, QWidget*> const & p : headerWidgets) {
@@ -643,8 +634,8 @@ QWidget *TransactionView::createDateRangeWidget()
     dateRangeWidget->setVisible(false);
 
     // Notify on change
-    connect(dateFrom, SIGNAL(dateChanged(QDate)), this, SLOT(dateRangeChanged()));
-    connect(dateTo, SIGNAL(dateChanged(QDate)), this, SLOT(dateRangeChanged()));
+    connect(dateFrom, &QDateTimeEdit::dateChanged, this, &TransactionView::dateRangeChanged);
+    connect(dateTo, &QDateTimeEdit::dateChanged, this, &TransactionView::dateRangeChanged);
 
     updateCalendarWidgets();
     return dateRangeWidget;
@@ -687,10 +678,13 @@ void TransactionView::focusTransaction(const QModelIndex &idx)
 // sizes as the tables width is proportional to the dialogs width.
 void TransactionView::resizeEvent(QResizeEvent* event)
 {
+    if(!transactionView || !transactionView->selectionModel())
+        return;
+
     QWidget::resizeEvent(event);
-    disconnect(transactionView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(updateHeaderSizes(int,int,int)));
+    disconnect(transactionView->horizontalHeader(), &QHeaderView::sectionResized, this, &TransactionView::updateHeaderSizes);
     columnResizingFixer->stretchColumnWidth(TransactionTableModel::ToAddress);
-    connect(transactionView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(updateHeaderSizes(int,int,int)));
+    connect(transactionView->horizontalHeader(), &QHeaderView::sectionResized, this, &TransactionView::updateHeaderSizes);
 }
 
 // Need to override default Ctrl+C action for amount as default behaviour is just to copy DisplayRole text

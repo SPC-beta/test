@@ -37,7 +37,7 @@ LookupTXDialog::LookupTXDialog(QWidget *parent) :
 #endif
 
     // connect actions
-    connect(ui->searchButton, SIGNAL(clicked()), this, SLOT(searchButtonClicked()));
+    connect(ui->searchButton, &QPushButton::clicked, this, &LookupTXDialog::searchButtonClicked);
 }
 
 LookupTXDialog::~LookupTXDialog()
@@ -82,7 +82,7 @@ void LookupTXDialog::searchTX()
 
             default:
                 strText += "of an unknown type.  If you are seeing this message please raise a bug report "
-                           "with the transaction hash.";
+                           "with the transaction hash at github.com/BZXorg/BZX/issues.";
             break;
         }
         QString strQText = QString::fromStdString(strText);
