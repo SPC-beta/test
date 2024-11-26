@@ -10,31 +10,16 @@ class SigmaExtendedVerifier{
 public:
     SigmaExtendedVerifier(const GroupElement& g,
                       const std::vector<GroupElement>& h_gens,
-                      std::size_t n_, std::size_t m_);
+                      uint64_t n, uint64_t m_);
 
-    // Verify a single one-of-many proof
-    // In this case, there is an implied input set size
-    bool singleverify(const std::vector<GroupElement>& commits,
-                     const Scalar& x,
-                     const Scalar& serial,
-                     const SigmaExtendedProof& proof) const;
-
-    // Verify a single one-of-many proof
-    // In this case, there is a specified set size
-    bool singleverify(const std::vector<GroupElement>& commits,
-                     const Scalar& x,
-                     const Scalar& serial,
-                     const size_t setSize,
-                     const SigmaExtendedProof& proof) const;
-
-    // Verify a batch of one-of-many proofs from the same transaction
-    // In this case, there is a single common challenge and implied input set size
+    //gets initial double-blinded Pedersen commitments,
+    //verifies proofs from single transaction, where set size and challenge are the same
     bool batchverify(const std::vector<GroupElement>& commits,
                      const Scalar& x,
                      const std::vector<Scalar>& serials,
                      const std::vector<SigmaExtendedProof>& proofs) const;
-    // Verify a general batch of one-of-many proofs
-    // In this case, each proof has a separate challenge and specified set size
+    //gets initial double-blinded Pedersen commitments
+    //verifies proofs from different transactions, where set sizes and challenges are different
     bool batchverify(const std::vector<GroupElement>& commits,
                      const std::vector<Scalar>& challenges,
                      const std::vector<Scalar>& serials,
@@ -42,20 +27,16 @@ public:
                      const std::vector<SigmaExtendedProof>& proofs) const;
 
 private:
-    // Utility function that actually performs verification
-    bool verify(const std::vector<GroupElement>& commits,
-                     const std::vector<Scalar>& challenges,
-                     const std::vector<Scalar>& serials,
-                     const std::vector<size_t>& setSizes,
-                     const bool commonChallenge,
-                     const bool specifiedSetSizes,
-                     const std::vector<SigmaExtendedProof>& proofs) const;
     //auxiliary functions
     bool membership_checks(const SigmaExtendedProof& proof) const;
     bool compute_fs(
             const SigmaExtendedProof& proof,
             const Scalar& x,
             std::vector<Scalar>& f_) const;
+    bool abcd_checks(
+            const SigmaExtendedProof& proof,
+            const Scalar& x,
+            const std::vector<Scalar>& f_) const;
 
     void compute_fis(int j, const std::vector<Scalar>& f, std::vector<Scalar>& f_i_) const;
     void compute_fis(
@@ -77,8 +58,8 @@ private:
 private:
     GroupElement g_;
     std::vector<GroupElement> h_;
-    std::size_t n;
-    std::size_t m;
+    uint64_t n;
+    uint64_t m;
 };
 
 } // namespace lelantus
