@@ -13,16 +13,12 @@
 
 IncomingFundNotifier::IncomingFundNotifier(
     CWallet *_wallet, QObject *parent) :
-    QObject(parent), wallet(_wallet), timer(0)
+    QObject(parent), wallet(_wallet), timer(0), lastUpdateTime(0)
 {
     timer = new QTimer(this);
     timer->setSingleShot(true);
 
-    connect(timer,
-        SIGNAL(timeout()),
-        this,
-        SLOT(check()),
-        Qt::QueuedConnection);
+    connect(timer, &QTimer::timeout, this, &IncomingFundNotifier::check, Qt::QueuedConnection);
 
     importTransactions();
     subscribeToCoreSignals();
@@ -58,9 +54,12 @@ void IncomingFundNotifier::check()
 {
     LOCK(cs);
 
-    if (txs.empty()) {
+    // update only if there are transaction and last update was done more than 2 minutes ago, and in case it is first time
+    if (txs.empty() || (lastUpdateTime!= 0 && (GetSystemTimeInSeconds() - lastUpdateTime <= 120))) {
         return;
     }
+
+    lastUpdateTime = GetSystemTimeInSeconds();
 
     CAmount credit = 0;
     std::vector<uint256> immatures;
@@ -184,13 +183,13 @@ AutoMintModel::AutoMintModel(
     autoMintCheckTimer = new QTimer(this);
     autoMintCheckTimer->setSingleShot(false);
 
-    connect(autoMintCheckTimer, SIGNAL(timeout()), this, SLOT(checkAutoMint()));
+    connect(autoMintCheckTimer, &QTimer::timeout, [this]{ checkAutoMint(); });
 
     notifier = new IncomingFundNotifier(wallet, this);
 
-    connect(notifier, SIGNAL(matureFund(CAmount)), this, SLOT(startAutoMint()));
+    connect(notifier, &IncomingFundNotifier::matureFund, this, &AutoMintModel::startAutoMint);
 
-    connect(optionsModel, SIGNAL(autoAnonymizeChanged(bool)), this, SLOT(updateAutoMintOption(bool)));
+    connect(optionsModel, &OptionsModel::autoAnonymizeChanged, this, &AutoMintModel::updateAutoMintOption);
 }
 
 AutoMintModel::~AutoMintModel()
