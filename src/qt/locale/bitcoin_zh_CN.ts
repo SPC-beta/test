@@ -860,7 +860,7 @@ Once this fee is paid, all future sends to this RAP address do not incur any add
         <translation>发送到 RAP 地址</translation>
     </message>
     <message>
-        <source>Lelantus balance</source>
+        <source>Private Balance</source>
         <translation>Lelantus 余额</translation>
     </message>
     <message>
@@ -2077,7 +2077,7 @@ After the notification transaction is received by the RAP address issuer, funds 
         <translation>现在显示的消息可能是过期的。在连接上 BZX 网络节点后，你的钱包将自动与网络同步，但是这个过程还没有完成。</translation>
     </message>
     <message>
-        <source>Lelantus Balances</source>
+        <source>Private Balances</source>
         <translation>匿名的余额</translation>
     </message>
     <message>
@@ -3128,11 +3128,11 @@ After the notification transaction is received by the RAP address issuer, funds 
         <translation>公开的余额</translation>
     </message>
     <message>
-        <source>Use Lelantus Balance</source>
+        <source>Use Private Balance</source>
         <translation>使用匿名的余额 </translation>
     </message>
     <message>
-        <source>Lelantus Balance</source>
+        <source>Private Balance</source>
         <translation>匿名的余额</translation>
     </message>
     <message>
