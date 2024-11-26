@@ -9,7 +9,7 @@ RangeProver::RangeProver(
         const GroupElement& h2,
         const std::vector<GroupElement>& g_vector,
         const std::vector<GroupElement>& h_vector,
-        std::size_t n,
+        uint64_t n,
         unsigned int v)
         : g (g)
         , h1 (h1)
@@ -20,27 +20,13 @@ RangeProver::RangeProver(
         , version (v)
 {}
 
-void RangeProver::proof(
+void RangeProver::batch_proof(
         const std::vector<Scalar>& v,
         const std::vector<Scalar>& serialNumbers,
         const std::vector<Scalar>& randomness,
         const std::vector<GroupElement>& commitments,
         RangeProof& proof_out) {
-    // Size checks
     std::size_t m = v.size();
-    if (m == 0) {
-        throw std::invalid_argument("Range proof cannot use zero inputs");
-    }
-    if ((m & (m - 1)) != 0) {
-        throw std::invalid_argument("Range proof requires a power-of-two number of aggregated inputs");
-    }
-    if (v.size() != serialNumbers.size() || v.size() != randomness.size()) {
-        throw std::invalid_argument("Range proof input vector sizes do not match");
-    }
-    if (g_.size() != n * m || h_.size() != n * m) {
-        throw std::invalid_argument("Range proof generator vector has incorrect size");
-    }
-
     std::vector<std::vector<bool>> bits;
     bits.resize(m);
     for (std::size_t i = 0; i < v.size(); i++)
@@ -104,7 +90,7 @@ void RangeProver::proof(
     NthPower two_n_(uint64_t(2));
     std::vector<Scalar> two_n;
     two_n.reserve(n);
-    for (std::size_t k = 0; k < n; ++k)
+    for (uint64_t k = 0; k < n; ++k)
     {
         two_n.emplace_back(two_n_.pow);
         two_n_.go_next();
