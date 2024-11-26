@@ -321,36 +321,36 @@ void BitcoinGUI::createActions()
     size_t key = Qt::Key_1;
 	QActionGroup *tabGroup = new QActionGroup(this);
 
-    overviewAction = new QAction(tr("&Overview"), this);
+	overviewAction = new QAction(tr("&Overview"), this);
 	overviewAction->setStatusTip(tr("Show general overview of wallet"));
 	overviewAction->setToolTip(overviewAction->statusTip());
 	overviewAction->setCheckable(true);
 	overviewAction->setShortcut(QKeySequence(Qt::ALT + key++));
 	tabGroup->addAction(overviewAction);
 
-    sendCoinsAction = new QAction(tr("&Send"), this);
-    sendCoinsAction->setStatusTip(tr("Send coins to a address"));
+	sendCoinsAction = new QAction(tr("&Send"), this);
+	sendCoinsAction->setStatusTip(tr("Send coins to a address"));
 	sendCoinsAction->setToolTip(sendCoinsAction->statusTip());
 	sendCoinsAction->setCheckable(true);
 	sendCoinsAction->setShortcut(QKeySequence(Qt::ALT + key++));
 	tabGroup->addAction(sendCoinsAction);
 
-    sendCoinsMenuAction = new QAction(sendCoinsAction->text(), this);
+	sendCoinsMenuAction = new QAction(sendCoinsAction->text(), this);
 	sendCoinsMenuAction->setStatusTip(sendCoinsAction->statusTip());
 	sendCoinsMenuAction->setToolTip(sendCoinsMenuAction->statusTip());
 
-    receiveCoinsAction = new QAction(tr("&Receive"), this);
+	receiveCoinsAction = new QAction(tr("&Receive"), this);
 	receiveCoinsAction->setStatusTip(tr("Request payments (generates QR codes and BZX: URIs)"));
 	receiveCoinsAction->setToolTip(receiveCoinsAction->statusTip());
 	receiveCoinsAction->setCheckable(true);
 	receiveCoinsAction->setShortcut(QKeySequence(Qt::ALT + key++));
 	tabGroup->addAction(receiveCoinsAction);
 
-    receiveCoinsMenuAction = new QAction(receiveCoinsAction->text(), this);
+	receiveCoinsMenuAction = new QAction(receiveCoinsAction->text(), this);
 	receiveCoinsMenuAction->setStatusTip(receiveCoinsAction->statusTip());
 	receiveCoinsMenuAction->setToolTip(receiveCoinsMenuAction->statusTip());
 
-    historyAction = new QAction(tr("&Transactions"), this);
+	historyAction = new QAction(tr("&Transactions"), this);
 	historyAction->setStatusTip(tr("Browse transaction history"));
 	historyAction->setToolTip(historyAction->statusTip());
 	historyAction->setCheckable(true);
@@ -471,7 +471,7 @@ void BitcoinGUI::createActions()
 
     usedSendingAddressesAction = new QAction(tr("&Sending addresses..."), this);
     usedSendingAddressesAction->setStatusTip(tr("Show the list of used sending addresses and labels"));
-    usedReceivingAddressesAction = new QAction(tr("&Receiving addresses..."), this);
+    usedReceivingAddressesAction = new QAction( tr("&Receiving addresses..."), this);
     usedReceivingAddressesAction->setStatusTip(tr("Show the list of used receiving addresses and labels"));
 
     openAction = new QAction(tr("Open &URI..."), this);
@@ -497,7 +497,6 @@ void BitcoinGUI::createActions()
     connect(quitAction, SIGNAL(triggered()), rpcConsole, SLOT(hide()));
     // Get restart command-line parameters and handle restart
     connect(rpcConsole, SIGNAL(handleRestart(QStringList)), this, SLOT(handleRestart(QStringList)));
-
 
 #ifdef ENABLE_WALLET
     if(walletFrame)
@@ -588,11 +587,11 @@ void BitcoinGUI::createToolBars()
         }
 #endif
         toolbar->addAction(createPcodeAction);
-
+        
         QLabel *logoLabel = new QLabel();
         logoLabel->setObjectName("lblToolbarLogo");
         logoLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
+        
         toolbar->addWidget(logoLabel);
 
         overviewAction->setChecked(true);
@@ -624,9 +623,6 @@ void BitcoinGUI::setClientModel(ClientModel *_clientModel)
 
         // Show progress dialog
         connect(_clientModel, SIGNAL(showProgress(QString,int)), this, SLOT(showProgress(QString,int)));
-
-        // Update progress bar label textw
-        connect(_clientModel, SIGNAL(updateProgressBarLabel(QString)), this, SLOT(updateProgressBarLabel(QString)));
 
         // Update Elysium pending status
         connect(_clientModel, SIGNAL(refreshElysiumPending(bool)), this, SLOT(setElysiumPendingStatus(bool)));
@@ -1375,18 +1371,24 @@ void BitcoinGUI::showNormalIfMinimized(bool fToggleHidden)
     if(!clientModel)
         return;
 
-    if (!isHidden() && !isMinimized() && !GUIUtil::isObscured(this) && fToggleHidden) {
-        hide();
-    } else {
-        // activateWindow() (sometimes) helps with keyboard focus on Windows
-        if (isMinimized()) {
-            showNormal();
-        } else {
-            show();
-        }
+    // activateWindow() (sometimes) helps with keyboard focus on Windows
+    if (isHidden())
+    {
+        show();
+        activateWindow();
+    }
+    else if (isMinimized())
+    {
+        showNormal();
+        activateWindow();
+    }
+    else if (GUIUtil::isObscured(this))
+    {
         raise();
         activateWindow();
     }
+    else if(fToggleHidden)
+        hide();
 }
 
 void BitcoinGUI::toggleHidden()
@@ -1425,15 +1427,6 @@ void BitcoinGUI::showProgress(const QString &title, int nProgress)
     }
     else if (progressDialog)
         progressDialog->setValue(nProgress);
-}
-
-void BitcoinGUI::updateProgressBarLabel(const QString& text)
-{
-    if (progressBarLabel)
-    {
-        progressBarLabel->setVisible(!text.isEmpty());
-        progressBarLabel->setText(text);
-    }
 }
 
 void BitcoinGUI::setTrayIconVisible(bool fHideTrayIcon)
