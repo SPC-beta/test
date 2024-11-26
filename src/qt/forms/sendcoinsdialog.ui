@@ -1284,7 +1284,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Lelantus Balance:</string>
+          <string>Private Balance:</string>
          </property>
         </widget>
        </item>

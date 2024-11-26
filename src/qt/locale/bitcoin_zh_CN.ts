@@ -855,7 +855,7 @@ Once this fee is paid, all future sends to this RAP address do not incur any add
         <translation>发送到 RAP 地址</translation>
     </message>
     <message>
-        <source>Lelantus balance</source>
+        <source>Private Balance</source>
         <translation>Lelantus 余额</translation>
     </message>
     <message>

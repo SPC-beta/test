@@ -745,13 +745,13 @@ void SendCoinsDialog::setAnonymizeMode(bool enableAnonymizeMode)
 
     if (fAnonymousMode) {
         ui->switchFundButton->setText(QString(tr("Use Normal Balance")));
-        ui->labelBalanceText->setText(QString(tr("Lelantus Balance")));
+        ui->labelBalanceText->setText(QString(tr("Private Balance")));
 
         ui->checkBoxCoinControlChange->setEnabled(false);
         ui->lineEditCoinControlChange->setEnabled(false);
 
     } else {
-        ui->switchFundButton->setText(QString(tr("Use Lelantus Balance")));
+        ui->switchFundButton->setText(QString(tr("Use Private Balance")));
         ui->labelBalanceText->setText(QString(tr("Normal Balance")));
 
         ui->checkBoxCoinControlChange->setEnabled(true);
