@@ -3703,10 +3703,6 @@
         <translation>非冗長モードで返却する生トランザクションやブロックの16進数表現のシリアライゼーションフォーマットを非 segwit (0) または segwit (1) のものに設定する (デフォルト: %d)</translation>
     </message>
     <message>
-        <source>Support filtering of blocks and transaction with bloom filters (default: %u)</source>
-        <translation>Bloomフィルタによる、ブロックおよびトランザクションのフィルタリングを有効化する (初期値: %u)</translation>
-    </message>
-    <message>
         <source>This is the transaction fee you may pay when fee estimates are not available.</source>
         <translation>これは手数料の推定機能が利用できない場合に支払うトランザクション手数料です。</translation>
     </message>

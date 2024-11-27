@@ -3698,10 +3698,6 @@
         <translation>Définit la sérialisation de la transaction brute ou les données hexa de bloc retournées en mode non-verbose, non-segwit(0) ou segwit(1) (par défaut : %d)</translation>
     </message>
     <message>
-        <source>Support filtering of blocks and transaction with bloom filters (default: %u)</source>
-        <translation>Prendre en charge le filtrage des blocs et des transactions avec les filtres bloom (par défaut : %u)</translation>
-    </message>
-    <message>
         <source>This is the transaction fee you may pay when fee estimates are not available.</source>
         <translation>Il s'agit des frais de transaction que vous pourriez payer si aucune estimation de frais n'est proposée.</translation>
     </message>

@@ -3698,10 +3698,6 @@
         <translation>Ham işlemin serileştirilmesini ayarlar veya blok non-verbose, non-segwit(0) veya segwit(1) kipinde onaltılık değeri döndürür (default: %d)</translation>
     </message>
     <message>
-        <source>Support filtering of blocks and transaction with bloom filters (default: %u)</source>
-        <translation>Blokların ve işlemlerin bloom filtreleri ile süzülmesini destekle (varsayılan: %u)</translation>
-    </message>
-    <message>
         <source>This is the transaction fee you may pay when fee estimates are not available.</source>
         <translation>İşlem ücret tahminleri mevcut olmadığında ödeyebileceğiniz işlem ücreti budur.</translation>
     </message>
