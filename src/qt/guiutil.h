@@ -178,7 +178,7 @@ namespace GUIUtil
 
     bool GetStartOnSystemStartup();
     bool SetStartOnSystemStartup(bool fAutoStart);
-
+    
     /* load stylesheet */
     void loadTheme();
 
