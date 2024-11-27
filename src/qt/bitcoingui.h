@@ -100,10 +100,6 @@ private:
 
     QMenuBar *appMenuBar;
     QAction *overviewAction;
-#ifdef ENABLE_ELYSIUM
-    QAction *elyAssetsAction;
-    QAction *toolboxAction;
-#endif
     QAction *historyAction;
     QAction *quitAction;
     QAction *sendCoinsAction;
@@ -223,14 +219,6 @@ public Q_SLOTS:
 #ifdef ENABLE_WALLET
     /** Switch to overview (home) page */
     void gotoOverviewPage();
-#ifdef ENABLE_ELYSIUM
-    /** Switch to ElyAssets page */
-    void gotoElyAssetsPage();
-    /** Switch to utility page */
-    void gotoToolboxPage();
-    /** Switch directly to Elysium history tab */
-    void gotoElysiumHistoryTab();
-#endif
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch directly to BZX history tab */

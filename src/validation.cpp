@@ -54,10 +54,6 @@
 #include "sigma/coinspend.h"
 #include "warnings.h"
 
-#ifdef ENABLE_ELYSIUM
-#include "elysium/elysium.h"
-#endif
-
 #include "masternode-payments.h"
 
 #include "evo/specialtx.h"
@@ -3322,29 +3318,11 @@ bool static DisconnectTip(CValidationState& state, const CChainParams& chainpara
     }
 #endif
 
-#ifdef ENABLE_ELYSIUM
-    //! Elysium: begin block disconnect notification
-    auto fElysium = isElysiumEnabled();
-
-    if (fElysium) {
-        LogPrint("handler", "Elysium handler: block disconnect begin [height: %d, reindex: %d]\n", GetHeight(), (int)fReindex);
-        elysium_handler_disc_begin(GetHeight(), pindexDelete);
-    }
-#endif
-
     // Let wallets know transactions went from 1-confirmed to
     // 0-confirmed or conflicted:
     for (const auto& tx : block.vtx) {
         GetMainSignals().SyncTransaction(*tx, pindexDelete->pprev, CMainSignals::SYNC_TRANSACTION_NOT_IN_BLOCK);
     }
-
-#ifdef ENABLE_ELYSIUM
-    //! Elysium: end of block disconnect notification
-    if (fElysium) {
-        LogPrint("handler", "Elysium handler: block disconnect end [height: %d, reindex: %d]\n", GetHeight(), (int)fReindex);
-        elysium_handler_disc_end(GetHeight(), pindexDelete);
-    }
-#endif
 
     return true;
 }
@@ -3417,36 +3395,11 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
     int64_t nTime5 = GetTimeMicros(); nTimeChainState += nTime5 - nTime4;
     LogPrint("bench", "  - Writing chainstate: %.2fms [%.2fs]\n", (nTime5 - nTime4) * 0.001, nTimeChainState * 0.000001);
 
-#ifdef ENABLE_ELYSIUM
-    bool fElysium = isElysiumEnabled();
-
-    //! Elysium: transaction position within the block
-    unsigned int nTxIdx = 0;
-    //! Elysium: number of meta transactions found
-    unsigned int nNumMetaTxs = 0;
-
-    //! Elysium: begin block connect notification
-    if (fElysium) {
-        LogPrint("handler", "Elysium handler: block connect begin [height: %d]\n", GetHeight());
-        elysium_handler_block_begin(GetHeight(), pindexNew);
-    }
-#endif
-
     // Remove conflicting transactions from the mempool.;
     txpools.removeForBlock(blockConnecting.vtx, pindexNew->nHeight);
 
     // Update chainActive & related variables.
     UpdateTip(pindexNew, chainparams);
-
-#ifdef ENABLE_ELYSIUM
-        //! Elysium: new confirmed transaction notification
-    if (fElysium) {
-        BOOST_FOREACH(CTransactionRef tx, blockConnecting.vtx) {
-                LogPrint("handler", "Elysium handler: new confirmed transaction [height: %d, idx: %u]\n", GetHeight(), nTxIdx);
-                if (elysium_handler_tx(*tx, GetHeight(), nTxIdx++, pindexNew)) ++nNumMetaTxs;
-            }
-    }
-#endif
 
 #ifdef ENABLE_WALLET
     // Sync with HDMint wallet
@@ -3471,14 +3424,6 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
             LogPrintf("HDmint: UpdateSpendStateFromBlock. [height: %d]\n", GetHeight());
             pwalletMain->zwallet->GetTracker().UpdateMintStateFromBlock(blockConnecting.lelantusTxInfo->mints);
         }
-    }
-#endif
-
-#ifdef ENABLE_ELYSIUM
-    //! Elysium: end of block connect notification
-    if (fElysium) {
-        LogPrint("handler", "Elysium handler: block connect end [new height: %d, found: %u txs]\n", GetHeight(), nNumMetaTxs);
-        elysium_handler_block_end(GetHeight(), pindexNew, nNumMetaTxs);
     }
 #endif
 
