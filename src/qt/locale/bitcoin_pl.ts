@@ -3003,7 +3003,6 @@ Zwróć uwagę, że poprawnie zweryfikowana wiadomość potwierdza to, że nadaw
         <translation>Wypuść informacje debugowania (domyślnie: %u, podanie &lt;category&gt; jest opcjonalne)</translation>
     </message>
     <message>
-    <message>
         <source>Total length of network version string (%i) exceeds maximum length (%i). Reduce the number or size of uacomments.</source>
         <translation>Całkowita długość łańcucha wersji (%i) przekracza maksymalną dopuszczalną długość (%i). Zmniejsz ilość lub rozmiar parametru uacomment.</translation>
     </message>
