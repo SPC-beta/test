@@ -2860,64 +2860,6 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         }
     }
 
-
-    else if (strCommand == NetMsgType::FILTERLOAD)
-    {
-        CBloomFilter filter;
-        vRecv >> filter;
-
-        if (!filter.IsWithinSizeConstraints())
-        {
-            // There is no excuse for sending a too-large filter
-            LOCK(cs_main);
-            Misbehaving(pfrom->GetId(), 100);
-        }
-        else
-        {
-            LOCK(pfrom->cs_filter);
-            delete pfrom->pfilter;
-            pfrom->pfilter = new CBloomFilter(filter);
-            pfrom->pfilter->UpdateEmptyFull();
-            pfrom->fRelayTxes = true;
-        }
-    }
-
-
-    else if (strCommand == NetMsgType::FILTERADD)
-    {
-        std::vector<unsigned char> vData;
-        vRecv >> vData;
-
-        // Nodes must NEVER send a data item > 520 bytes (the max size for a script data object,
-        // and thus, the maximum size any matched object can have) in a filteradd message
-        bool bad = false;
-        if (vData.size() > MAX_SCRIPT_ELEMENT_SIZE) {
-            bad = true;
-        } else {
-            LOCK(pfrom->cs_filter);
-            if (pfrom->pfilter) {
-                pfrom->pfilter->insert(vData);
-            } else {
-                bad = true;
-            }
-        }
-        if (bad) {
-            LOCK(cs_main);
-            Misbehaving(pfrom->GetId(), 100);
-        }
-    }
-
-
-    else if (strCommand == NetMsgType::FILTERCLEAR)
-    {
-        LOCK(pfrom->cs_filter);
-        if (pfrom->GetLocalServices() & NODE_BLOOM) {
-            delete pfrom->pfilter;
-            pfrom->pfilter = new CBloomFilter();
-        }
-        pfrom->fRelayTxes = true;
-    }
-
     else if (strCommand == NetMsgType::FEEFILTER) {
         CAmount newFeeFilter = 0;
         vRecv >> newFeeFilter;
