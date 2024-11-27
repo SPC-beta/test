@@ -318,36 +318,36 @@ void BitcoinGUI::createActions()
     size_t key = Qt::Key_1;
 	QActionGroup *tabGroup = new QActionGroup(this);
 
-    overviewAction = new QAction(tr("&Overview"), this);
+	overviewAction = new QAction(tr("&Overview"), this);
 	overviewAction->setStatusTip(tr("Show general overview of wallet"));
 	overviewAction->setToolTip(overviewAction->statusTip());
 	overviewAction->setCheckable(true);
 	overviewAction->setShortcut(QKeySequence(Qt::ALT + key++));
 	tabGroup->addAction(overviewAction);
 
-    sendCoinsAction = new QAction(tr("&Send"), this);
-    sendCoinsAction->setStatusTip(tr("Send coins to a address"));
+	sendCoinsAction = new QAction(tr("&Send"), this);
+	sendCoinsAction->setStatusTip(tr("Send coins to a address"));
 	sendCoinsAction->setToolTip(sendCoinsAction->statusTip());
 	sendCoinsAction->setCheckable(true);
 	sendCoinsAction->setShortcut(QKeySequence(Qt::ALT + key++));
 	tabGroup->addAction(sendCoinsAction);
 
-    sendCoinsMenuAction = new QAction(sendCoinsAction->text(), this);
+	sendCoinsMenuAction = new QAction(sendCoinsAction->text(), this);
 	sendCoinsMenuAction->setStatusTip(sendCoinsAction->statusTip());
 	sendCoinsMenuAction->setToolTip(sendCoinsMenuAction->statusTip());
 
-    receiveCoinsAction = new QAction(tr("&Receive"), this);
+	receiveCoinsAction = new QAction(tr("&Receive"), this);
 	receiveCoinsAction->setStatusTip(tr("Request payments (generates QR codes and BZX: URIs)"));
 	receiveCoinsAction->setToolTip(receiveCoinsAction->statusTip());
 	receiveCoinsAction->setCheckable(true);
 	receiveCoinsAction->setShortcut(QKeySequence(Qt::ALT + key++));
 	tabGroup->addAction(receiveCoinsAction);
 
-    receiveCoinsMenuAction = new QAction(receiveCoinsAction->text(), this);
+	receiveCoinsMenuAction = new QAction(receiveCoinsAction->text(), this);
 	receiveCoinsMenuAction->setStatusTip(receiveCoinsAction->statusTip());
 	receiveCoinsMenuAction->setToolTip(receiveCoinsMenuAction->statusTip());
 
-    historyAction = new QAction(tr("&Transactions"), this);
+	historyAction = new QAction(tr("&Transactions"), this);
 	historyAction->setStatusTip(tr("Browse transaction history"));
 	historyAction->setToolTip(historyAction->statusTip());
 	historyAction->setCheckable(true);
@@ -462,6 +462,8 @@ void BitcoinGUI::createActions()
     connect(toggleHideAction, &QAction::triggered, this, &BitcoinGUI::toggleHidden);
     connect(showHelpMessageAction, &QAction::triggered, this, &BitcoinGUI::showHelpMessageClicked);
     connect(openRPCConsoleAction, &QAction::triggered, this, &BitcoinGUI::showDebugWindow);
+    // prevents an open debug window from becoming stuck/unusable on client shutdown
+    connect(quitAction, &QAction::triggered, rpcConsole, &QWidget::hide);
 
 #ifdef ENABLE_WALLET
     if(walletFrame)
@@ -687,6 +689,7 @@ void BitcoinGUI::setWalletActionsEnabled(bool enabled)
     verifyMessageAction->setEnabled(enabled);
     usedSendingAddressesAction->setEnabled(enabled);
     usedReceivingAddressesAction->setEnabled(enabled);
+    openAction->setEnabled(enabled);
 }
 
 void BitcoinGUI::createTrayIcon(const NetworkStyle *networkStyle)
@@ -1427,12 +1430,12 @@ void BitcoinGUI::unsubscribeFromCoreSignals()
 
 void BitcoinGUI::checkMasternodeVisibility(int numBlocks)
 {
-        masternodeAction->setVisible(true);
+    masternodeAction->setVisible(true);
 }
 
 void BitcoinGUI::checkLelantusVisibility(int numBlocks)
 {
-        lelantusAction->setVisible(true);
+    lelantusAction->setVisible(true);
 }
 
 /** Get restart command-line parameters and request restart */
