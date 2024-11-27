@@ -274,7 +274,11 @@ bool GetOutPointFromBlock(COutPoint& outPoint, const GroupElement &pubCoinValue,
                 // CWallet::CreatePrivcoinMintModelV3 around "scriptSerializedCoin << OP_PRIVCOINMINTV3";
                 std::vector<unsigned char> coin_serialised(txout.scriptPubKey.begin() + 1,
                                                       txout.scriptPubKey.end());
-                txPubCoinValue.deserialize(&coin_serialised[0]);
+                try {
+                    txPubCoinValue.deserialize(&coin_serialised[0]);
+                } catch (const std::exception &) {
+                    return false;
+                }
                 if(pubCoinValue==txPubCoinValue){
                     outPoint = COutPoint(tx->GetHash(), nIndex);
                     return true;
