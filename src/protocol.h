@@ -255,6 +255,9 @@ enum ServiceFlags : uint64_t {
     // Bitcoin Core does not support this but a patch set called Bitcoin XT does.
     // See BIP 64 for details on how this is implemented.
     NODE_GETUTXO = (1 << 1),
+    // NODE_WITNESS indicates that a node can be asked for blocks and transactions including
+    // witness data.
+    NODE_WITNESS = (1 << 3),
     // NODE_XTHIN means the node supports Xtreme Thinblocks
     // If this is turned off then the node will not service nor make xthin requests
     NODE_XTHIN = (1 << 4),
@@ -305,6 +308,7 @@ public:
 };
 
 /** getdata message type flags */
+const uint32_t MSG_WITNESS_FLAG = 1 << 30;
 const uint32_t MSG_TYPE_MASK    = 0xffffffff >> 2;
 
 /** getdata / inv message types.
@@ -320,6 +324,10 @@ enum GetDataMsg
     MSG_FILTERED_BLOCK = 3,  //!< Defined in BIP37
     MSG_CMPCT_BLOCK = 4,     //!< Defined in BIP152
 	MSG_DANDELION_TX = 5,    //!< Dandelion
+    MSG_WITNESS_BLOCK = MSG_BLOCK | MSG_WITNESS_FLAG, //!< Defined in BIP144
+    MSG_WITNESS_TX = MSG_TX | MSG_WITNESS_FLAG,       //!< Defined in BIP144
+    MSG_FILTERED_WITNESS_BLOCK = MSG_FILTERED_BLOCK | MSG_WITNESS_FLAG,
+    MSG_DANDELION_WITNESS_TX = MSG_DANDELION_TX | MSG_WITNESS_FLAG,
 
     MSG_QUORUM_FINAL_COMMITMENT = 21,
     MSG_QUORUM_CONTRIB = 23,
