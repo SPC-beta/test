@@ -116,6 +116,7 @@ TXHistoryDialog::TXHistoryDialog(QWidget *parent) :
     connect(copyAmountAction, &QAction::triggered, this, &TXHistoryDialog::copyAmount);
     connect(copyTxIDAction, &QAction::triggered, this, &TXHistoryDialog::copyTxID);
     connect(showDetailsAction, &QAction::triggered, this, &TXHistoryDialog::showDetails);
+    // Perform initial population and update of history table
 
     UpdateHistory();
     // since there is no model we can't do this before we add some data, so now let's do the resizing
