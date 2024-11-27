@@ -298,7 +298,14 @@ UniValue getgenerate(const JSONRPCRequest& request)
         );
 
     LOCK(cs_main);
-    return GetBoolArg("-gen", DEFAULT_GENERATE);
+    if (fGenerate)
+    {
+    return true;
+    }
+    else
+    {
+    return false;
+    }
 }
 
 UniValue getmininginfo(const JSONRPCRequest& request)
@@ -614,13 +621,23 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
         // TODO: Maybe recheck connections/IBD and (if something wrong) send an expires-immediately template to stop miners?
     }
 
+    const struct BIP9DeploymentInfo& segwit_info = VersionBitsDeploymentInfo[Consensus::DEPLOYMENT_SEGWIT];
+    // If the caller is indicating segwit support, then allow CreateNewBlock()
+    // to select witness transactions, after segwit activates (otherwise
+    // don't).
+    bool fSupportsSegwit = setClientRules.find(segwit_info.name) != setClientRules.end();
+
 
     // Update block
     static CBlockIndex* pindexPrev;
     static int64_t nStart;
     static std::unique_ptr<CBlockTemplate> pblocktemplate;
+    // Cache whether the last invocation was with segwit support, to avoid returning
+    // a segwit-block to a non-segwit caller.
+    static bool fLastTemplateSupportsSegwit = true;
     if (pindexPrev != chainActive.Tip() ||
-        (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 5))
+            (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 5) ||
+                    fLastTemplateSupportsSegwit != fSupportsSegwit)
     {
         // Clear pindexPrev so future calls make a new block, despite any failures from here on
         pindexPrev = nullptr;
@@ -630,10 +647,11 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
         nTransactionsUpdatedLast = mempool.GetTransactionsUpdated();
         CBlockIndex* pindexPrevNew = chainActive.Tip();
         nStart = GetTime();
+        fLastTemplateSupportsSegwit = fSupportsSegwit;
 
         // Create new block
         CScript scriptDummy = CScript() << OP_TRUE;
-        pblocktemplate = BlockAssembler(Params()).CreateNewBlock(scriptDummy);
+        pblocktemplate = BlockAssembler(Params()).CreateNewBlock(scriptDummy, fSupportsSegwit);
         if (!pblocktemplate)
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
 
@@ -808,6 +826,10 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
         result.push_back(Pair("coinbase_payload", HexStr(pblock->vtx[0]->vExtraPayload)));
     }
 
+    if (!pblocktemplate->vchCoinbaseCommitment.empty() && fSupportsSegwit) {
+        result.push_back(Pair("default_witness_commitment", HexStr(pblocktemplate->vchCoinbaseCommitment.begin(), pblocktemplate->vchCoinbaseCommitment.end())));
+    }
+
     return result;
 }
 
@@ -875,6 +897,15 @@ UniValue submitblock(const JSONRPCRequest& request)
         }
     }
 
+    {
+        LOCK(cs_main);
+        BlockMap::iterator mi = mapBlockIndex.find(block.hashPrevBlock);
+        if (mi != mapBlockIndex.end()) {
+            UpdateUncommittedBlockStructures(block, mi->second, Params().GetConsensus());
+        }
+    }
+
+    // Process block
     submitblock_StateCatcher sc(block.GetHash());
     RegisterValidationInterface(&sc);
     bool fAccepted = ProcessNewBlock(Params(), blockptr, true, NULL);
