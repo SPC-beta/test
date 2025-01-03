@@ -592,8 +592,6 @@ void BitcoinGUI::setClientModel(ClientModel *_clientModel)
         rpcConsole->setClientModel(_clientModel);
 
 #ifdef ENABLE_WALLET
-        // Update Elysium pending status
-        connect(_clientModel, &ClientModel::refreshElysiumPending, this, &BitcoinGUI::setElysiumPendingStatus);
         if(walletFrame)
 
         {
