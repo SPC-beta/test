@@ -598,6 +598,7 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
     }
 
     // Check for duplicate inputs - note that this check is slow so we skip it in CheckBlock
+    {
         std::set<COutPoint> vInOutPoints;
         if (tx.IsSigmaSpend() || tx.IsLelantusJoinSplit()) {
             std::set<CScript> spendScripts;
@@ -615,6 +616,7 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
                     return state.DoS(100, false, REJECT_INVALID, "bad-txns-inputs-duplicate");
             }
         }
+    }
 
     if (tx.IsCoinBase())
     {
@@ -760,10 +762,12 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
             }
     }
 
-    if(tx.IsSigmaMint() || tx.IsSigmaSpend()) {
+    {
+        if(tx.IsSigmaMint() || tx.IsSigmaSpend()) {
             return state.DoS(100, error("Sigma transactions no more allowed in mempool"),
                              REJECT_INVALID, "bad-txns-privcoin");
         }
+    }
 
     // V3 sigma spends.
     sigma::CSigmaState *sigmaState = sigma::CSigmaState::GetState();
@@ -887,7 +891,7 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
     if (tx.IsCoinBase())
         return state.DoS(100, false, REJECT_INVALID, "coinbase");
 
-    // Rather not work on nonstandard transactions (unless -testnet/-regtest)
+    // Rather not work on nonstandard transactions
     std::string reason;
     if (fRequireStandard && !IsStandardTx(tx, reason))
         return state.DoS(0, false, REJECT_NONSTANDARD, reason);
@@ -1846,14 +1850,14 @@ void CheckForkWarningConditions()
         }
         else
         {
-            //LogPrintf("%s: Warning: Found invalid chain at least ~6 blocks longer than our best chain.\nChain state database corruption likely.\n", __func__);
-            //SetfLargeWorkInvalidChainFound(true);
+            LogPrintf("%s: Warning: Found invalid chain at least ~6 blocks longer than our best chain.\nChain state database corruption likely.\n", __func__);
+            SetfLargeWorkInvalidChainFound(true);
         }
     }
     else
     {
-        //SetfLargeWorkForkFound(false);
-        //SetfLargeWorkInvalidChainFound(false);
+        SetfLargeWorkForkFound(false);
+        SetfLargeWorkInvalidChainFound(false);
     }
 }
 
@@ -3365,7 +3369,6 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
     int64_t nTime5 = GetTimeMicros(); nTimeChainState += nTime5 - nTime4;
     LogPrint("bench", "  - Writing chainstate: %.2fms [%.2fs]\n", (nTime5 - nTime4) * 0.001, nTimeChainState * 0.000001);
 
-
     // Remove conflicting transactions from the mempool.;
     txpools.removeForBlock(blockConnecting.vtx, pindexNew->nHeight);
 
@@ -4371,7 +4374,7 @@ static bool AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CValidation
         return error("%s: %s", __func__, FormatStateMessage(state));
     }
 
-    // Header is valid/has work, merkle tree and is good...RELAY NOW
+    // Header is valid/has work, merkle tree is good...RELAY NOW
     // (but if it does not build on our best tip, let the SendMessages loop relay it)
     if (!IsInitialBlockDownload() && chainActive.Tip() == pindex->pprev)
         GetMainSignals().NewPoWValidBlock(pindex, pblock);
