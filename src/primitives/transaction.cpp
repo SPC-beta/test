@@ -84,7 +84,7 @@ CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.n
 
 uint256 CMutableTransaction::GetHash() const
 {
-    return SerializeHash(*this, SER_GETHASH, SERIALIZE_TRANSACTION_NO_WITNESS);
+    return SerializeHash(*this, SER_GETHASH);
 }
 
 std::string CMutableTransaction::ToString() const
@@ -105,13 +105,13 @@ std::string CMutableTransaction::ToString() const
 
 uint256 CTransaction::ComputeHash() const
 {
-    return SerializeHash(*this, SER_GETHASH, SERIALIZE_TRANSACTION_NO_WITNESS);
+    return SerializeHash(*this, SER_GETHASH);
 }
 
 
 uint256 CTransaction::GetWitnessHash() const
 {
-    if (!HasWitness()) {
+    if (true) {
         return GetHash();
     }
     return SerializeHash(*this, SER_GETHASH, 0);
@@ -265,8 +265,6 @@ std::string CTransaction::ToString() const
         vExtraPayload.size());
     for (unsigned int i = 0; i < vin.size(); i++)
         str += "    " + vin[i].ToString() + "\n";
-    for (unsigned int i = 0; i < vin.size(); i++)
-        str += "    " + vin[i].scriptWitness.ToString() + "\n";
     for (unsigned int i = 0; i < vout.size(); i++)
         str += "    " + vout[i].ToString() + "\n";
     return str;
