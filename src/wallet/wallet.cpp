@@ -4269,7 +4269,6 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
                 // Remove scriptSigs to eliminate the fee calculation dummy signatures
                 for (auto& vin : txNew.vin) {
                     vin.scriptSig = CScript();
-                    vin.scriptWitness.SetNull();
                 }
 
                 // Allow to override the default confirmation target over the CoinControl instance
@@ -4972,7 +4971,6 @@ bool CWallet::CreateLelantusMintTransactions(
                     // Remove scriptSigs to eliminate the fee calculation dummy signatures
                     for (auto &vin : tx.vin) {
                         vin.scriptSig = CScript();
-                        vin.scriptWitness.SetNull();
                     }
 
                     // Can we complete this as a free transaction?
