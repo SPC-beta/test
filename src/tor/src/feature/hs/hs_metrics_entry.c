@@ -28,16 +28,7 @@ static const int64_t hs_metrics_circ_build_time_buckets[] =
   60000  /* 60s */
 };
 
-// TODO: Define a constant for ARRAY_LENGTH(hs_metrics_circ_build_time_buckets)
-// and use where it applicable.
-//
-// This is commented out because it doesn't compile with gcc versions < 8.1
-// or with MSVC ("initializer element is not constant").
-//
-// See ticket#40773 and https://gcc.gnu.org/bugzilla/show_bug.cgi?id=69960#c18
-//
-/*static const size_t hs_metrics_circ_build_time_buckets_size =*/
-/*ARRAY_LENGTH(hs_metrics_circ_build_time_buckets);*/
+#define hs_metrics_circ_build_time_buckets_size ARRAY_LENGTH(hs_metrics_circ_build_time_buckets)
 
 /** The base metrics that is a static array of metrics that are added to every
  * single new stores.
