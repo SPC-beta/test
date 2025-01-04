@@ -280,29 +280,6 @@ WalletModel::SendCoinsReturn WalletModel::prepareTransaction(WalletModelTransact
     {
         if (rcp.fSubtractFeeFromAmount)
             fSubtractFeeFromAmount = true;
-
-        if (rcp.paymentRequest.IsInitialized())
-        {   // PaymentRequest...
-            CAmount subtotal = 0;
-            const payments::PaymentDetails& details = rcp.paymentRequest.getDetails();
-            for (int i = 0; i < details.outputs_size(); i++)
-            {
-                const payments::Output& out = details.outputs(i);
-                if (out.amount() <= 0) continue;
-                subtotal += out.amount();
-                const unsigned char* scriptStr = (const unsigned char*)out.script().data();
-                CScript scriptPubKey(scriptStr, scriptStr+out.script().size());
-                CAmount nAmount = out.amount();
-                CRecipient recipient = {scriptPubKey, nAmount, rcp.fSubtractFeeFromAmount};
-                vecSend.push_back(recipient);
-            }
-            if (subtotal <= 0)
-            {
-                return InvalidAmount;
-            }
-            total += subtotal;
-        }
-        else
         {   // User-entered address / amount:
             if(!validateAddress(rcp.address))
             {
@@ -394,29 +371,6 @@ WalletModel::SendCoinsReturn WalletModel::prepareJoinSplitTransaction(
         if (rcp.fSubtractFeeFromAmount)
             fSubtractFeeFromAmount = true;
 
-        if (rcp.paymentRequest.IsInitialized())
-        {
-            // PaymentRequest...
-            CAmount subtotal = 0;
-            const payments::PaymentDetails& details = rcp.paymentRequest.getDetails();
-            for (int i = 0; i < details.outputs_size(); i++)
-            {
-                const payments::Output& out = details.outputs(i);
-                if (out.amount() <= 0) continue;
-                subtotal += out.amount();
-                const unsigned char* scriptStr = (const unsigned char*)out.script().data();
-                CScript scriptPubKey(scriptStr, scriptStr+out.script().size());
-                CAmount nAmount = out.amount();
-                CRecipient recipient = {scriptPubKey, nAmount, rcp.fSubtractFeeFromAmount};
-                vecSend.push_back(recipient);
-            }
-            if (subtotal <= 0)
-            {
-                return InvalidAmount;
-            }
-            total += subtotal;
-        }
-        else
         {
             // User-entered address / amount:
             if(!validateAddress(rcp.address))
@@ -599,20 +553,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(WalletModelTransaction &tran
 
         Q_FOREACH(const SendCoinsRecipient &rcp, transaction.getRecipients())
         {
-            if (rcp.paymentRequest.IsInitialized())
-            {
-                // Make sure any payment requests involved are still valid.
-                if (PaymentServer::verifyExpired(rcp.paymentRequest.getDetails())) {
-                    return PaymentRequestExpired;
-                }
-
-                // Store PaymentRequests in wtx.vOrderForm in wallet.
-                std::string key("PaymentRequest");
-                std::string value;
-                rcp.paymentRequest.SerializeToString(&value);
-                newTx->vOrderForm.push_back(make_pair(key, value));
-            }
-            else if (!rcp.message.isEmpty()) // Message from normal BZX:URI (BZX:123...?message=example)
+            if (!rcp.message.isEmpty()) // Message from normal BZX:URI (BZX:123...?message=example)
                 newTx->vOrderForm.push_back(make_pair("Message", rcp.message.toStdString()));
         }
 
@@ -630,8 +571,6 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(WalletModelTransaction &tran
     // and emit coinsSent signal for each recipient
     Q_FOREACH(const SendCoinsRecipient &rcp, transaction.getRecipients())
     {
-        // Don't touch the address book when we have a payment request
-        if (!rcp.paymentRequest.IsInitialized())
         {
             std::string strAddress = rcp.address.toStdString();
             CTxDestination dest = CBitcoinAddress(strAddress).Get();
@@ -669,20 +608,7 @@ WalletModel::SendCoinsReturn WalletModel::sendPrivateCoins(WalletModelTransactio
 
         Q_FOREACH(const SendCoinsRecipient &rcp, transaction.getRecipients())
         {
-            if (rcp.paymentRequest.IsInitialized())
-            {
-                // Make sure any payment requests involved are still valid.
-                if (PaymentServer::verifyExpired(rcp.paymentRequest.getDetails())) {
-                    return PaymentRequestExpired;
-                }
-
-                // Store PaymentRequests in wtx.vOrderForm in wallet.
-                std::string key("PaymentRequest");
-                std::string value;
-                rcp.paymentRequest.SerializeToString(&value);
-                newTx->vOrderForm.push_back(make_pair(key, value));
-            }
-            else if (!rcp.message.isEmpty()) // Message from normal BZX:URI (BZX:123...?message=example)
+            if (!rcp.message.isEmpty()) // Message from normal BZX:URI (BZX:123...?message=example)
                 newTx->vOrderForm.push_back(make_pair("Message", rcp.message.toStdString()));
         }
 
@@ -702,8 +628,6 @@ WalletModel::SendCoinsReturn WalletModel::sendPrivateCoins(WalletModelTransactio
     // and emit coinsSent signal for each recipient
     Q_FOREACH(const SendCoinsRecipient &rcp, transaction.getRecipients())
     {
-        // Don't touch the address book when we have a payment request
-        if (!rcp.paymentRequest.IsInitialized())
         {
             std::string strAddress = rcp.address.toStdString();
             CTxDestination dest = CBitcoinAddress(strAddress).Get();
