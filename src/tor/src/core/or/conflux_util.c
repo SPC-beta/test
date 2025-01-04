@@ -33,15 +33,43 @@ int
 circuit_get_package_window(circuit_t *circ,
                            const crypt_path_t *cpath)
 {
+  /* We believe it is possible to get a closed circuit related to the
+   * on_circuit pointer of a connection not being nullified before ending up
+   * here. Else, this can lead to loud bug like experienced in #40908. */
+  if (circ->marked_for_close) {
+    return 0;
+  }
+
   if (circ->conflux) {
     if (CIRCUIT_IS_ORIGIN(circ)) {
       tor_assert_nonfatal(circ->purpose ==
                           CIRCUIT_PURPOSE_CONFLUX_LINKED);
     }
+    circuit_t *orig_circ = circ;
+
+    /* If conflux is in the process of tearing down the set,
+     * the package window is 0 -- there is no room. */
+    if (circ->conflux->in_full_teardown)
+      return 0;
+
     circ = conflux_decide_next_circ(circ->conflux);
 
     /* If conflux has no circuit to send on, the package window is 0. */
     if (!circ) {
+      /* Bug #40842: Additional diagnostics for other potential cases */
+      if (!orig_circ->conflux->curr_leg) {
+        if (orig_circ->marked_for_close) {
+          log_warn(LD_BUG, "Conflux has no circuit to send on. "
+                           "Circuit %p idx %d marked at line %s:%d",
+                           orig_circ, orig_circ->global_circuitlist_idx,
+                           orig_circ->marked_for_close_file,
+                           orig_circ->marked_for_close);
+        } else {
+          log_warn(LD_BUG, "Conflux has no circuit to send on. "
+                           "Circuit %p idx %d not marked for close.",
+                           orig_circ, orig_circ->global_circuitlist_idx);
+        }
+      }
       return 0;
     }
 
@@ -76,6 +104,10 @@ conflux_can_send(conflux_t *cfx)
   if (send_circ) {
     return true;
   } else {
+    if (BUG(!cfx->in_full_teardown && !cfx->curr_leg)) {
+      log_fn(LOG_WARN,
+             LD_BUG, "Conflux has no current circuit to send on. ");
+    }
     return false;
   }
 }
@@ -384,13 +416,13 @@ conflux_validate_legs(const conflux_t *cfx)
 
     /* Ensure we have no pending nonce on the circ */
     if (BUG(leg->circ->conflux_pending_nonce != NULL)) {
-      conflux_log_set(cfx, is_client);
+      conflux_log_set(LOG_WARN, cfx, is_client);
       continue;
     }
 
     /* Ensure we have a conflux object */
     if (BUG(leg->circ->conflux == NULL)) {
-      conflux_log_set(cfx, is_client);
+      conflux_log_set(LOG_WARN, cfx, is_client);
       continue;
     }
 
@@ -403,9 +435,10 @@ conflux_validate_legs(const conflux_t *cfx)
   // TODO-329-UDP: Eventually we want to allow three legs for the
   // exit case, to allow reconnection of legs to hit an RTT target.
   // For now, this validation helps find bugs.
-  if (BUG(num_legs > conflux_params_get_num_legs_set())) {
-    log_warn(LD_BUG, "Number of legs is above maximum of %d allowed: %d\n",
+  if (num_legs > conflux_params_get_num_legs_set()) {
+    log_fn(LOG_PROTOCOL_WARN,
+           LD_BUG, "Number of legs is above maximum of %d allowed: %d\n",
              conflux_params_get_num_legs_set(), smartlist_len(cfx->legs));
-    conflux_log_set(cfx, is_client);
+    conflux_log_set(LOG_PROTOCOL_WARN, cfx, is_client);
   }
 }

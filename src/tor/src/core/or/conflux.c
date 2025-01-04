@@ -115,6 +115,8 @@ conflux_leg_t *
 conflux_get_leg(conflux_t *cfx, const circuit_t *circ)
 {
   conflux_leg_t *leg_found = NULL;
+  tor_assert(cfx);
+  tor_assert(cfx->legs);
 
   // Find the leg that the cell is written on
   CONFLUX_FOR_EACH_LEG_BEGIN(cfx, leg) {
@@ -467,8 +469,12 @@ conflux_decide_circ_for_send(conflux_t *cfx,
    * so these commands arrive in-order. */
   if (!new_circ && relay_command != RELAY_COMMAND_DATA) {
     /* Curr leg should be set, because conflux_decide_next_circ() should
-     * have set it earlier. */
-    tor_assert(cfx->curr_leg);
+     * have set it earlier. No BUG() here because the only caller BUG()s. */
+    if (!cfx->curr_leg) {
+      log_warn(LD_BUG, "No current leg for conflux with relay command %d",
+               relay_command);
+      return NULL;
+    }
     return cfx->curr_leg->circ;
   }
 
@@ -525,7 +531,10 @@ conflux_note_cell_sent(conflux_t *cfx, circuit_t *circ, uint8_t relay_command)
   }
 
   leg = conflux_get_leg(cfx, circ);
-  tor_assert(leg);
+  if (leg == NULL) {
+    log_fn(LOG_PROTOCOL_WARN, LD_BUG, "No Conflux leg after sending a cell");
+    return;
+  }
 
   leg->last_seq_sent++;
 
@@ -536,7 +545,7 @@ conflux_note_cell_sent(conflux_t *cfx, circuit_t *circ, uint8_t relay_command)
 
 /** Find the leg with lowest non-zero curr_rtt_usec, and
  * pick it for our current leg. */
-static inline void
+static inline bool
 conflux_pick_first_leg(conflux_t *cfx)
 {
   conflux_leg_t *min_leg = NULL;
@@ -555,14 +564,26 @@ conflux_pick_first_leg(conflux_t *cfx)
   } CONFLUX_FOR_EACH_LEG_END(leg);
 
   if (!min_leg) {
-    // Get the 0th leg; if it does not exist, assert
-    tor_assert(smartlist_len(cfx->legs) > 0);
+    // Get the 0th leg; if it does not exist, log the set.
+    // Bug 40827 managed to hit this, so let's dump the sets
+    // in case it happens again.
+    if (BUG(smartlist_len(cfx->legs) <= 0)) {
+      // Since we have no legs, we have no idea if this is really a client
+      // or server set. Try to find any that match:
+      log_warn(LD_BUG, "Matching client sets:");
+      conflux_log_set(LOG_WARN, cfx, true);
+      log_warn(LD_BUG, "Matching server sets:");
+      conflux_log_set(LOG_WARN, cfx, false);
+      log_warn(LD_BUG, "End conflux set dump");
+      return false;
+    }
+
     min_leg = smartlist_get(cfx->legs, 0);
     tor_assert(min_leg);
     if (BUG(min_leg->linked_sent_usec == 0)) {
       log_warn(LD_BUG, "Conflux has no legs with non-zero RTT. "
                "Using first leg.");
-      conflux_log_set(cfx, CIRCUIT_IS_ORIGIN(min_leg->circ));
+      conflux_log_set(LOG_WARN, cfx, CIRCUIT_IS_ORIGIN(min_leg->circ));
     }
   }
 
@@ -572,6 +593,8 @@ conflux_pick_first_leg(conflux_t *cfx)
   cfx->cells_until_switch = 0;
 
   cfx->curr_leg = min_leg;
+
+  return true;
 }
 
 /**
@@ -586,10 +609,17 @@ conflux_decide_next_circ(conflux_t *cfx)
   // this once tuning is complete.
   conflux_validate_legs(cfx);
 
+  /* If the conflux set is tearing down and has no current leg,
+   * bail and give up */
+  if (cfx->in_full_teardown) {
+    return NULL;
+  }
+
   /* If we don't have a current leg yet, pick one.
    * (This is the only non-const operation in this function). */
   if (!cfx->curr_leg) {
-    conflux_pick_first_leg(cfx);
+    if (!conflux_pick_first_leg(cfx))
+      return NULL;
   }
 
   /* First, check if we can switch. */

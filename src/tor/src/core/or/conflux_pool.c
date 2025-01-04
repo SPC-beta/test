@@ -187,6 +187,8 @@ conflux_free_(conflux_t *cfx)
   if (!cfx) {
     return;
   }
+  tor_assert(cfx->legs);
+  tor_assert(cfx->ooo_q);
 
   SMARTLIST_FOREACH_BEGIN(cfx->legs, conflux_leg_t *, leg) {
     SMARTLIST_DEL_CURRENT(cfx->legs, leg);
@@ -260,6 +262,8 @@ unlinked_free(unlinked_circuits_t *unlinked)
   if (!unlinked) {
     return;
   }
+  tor_assert(unlinked->legs);
+
   /* This cfx is pointing to a linked set. */
   if (!unlinked->is_for_linked_set) {
     conflux_free(unlinked->cfx);
@@ -492,10 +496,6 @@ cfx_add_leg(conflux_t *cfx, leg_t *leg)
 
   /* Big trouble if we add a leg to the wrong set. */
   tor_assert(tor_memeq(cfx->nonce, leg->link->nonce, sizeof(cfx->nonce)));
-
-  if (BUG(CONFLUX_NUM_LEGS(cfx) > CONFLUX_MAX_CIRCS)) {
-    return;
-  }
 
   conflux_leg_t *cleg = tor_malloc_zero(sizeof(*cleg));
   cleg->circ = leg->circ;
@@ -731,10 +731,24 @@ try_finalize_set(unlinked_circuits_t *unlinked)
   bool is_client;
 
   tor_assert(unlinked);
+  tor_assert(unlinked->legs);
+  tor_assert(unlinked->cfx);
+  tor_assert(unlinked->cfx->legs);
 
   /* Without legs, this is not ready to become a linked set. */
   if (BUG(smartlist_len(unlinked->legs) == 0)) {
     err = ERR_LINK_CIRC_MISSING_LEG;
+    goto end;
+  }
+
+  /* If there are too many legs, we can't link. */
+  if (smartlist_len(unlinked->legs) +
+      smartlist_len(unlinked->cfx->legs) > conflux_params_get_max_legs_set()) {
+    log_fn(LOG_PROTOCOL_WARN, LD_CIRC,
+           "Conflux set has too many legs to link. "
+           "Rejecting this circuit.");
+    conflux_log_set(LOG_PROTOCOL_WARN, unlinked->cfx, unlinked->is_client);
+    err = ERR_LINK_CIRC_INVALID_LEG;
     goto end;
   }
 
@@ -1322,7 +1336,12 @@ count_client_usable_sets(void)
       log_warn(LD_BUG, "Client conflux linked set leg without a circuit");
       continue;
     }
-    if (!CONST_TO_ORIGIN_CIRCUIT(leg->circ)->unusable_for_new_conns) {
+
+    /* The maze marks circuits used several different ways. If any of
+     * them are marked for this leg, launch a new one. */
+    if (!CONST_TO_ORIGIN_CIRCUIT(leg->circ)->unusable_for_new_conns &&
+        !CONST_TO_ORIGIN_CIRCUIT(leg->circ)->isolation_values_set &&
+        !leg->circ->timestamp_dirty) {
       count++;
     }
   } DIGEST256MAP_FOREACH_END;
@@ -1596,6 +1615,9 @@ linked_circuit_free(circuit_t *circ, bool is_client)
 {
   tor_assert(circ);
   tor_assert(circ->conflux);
+  tor_assert(circ->conflux->legs);
+  tor_assert(circ->conflux->ooo_q);
+
   if (is_client) {
     tor_assert(circ->purpose == CIRCUIT_PURPOSE_CONFLUX_LINKED);
   }
@@ -1970,6 +1992,9 @@ conflux_process_linked(circuit_t *circ, crypt_path_t *layer_hint,
     connection_ap_attach_pending(1);
   }
 
+  /* This cell is now considered valid for clients. */
+  circuit_read_valid_data(TO_ORIGIN_CIRCUIT(circ), cell_len);
+
   goto end;
 
  close:
@@ -2071,22 +2096,32 @@ conflux_pool_init(void)
  * For use in rare bug cases that are hard to diagnose.
  */
 void
-conflux_log_set(const conflux_t *cfx, bool is_client)
+conflux_log_set(int loglevel, const conflux_t *cfx, bool is_client)
 {
   tor_assert(cfx);
 
-  log_warn(LD_BUG, "Conflux %s: %d linked, %d launched",
+  log_fn(loglevel,
+          LD_BUG,
+           "Conflux %s: %d linked, %d launched. Delivered: %"PRIu64"; "
+           "teardown: %d; Current: %p, Previous: %p",
                fmt_nonce(cfx->nonce), smartlist_len(cfx->legs),
-               cfx->num_leg_launch);
+               cfx->num_leg_launch,
+               cfx->last_seq_delivered, cfx->in_full_teardown,
+               cfx->curr_leg, cfx->prev_leg);
 
   // Log all linked legs
   int legs = 0;
   CONFLUX_FOR_EACH_LEG_BEGIN(cfx, leg) {
-   log_warn(LD_BUG,
+   const struct congestion_control_t *cc = circuit_ccontrol(leg->circ);
+   log_fn(loglevel, LD_BUG,
             " - Linked Leg %d purpose=%d; RTT %"PRIu64", sent: %"PRIu64
-            " marked: %d",
+            "; sent: %"PRIu64", recv: %"PRIu64", infl: %"PRIu64", "
+            "ptr: %p, idx: %d, marked: %d",
             legs, leg->circ->purpose, leg->circ_rtts_usec,
-            leg->linked_sent_usec, leg->circ->marked_for_close);
+            leg->linked_sent_usec, leg->last_seq_recv,
+            leg->last_seq_sent, cc->inflight, leg->circ,
+            leg->circ->global_circuitlist_idx,
+            leg->circ->marked_for_close);
    legs++;
   } CONFLUX_FOR_EACH_LEG_END(leg);
 
@@ -2094,16 +2129,18 @@ conflux_log_set(const conflux_t *cfx, bool is_client)
   unlinked_circuits_t *unlinked = unlinked_pool_get(cfx->nonce, is_client);
   if (unlinked) {
     // Log the number of legs and the is_for_linked_set status
-    log_warn(LD_BUG, " - Unlinked set:  %d legs, for link: %d",
+    log_fn(loglevel, LD_BUG, " - Unlinked set:  %d legs, for link: %d",
              smartlist_len(unlinked->legs), unlinked->is_for_linked_set);
     legs = 0;
     SMARTLIST_FOREACH_BEGIN(unlinked->legs, leg_t *, leg) {
-      log_warn(LD_BUG,
+      log_fn(loglevel, LD_BUG,
         "     Unlinked Leg: %d purpose=%d; linked: %d, RTT %"PRIu64", "
-        "sent: %"PRIu64" link ptr %p, marked: %d",
+        "sent: %"PRIu64" link ptr %p, circ ptr: %p, idx: %d, marked: %d",
                legs, leg->circ->purpose, leg->linked,
                leg->rtt_usec, leg->link_sent_usec,
-               leg->link, leg->circ->marked_for_close);
+               leg->link, leg->circ,
+               leg->circ->global_circuitlist_idx,
+               leg->circ->marked_for_close);
       legs++;
     } SMARTLIST_FOREACH_END(leg);
   }
