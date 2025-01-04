@@ -1850,14 +1850,14 @@ void CheckForkWarningConditions()
         }
         else
         {
-            LogPrintf("%s: Warning: Found invalid chain at least ~6 blocks longer than our best chain.\nChain state database corruption likely.\n", __func__);
-            SetfLargeWorkInvalidChainFound(true);
+            //LogPrintf("%s: Warning: Found invalid chain at least ~6 blocks longer than our best chain.\nChain state database corruption likely.\n", __func__);
+            //SetfLargeWorkInvalidChainFound(true);
         }
     }
     else
     {
-        SetfLargeWorkForkFound(false);
-        SetfLargeWorkInvalidChainFound(false);
+        //SetfLargeWorkForkFound(false);
+        //SetfLargeWorkInvalidChainFound(false);
     }
 }
 
