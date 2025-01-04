@@ -279,7 +279,7 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
     strHTML += "<b>" + tr("Output index") + ":</b> " + QString::number(rec->getOutputIndex()) + "<br>";
 
     // Message from normal BZX:URI (BZX:123...?message=example)
-    for (const std::pair<std::string, std::string>& r : orderForm) {
+    for (const std::pair<std::string, std::string>& r : wtx.vOrderForm) {
         if (r.first == "Message")
             strHTML += "<br><b>" + tr("Message") + ":</b><br>" + GUIUtil::HtmlEscape(r.second, true) + "<br>";
     }
