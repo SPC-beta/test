@@ -168,7 +168,15 @@ AC_ARG_ENABLE([zmq],
   [use_zmq=$enableval],
   [use_zmq=yes])
 
-AC_ARG_WITH([protoc-bindir],[AS_HELP_STRING([--with-protoc-bindir=BIN_DIR],[specify protoc bin path])], [protoc_bin_path=$withval], [])
+AC_ARG_ENABLE([bip70],
+  [AS_HELP_STRING([--enable-bip70],
+  [BIP70 (payment protocol) support in the GUI (no longer supported)])],
+  [enable_bip70=$enableval],
+  [enable_bip70=no])
+
+if test x$enable_bip70 != xno; then
+  AC_MSG_ERROR([BIP70 is no longer supported!])
+fi
 
 AC_ARG_ENABLE(man,
     [AS_HELP_STRING([--disable-man],
@@ -845,7 +853,6 @@ if test x$use_pkgconfig = xyes; then
       PKG_CHECK_MODULES([SSL], [libssl],, [AC_MSG_ERROR(openssl  not found.)])
       PKG_CHECK_MODULES([CRYPTO], [libcrypto],,[AC_MSG_ERROR(libcrypto  not found.)])
       PKG_CHECK_MODULES(ZLIB, [zlib], [], [AC_MSG_ERROR([zlib not found])])
-      BITCOIN_QT_CHECK([PKG_CHECK_MODULES([PROTOBUF], [protobuf], [have_protobuf=yes], [BITCOIN_QT_FAIL(libprotobuf not found)])])
       if test x$use_qr != xno; then
         BITCOIN_QT_CHECK([PKG_CHECK_MODULES([QR], [libqrencode], [have_qrencode=yes], [have_qrencode=no])])
       fi
