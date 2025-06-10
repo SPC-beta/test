@@ -32,17 +32,6 @@ void RegisterEvoRPCCommands(CRPCTable &tableRPC);
 /** Register Quorums RPC commands */
 void RegisterQuorumsRPCCommands(CRPCTable &tableRPC);
 
-/** Register Elysium data retrieval RPC commands */
-void RegisterElysiumDataRetrievalRPCCommands(CRPCTable &tableRPC);
-#ifdef ENABLE_WALLET
-/** Register Elysium transaction creation RPC commands */
-void RegisterElysiumTransactionCreationRPCCommands(CRPCTable &tableRPC);
-#endif
-/** Register Elysium payload creation RPC commands */
-void RegisterElysiumPayloadCreationRPCCommands(CRPCTable &tableRPC);
-/** Register Elysium raw transaction RPC commands */
-void RegisterElysiumRawTransactionRPCCommands(CRPCTable &tableRPC);
-
 static inline void RegisterAllCoreRPCCommands(CRPCTable &tableRPC)
 {
     RegisterBlockchainRPCCommands(tableRPC);
@@ -51,6 +40,7 @@ static inline void RegisterAllCoreRPCCommands(CRPCTable &tableRPC)
     RegisterMiningRPCCommands(tableRPC);
     RegisterRawTransactionRPCCommands(tableRPC);
     RegisterMasternodeRPCCommands(tableRPC);
+
     RegisterEvoRPCCommands(tableRPC);
     RegisterQuorumsRPCCommands(tableRPC);
 }
