@@ -2,10 +2,10 @@ dnl require autoconf 2.60 (AS_ECHO/AS_ECHO_N)
 AC_PREREQ([2.60])
 define(_CLIENT_VERSION_MAJOR, 5)
 define(_CLIENT_VERSION_MINOR, 14)
-define(_CLIENT_VERSION_REVISION, 12)
-define(_CLIENT_VERSION_BUILD, 2)
+define(_CLIENT_VERSION_REVISION, 14)
+define(_CLIENT_VERSION_BUILD, 1)
 define(_CLIENT_VERSION_IS_RELEASE, true)
-define(_COPYRIGHT_YEAR, 2024)
+define(_COPYRIGHT_YEAR, 2025)
 define(_COPYRIGHT_HOLDERS,[The %s developers])
 define(_COPYRIGHT_HOLDERS_SUBSTITUTION,[[BZX Core]])
 AC_INIT([BZX Core],[_CLIENT_VERSION_MAJOR._CLIENT_VERSION_MINOR._CLIENT_VERSION_REVISION],[https://github.com/SpecialCoins/BitcoinZero/])
@@ -92,7 +92,17 @@ AC_PATH_TOOL(OBJCOPY, objcopy)
 AC_ARG_VAR(PYTHONPATH, Augments the default search path for python module files)
 
 # Enable wallet
-enable_wallet=yes
+AC_ARG_ENABLE([wallet],
+  [AS_HELP_STRING([--disable-wallet],
+  [disable wallet (enabled by default)])],
+  [enable_wallet=$enableval],
+  [enable_wallet=yes])
+
+AC_ARG_WITH([bdb],
+    [AS_HELP_STRING([--without-bdb],
+    [disable bdb wallet support (default is enabled if wallet is enabled)])],
+    [use_bdb=$withval],
+    [use_bdb=auto])
 
 AC_ARG_WITH([miniupnpc],
   [AS_HELP_STRING([--with-miniupnpc],
@@ -160,8 +170,8 @@ AC_ARG_WITH([system-univalue],
   [AS_HELP_STRING([--with-system-univalue],
   [Build with system UniValue (default is no)])],
   [system_univalue=$withval],
-  [system_univalue=no]
-)
+  [system_univalue=no])
+
 AC_ARG_ENABLE([zmq],
   [AS_HELP_STRING([--disable-zmq],
   [disable ZMQ notifications])],
@@ -648,17 +658,11 @@ if test x$use_reduce_exports = xyes; then
   [AC_MSG_ERROR([Cannot set default symbol visibility. Use --disable-reduce-exports.])])
 fi
 
-LEVELDB_CPPFLAGS=
-LIBLEVELDB=
-LIBMEMENV=
-AM_CONDITIONAL([EMBEDDED_LEVELDB],[true])
-AC_SUBST(LEVELDB_CPPFLAGS)
-AC_SUBST(LIBLEVELDB)
-AC_SUBST(LIBMEMENV)
-
-if test x$enable_wallet != xno; then
-    dnl Check for libdb_cxx only if wallet enabled
-    BITCOIN_FIND_BDB48
+if test "$enable_wallet" != "no"; then
+     dnl Check for libdb_cxx only if wallet enabled
+     if test "$use_bdb" != "no"; then
+       BITCOIN_FIND_BDB48
+     fi
 fi
 
 dnl Check for libminiupnpc (optional)
@@ -912,7 +916,6 @@ else
     esac
   fi
 
-  BITCOIN_QT_CHECK(AC_CHECK_LIB([protobuf] ,[main],[PROTOBUF_LIBS=-lprotobuf], BITCOIN_QT_FAIL(libprotobuf not found)))
   if test x$use_qr != xno; then
     BITCOIN_QT_CHECK([AC_CHECK_LIB([qrencode], [main],[QR_LIBS=-lqrencode], [have_qrencode=no])])
     BITCOIN_QT_CHECK([AC_CHECK_HEADER([qrencode.h],, have_qrencode=no)])
@@ -991,8 +994,6 @@ AM_CONDITIONAL([EMBEDDED_UNIVALUE],[test x$need_bundled_univalue = xyes])
 AC_SUBST(UNIVALUE_CFLAGS)
 AC_SUBST(UNIVALUE_LIBS)
 
-BITCOIN_QT_PATH_PROGS([PROTOC], [protoc],$protoc_bin_path)
-
 AC_MSG_CHECKING([whether to build bitcoinzerod])
 AM_CONDITIONAL([BUILD_BITCOIND], [test x$build_bitcoind = xyes])
 AC_MSG_RESULT($build_bitcoind)
@@ -1065,6 +1066,142 @@ else
   else
     AC_MSG_RESULT(no)
   fi
+fi
+
+dnl Check for different ways of gathering OS randomness
+AC_MSG_CHECKING([for Linux getrandom function])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+  #include <sys/random.h>]],
+ [[ getrandom(nullptr, 32, 0); ]])],
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_GETRANDOM], [1], [Define this symbol if the Linux getrandom function call is available]) ],
+ [ AC_MSG_RESULT([no])]
+)
+
+AC_MSG_CHECKING([for getentropy via sys/random.h])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+ #include <sys/random.h>]],
+ [[ getentropy(nullptr, 32) ]])],
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_GETENTROPY_RAND], [1], [Define this symbol if the BSD getentropy system call is available with sys/random.h]) ],
+ [ AC_MSG_RESULT([no])]
+)
+
+AC_MSG_CHECKING([for sysctl])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
+  #include <sys/sysctl.h>]],
+ [[ #ifdef __linux__
+    #error "Don't use sysctl on Linux, it's deprecated even when it works"
+    #endif
+    sysctl(nullptr, 2, nullptr, nullptr, nullptr, 0); ]])],
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_SYSCTL], [1], [Define this symbol if the BSD sysctl() is available]) ],
+ [ AC_MSG_RESULT([no])]
+)
+
+AC_MSG_CHECKING([for sysctl KERN_ARND])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
+  #include <sys/sysctl.h>]],
+ [[ #ifdef __linux__
+    #error "Don't use sysctl on Linux, it's deprecated even when it works"
+    #endif
+    static int name[2] = {CTL_KERN, KERN_ARND};
+    sysctl(name, 2, nullptr, nullptr, nullptr, 0); ]])],
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_SYSCTL_ARND], [1], [Define this symbol if the BSD sysctl(KERN_ARND) is available]) ],
+ [ AC_MSG_RESULT([no])]
+)
+
+AC_MSG_CHECKING([for fdatasync])
+
+# Check specifically for macOS
+case "$host_os" in
+  *darwin*)
+    AC_MSG_RESULT([not available on macOS])
+    HAVE_FDATASYNC=0
+    ;;
+  *bsd*)
+    AC_MSG_RESULT([not available on BSD])
+    HAVE_FDATASYNC=0
+    ;;
+  *)
+    # Generic test for fdatasync presence on non-macOS systems
+    AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM([[#include <unistd.h>]], [[ fdatasync(0); ]])],
+      [ AC_MSG_RESULT([yes]); HAVE_FDATASYNC=1 ],
+      [ AC_MSG_RESULT([no]); HAVE_FDATASYNC=0 ]
+    )
+    ;;
+esac
+
+# Define HAVE_FDATASYNC as a preprocessor macro
+AC_DEFINE_UNQUOTED([HAVE_FDATASYNC], [$HAVE_FDATASYNC], [Define to 1 if fdatasync is available.])
+
+AC_MSG_CHECKING([for F_FULLFSYNC])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <fcntl.h>]],
+ [[ fcntl(0, F_FULLFSYNC, 0); ]])],
+ [ AC_MSG_RESULT([yes]); HAVE_FULLFSYNC=1 ],
+ [ AC_MSG_RESULT([no]); HAVE_FULLFSYNC=0 ]
+)
+
+AC_MSG_CHECKING([for O_CLOEXEC])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <fcntl.h>]],
+ [[ open("", O_CLOEXEC); ]])],
+ [ AC_MSG_RESULT([yes]); HAVE_O_CLOEXEC=1 ],
+ [ AC_MSG_RESULT([no]); HAVE_O_CLOEXEC=0 ]
+)
+AC_DEFINE_UNQUOTED([HAVE_O_CLOEXEC], [$HAVE_O_CLOEXEC], [Define to 1 if O_CLOEXEC flag is available.])
+
+dnl crc32c platform checks
+AC_MSG_CHECKING([for __builtin_prefetch])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[ ]], [[
+  char data = 0;
+  const char* address = &data;
+  __builtin_prefetch(address, 0, 0);
+  ]])],
+ [ AC_MSG_RESULT([yes]); HAVE_BUILTIN_PREFETCH=1 ],
+ [ AC_MSG_RESULT([no]); HAVE_BUILTIN_PREFETCH=0 ]
+)
+
+AC_MSG_CHECKING([for _mm_prefetch])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <xmmintrin.h>]], [[
+  char data = 0;
+  const char* address = &data;
+  _mm_prefetch(address, _MM_HINT_NTA);
+  ]])],
+ [ AC_MSG_RESULT([yes]); HAVE_MM_PREFETCH=1 ],
+ [ AC_MSG_RESULT([no]); HAVE_MM_PREFETCH=0 ]
+)
+
+AC_MSG_CHECKING([for strong getauxval support in the system headers])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    #include <sys/auxv.h>
+  ]], [[
+    getauxval(AT_HWCAP);
+  ]])],
+ [ AC_MSG_RESULT([yes]); HAVE_STRONG_GETAUXVAL=1; AC_DEFINE([HAVE_STRONG_GETAUXVAL], [1], [Define this symbol to build code that uses getauxval)]) ],
+ [ AC_MSG_RESULT([no]); HAVE_STRONG_GETAUXVAL=0 ]
+)
+
+have_any_system=no
+AC_MSG_CHECKING([for std::system])
+AC_LINK_IFELSE(
+    [ AC_LANG_PROGRAM(
+        [[ #include <cstdlib> ]],
+        [[ int nErr = std::system(""); ]]
+    )],
+    [ AC_MSG_RESULT([yes]); have_any_system=yes],
+    [ AC_MSG_RESULT([no]) ]
+)
+
+AC_MSG_CHECKING([for ::_wsystem])
+AC_LINK_IFELSE(
+    [ AC_LANG_PROGRAM(
+        [[ #include <stdlib.h> ]],
+        [[ int nErr = ::_wsystem(NULL); ]]
+    )],
+    [ AC_MSG_RESULT([yes]); have_any_system=yes],
+    [ AC_MSG_RESULT([no]) ]
+)
+
+if test "$have_any_system" != "no"; then
+  AC_DEFINE([HAVE_SYSTEM], [1], [Define to 1 if std::system or ::wsystem is available.])
 fi
 
 dnl these are only used when qt is enabled
@@ -1158,6 +1295,9 @@ AM_CONDITIONAL([USE_LCOV],[test x$use_lcov = xyes])
 AM_CONDITIONAL([GLIBC_BACK_COMPAT],[test x$use_glibc_compat = xyes])
 AM_CONDITIONAL([HARDEN],[test x$use_hardening = xyes])
 AM_CONDITIONAL([ENABLE_SSE42],[test x$enable_sse42 = xyes])
+AM_CONDITIONAL([USE_BDB], [test "$use_bdb" = "yes"])
+AM_CONDITIONAL([ENABLE_ARM_CRC], [test "$enable_arm_crc" = "yes"])
+AM_CONDITIONAL([WORDS_BIGENDIAN], [test "$ac_cv_c_bigendian" = "yes"])
 
 AC_DEFINE(CLIENT_VERSION_MAJOR, _CLIENT_VERSION_MAJOR, [Major version])
 AC_DEFINE(CLIENT_VERSION_MINOR, _CLIENT_VERSION_MINOR, [Minor version])
@@ -1201,17 +1341,20 @@ AC_SUBST(USE_UPNP)
 AC_SUBST(USE_QRCODE)
 AC_SUBST(BOOST_LIBS)
 AC_SUBST(TESTDEFS)
-AC_SUBST(LEVELDB_TARGET_FLAGS)
 AC_SUBST(MINIUPNPC_CPPFLAGS)
 AC_SUBST(MINIUPNPC_LIBS)
 AC_SUBST(CRYPTO_LIBS)
-AC_SUBST(SSL_LIBS)
 AC_SUBST(EVENT_LIBS)
 AC_SUBST(EVENT_PTHREADS_LIBS)
 AC_SUBST(ZMQ_LIBS)
-AC_SUBST(PROTOBUF_LIBS)
 AC_SUBST(QR_LIBS)
 AC_SUBST(DSYMUTIL_FLAT)
+AC_SUBST(USE_BDB)
+AC_SUBST(HAVE_FDATASYNC)
+AC_SUBST(HAVE_FULLFSYNC)
+AC_SUBST(HAVE_O_CLOEXEC)
+AC_SUBST(HAVE_BUILTIN_PREFETCH)
+AC_SUBST(HAVE_MM_PREFETCH)
 AC_CONFIG_FILES([Makefile src/Makefile])
 
 dnl boost's m4 checks do something really nasty: they export these vars. As a
@@ -1277,6 +1420,9 @@ if test x$bitcoin_enable_qt != xno; then
     echo "    qt version  = $bitcoin_qt_got_major_vers"
     echo "    with qr     = $use_qr"
 fi
+if test "$enable_wallet" != "no"; then
+    echo "    with bdb      = $use_bdb"
+fi
 echo "  with zmq      = $use_zmq"
 echo "  with test     = $use_tests"
 echo "  with bench    = $use_bench"
@@ -1294,4 +1440,4 @@ echo "  CPPFLAGS      = $CPPFLAGS"
 echo "  CXX           = $CXX"
 echo "  CXXFLAGS      = $CXXFLAGS"
 echo "  LDFLAGS       = $LDFLAGS"
-echo 
+echo
