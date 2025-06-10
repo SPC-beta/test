@@ -27,6 +27,11 @@ class CLelantusTxInfo;
 
 } // namespace lelantus
 
+namespace spark {
+    class CSparkTxInfo;
+
+} // namespace spark
+
 class CBlockHeader
 {
 public:
@@ -111,6 +116,8 @@ public:
     mutable std::shared_ptr<sigma::CSigmaTxInfo> sigmaTxInfo;
 
     mutable std::shared_ptr<lelantus::CLelantusTxInfo> lelantusTxInfo;
+
+    mutable std::shared_ptr<spark::CSparkTxInfo> sparkTxInfo;
 
     CBlock()
     {
