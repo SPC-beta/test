@@ -1058,7 +1058,6 @@ bool CSparkWallet::CreateSparkMintTransactions(
                     // Remove scriptSigs to eliminate the fee calculation dummy signatures
                     for (auto &vin : tx.vin) {
                         vin.scriptSig = CScript();
-                        vin.scriptWitness.SetNull();
                     }
 
                     // Can we complete this as a free transaction?
