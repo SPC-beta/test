@@ -471,7 +471,7 @@ void CSparkWallet::UpdateSpendState(const GroupElement& lTag, const uint256& lTa
             addOrUpdateMint(mintMeta, lTagHash, walletdb);
         }
 
-//        pwalletMain->NotifyZerocoinChanged(
+//        pwalletMain->NotifyPrivcoinChanged(
 //                pwalletMain,
 //                lTagHash.GetHex(),
 //                std::string("used (") + std::to_string((double)mintMeta.v / COIN) + "mint)",
@@ -621,7 +621,7 @@ void CSparkWallet::UpdateMintState(const std::vector<spark::Coin>& coins, const 
                 UpdateSpendState(recoveredCoinData.T, lTagHash, spendTxHash, false);
             }
 
-//            pwalletMain->NotifyZerocoinChanged(
+//            pwalletMain->NotifyPrivcoinChanged(
 //                    pwalletMain,
 //                    lTagHash.GetHex(),
 //                    std::string("Update (") + std::to_string((double)mintMeta.v / COIN) + "mint)",
@@ -1289,7 +1289,7 @@ CWalletTx CSparkWallet::CreateSparkSpendTransaction(
     }
 
     if (vOut > consensusParams.nMaxValueSparkSpendPerTransaction)
-        throw std::runtime_error(_("Spend to transparent address limit exceeded (10,000 Firo per transaction)."));
+        throw std::runtime_error(_("Spend to transparent address limit exceeded."));
 
     std::vector<CWalletTx> result;
     std::vector<CMutableTransaction> txs;

@@ -1,5 +1,5 @@
-#ifndef FIRO_SPARK_TRANSCRIPT_H
-#define FIRO_SPARK_TRANSCRIPT_H
+#ifndef BZX_SPARK_TRANSCRIPT_H
+#define BZX_SPARK_TRANSCRIPT_H
 #include <openssl/evp.h>
 #include "util.h"
 

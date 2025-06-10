@@ -1,5 +1,5 @@
-#ifndef FIRO_PRIMITIVES_H
-#define FIRO_PRIMITIVES_H
+#ifndef BZX_PRIMITIVES_H
+#define BZX_PRIMITIVES_H
 
 #include "libspark/coin.h"
 #include "serialize.h"
@@ -146,4 +146,4 @@ struct CMintedCoinInfo {
 }
 
 
-#endif //FIRO_PRIMITIVES_H
+#endif //BZX_PRIMITIVES_H

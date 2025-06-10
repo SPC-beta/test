@@ -622,7 +622,7 @@ bool CheckSparkSpendTransaction(
     for (const auto& idAndHash : idAndBlockHashes) {
         CSparkState::SparkCoinGroupInfo coinGroup;
         if (!sparkState.GetCoinGroupInfo(idAndHash.first, coinGroup))
-                return state.DoS(100, false, NO_MINT_ZEROCOIN,
+                return state.DoS(100, false, NO_MINT_PRIVCOIN,
                                  "CheckSparkSpendTransaction: Error: no coins were minted with such parameters");
 
         CBlockIndex *index = coinGroup.lastBlock;
