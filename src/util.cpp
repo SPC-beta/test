@@ -128,9 +128,6 @@ bool fLogIPs = DEFAULT_LOGIPS;
 std::atomic<bool> fReopenDebugLog(false);
 CTranslationInterface translationInterface;
 
-/** Flag to indicate, whether the Elysium log file should be reopened. */
-std::atomic<bool> fReopenElysiumLog(false);
-
 /** Init OpenSSL library multithreading support */
 static CCriticalSection** ppmutexOpenSSL;
 void locking_callback(int mode, int i, const char* file, int line) NO_THREAD_SAFETY_ANALYSIS
@@ -597,7 +594,7 @@ void ClearDatadirCache()
 boost::filesystem::path GetConfigFile(const std::string& confPath)
 {
     boost::filesystem::path pathConfigFile(confPath);
-    if (!pathConfigFile.is_complete()) {
+    if (!pathConfigFile.is_absolute()) {
         boost::filesystem::path dataDir = GetDataDir(false);
 
         pathConfigFile = dataDir / pathConfigFile;
@@ -655,7 +652,7 @@ void ReadConfigFile(const std::string& confPath)
 boost::filesystem::path GetPidFile()
 {
     boost::filesystem::path pathPidFile(GetArg("-pid", BITCOIN_PID_FILENAME));
-    if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
+    if (!pathPidFile.is_absolute()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
 }
 
