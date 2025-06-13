@@ -424,7 +424,6 @@ static void HandleSIGTERM(int)
 void HandleSIGHUP(int)
 {
     fReopenDebugLog = true;
-    fReopenElysiumLog = true;
 }
 #else
 static BOOL WINAPI consoleCtrlHandler(DWORD dwCtrlType)
@@ -1059,7 +1058,11 @@ void InitParameterInteraction()
             LogPrintf("%s: parameter interaction: -whitelistforcerelay=1 -> setting -whitelistrelay=1\n", __func__);
     }
 
-    // Forcing all mnemonic settings off if -usehd is off.
+#ifdef ENABLE_WALLET
+    // Set arg "-newwallet" false by default for wallet scaning.
+    SoftSetBoolArg("-newwallet", false);
+
+    // Forcing all mnemonic settings off if -usehd is off..
     if (!GetBoolArg("-usehd", DEFAULT_USE_HD_WALLET)) {
         if (SoftSetBoolArg("-usemnemonic", false) && SoftSetArg("-mnemonic", "") && SoftSetArg("-mnemonicpassphrase", "") && SoftSetArg("-hdseed", "not hex"))
             LogPrintf("%s: Potential  parameter interaction: -usehd=0 -> setting -usemnemonic=0, -mnemonic=\"\", -mnemonicpassphrase=\"\", -hdseed=\"not hex\"\n", __func__);
@@ -1070,6 +1073,7 @@ void InitParameterInteraction()
         if (SoftSetArg("-mnemonic", "") && SoftSetArg("-mnemonicpassphrase", "") && SoftSetArg("-hdseed", "not hex"))
             LogPrintf("%s: Potential parameter interaction: -usemnemonic=0 -> setting -mnemonic=\"\", -mnemonicpassphrase=\"\"\n, -hdseed=\"not hex\"\n", __func__);
     }
+#endif // ENABLE_WALLET
 }
 
 static std::string ResolveErrMsg(const char *const optname, const std::string &strBind) {
