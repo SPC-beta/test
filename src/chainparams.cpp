@@ -106,6 +106,13 @@ static Consensus::LLMQParams llmq400_85 = {
         .keepOldConnections = 5,
 };
 
+static std::array<int,21> standardSparkNamesFee = {
+    -1,
+    1000,
+    100,
+    10, 10, 10,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+};
 
 /**
  * Main network
@@ -144,14 +151,22 @@ public:
         consensus.nxt = 90;
         consensus.nEvoSporkStartBlock = 91;
         consensus.nLelantusStartBlock = 100;
-        consensus.nSparkStartBlock = INT_MAX;
-        consensus.nLelantusGracefulPeriod = INT_MAX;
         consensus.no_zero_payee = 20000;
         consensus.DIP0008Height = INT_MAX;
         consensus.nEvoSporkStopBlock = INT_MAX;
         consensus.nEvoMasternodeMinimumConfirmations = 35;
         consensus.evoSporkKeyID = "XFWzf2xwwARUY3fLhY83P4TDh2pSybUQ8y";
         consensus.new_version = INT_MAX;
+
+        // exchange address
+        consensus.nExchangeAddressStartBlock = consensus.nSparkStartBlock;
+
+        // spark names
+        consensus.nSparkNamesStartBlock = consensus.nSparkStartBlock;
+        consensus.nSparkNamesFee = standardSparkNamesFee;
+
+        consensus.nSparkStartBlock = INT_MAX;
+        consensus.nLelantusGracefulPeriod = INT_MAX;
 
         // reorg
         consensus.nMaxReorgDepth = 5;
@@ -196,6 +211,7 @@ public:
         vSeeds.push_back(CDNSSeedData("bzx.pool4u.net:29149","bzx.pool4u.net:29149", false));
         base58Prefixes[PUBKEY_ADDRESS] = std::vector < unsigned char > (1, 75);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector < unsigned char > (1, 34);
+        base58Prefixes[EXCHANGE_PUBKEY_ADDRESS] = {0x01, 0xb9, 0xbb};   // EXX prefix for the address
         base58Prefixes[SECRET_KEY] = std::vector < unsigned char > (1, 210);
         base58Prefixes[EXT_PUBLIC_KEY] = boost::assign::list_of(0x04)(0x88)(0xB2)(0x1E).convert_to_container < std::vector < unsigned char > > ();
         base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x04)(0x88)(0xAD)(0xE4).convert_to_container < std::vector < unsigned char > > ();
@@ -238,7 +254,7 @@ public:
             GroupElement coin;
             try {
                 coin.deserialize(ParseHex(str).data());
-            } catch (...) {
+            } catch (const std::exception &) {
                 continue;
             }
             consensus.lelantusBlacklist.insert(coin);
@@ -248,7 +264,7 @@ public:
             GroupElement coin;
             try {
                 coin.deserialize(ParseHex(str).data());
-            } catch (...) {
+            } catch (const std::exception &) {
                 continue;
             }
             consensus.sigmaBlacklist.insert(coin);
