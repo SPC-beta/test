@@ -223,6 +223,9 @@ struct Params {
     // Number of block that introduces ability to specify super-transparent addresses
     int nExchangeAddressStartBlock;
 
+    /** P2PKH or P2SH address for developer funds */
+    std::string stage3DevelopmentFundAddress;
+
     /** block to start accepting pro reg txs for evo masternodes */
     int DIP0003Height;
 
