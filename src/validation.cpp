@@ -742,7 +742,7 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
         if (tx.IsSparkTransaction()) {
             if (hasExchangeUTXOs)
                 return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address");
-            if (!CheckSparkTransaction(tx, state, hashTx, isVerifyDB, nHeight, isCheckWallet, fStatefulZerocoinCheck, sparkTxInfo))
+            if (!CheckSparkTransaction(tx, state, hashTx, isVerifyDB, nHeight, isCheckWallet, fStatefulPrivcoinCheck, sparkTxInfo))
                 return false;
         }
 
@@ -877,19 +877,19 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
     if (startSpark) {
         if (tx.IsLelantusMint() && !tx.IsLelantusJoinSplit()) {
             return state.DoS(100, error("Lelantus mints no more allowed in mempool"),
-                             REJECT_INVALID, "bad-txns-zerocoin");
+                             REJECT_INVALID, "bad-txns-privcoin");
         }
     } else {
         if(tx.IsSparkTransaction()) {
             return state.DoS(100, error("Spark transactions are not allowed in mempool yet"),
-                             REJECT_INVALID, "bad-txns-zerocoin");
+                             REJECT_INVALID, "bad-txns-privcoin");
         }
     }
 
     if (chainActive.Height() >= consensus.nLelantusGracefulPeriod) {
         if(tx.IsLelantusTransaction()) {
             return state.DoS(100, error("Lelantus transactions are no more allowed into mempool"),
-                             REJECT_INVALID, "bad-txns-zerocoin");
+                             REJECT_INVALID, "bad-txns-privcoin");
         }
     }
 
