@@ -342,7 +342,7 @@ bool CScript::IsSparkSpend() const {
 }
 
 bool CScript::IsMint() const {
-    return IsSigmaMint() || IsLelantusMint() || IsLelantusJMint() || IsSparkMint() || IsSparkSMint()
+    return IsSigmaMint() || IsLelantusMint() || IsLelantusJMint() || IsSparkMint() || IsSparkSMint();
 }
 
 bool CScript::HasCanonicalPushes() const
