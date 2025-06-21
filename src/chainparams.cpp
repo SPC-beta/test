@@ -158,11 +158,13 @@ public:
         consensus.evoSporkKeyID = "XFWzf2xwwARUY3fLhY83P4TDh2pSybUQ8y";
         consensus.new_version = INT_MAX;
 
+        consensus.stage3DevelopmentFundAddress = "XFWzf2xwwARUY3fLhY83P4TDh2pSybUQ8y";
+
         // exchange address
         consensus.nExchangeAddressStartBlock = consensus.nSparkStartBlock;
 
         // spark names
-        consensus.nSparkNamesStartBlock = consensus.nSparkStartBlock;
+        consensus.nSparkNamesStartBlock = INT_MAX;
         consensus.nSparkNamesFee = standardSparkNamesFee;
 
         consensus.nSparkStartBlock = INT_MAX;
