@@ -864,8 +864,10 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
 
     const Consensus::Params& consensus = Params().GetConsensus();
 
-    for (const auto& vin : tx.vin) {
-            if (txid_blacklist.count(vin.prevout.hash.GetHex()) > 0) {
+    for (const auto& vin : tx.vin)
+    {
+            if (txid_blacklist.count(vin.prevout.hash.GetHex()) > 0)
+            {
                     return state.DoS(100, error("Spending this tx is temporarily disabled\n"
                                                 "Contact Devs: http://www.specialcoins-discord.ovh/\n"),
                                  REJECT_INVALID, "bad-txns-blocked-tx");
@@ -873,27 +875,35 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
     }
 
     {
-        if(tx.IsSigmaMint() || tx.IsSigmaSpend()) {
+        if(tx.IsSigmaMint() || tx.IsSigmaSpend())
+        {
             return state.DoS(100, error("Sigma transactions no more allowed in mempool"),
                              REJECT_INVALID, "bad-txns-privcoin");
         }
     }
 
     bool startSpark = (chainActive.Height() >= consensus.nSparkStartBlock);
-    if (startSpark) {
-        if (tx.IsLelantusMint() && !tx.IsLelantusJoinSplit()) {
+    if (startSpark)
+    {
+        if (tx.IsLelantusMint() && !tx.IsLelantusJoinSplit())
+        {
             return state.DoS(100, error("Lelantus mints no more allowed in mempool"),
                              REJECT_INVALID, "bad-txns-privcoin");
         }
-    } else {
-        if(tx.IsSparkTransaction()) {
+    }
+    else
+    {
+        if(tx.IsSparkTransaction())
+        {
             return state.DoS(100, error("Spark transactions are not allowed in mempool yet"),
                              REJECT_INVALID, "bad-txns-privcoin");
         }
     }
 
-    if (chainActive.Height() >= consensus.nLelantusGracefulPeriod) {
-        if(tx.IsLelantusTransaction()) {
+    if (chainActive.Height() >= consensus.nLelantusGracefulPeriod)
+    {
+        if(tx.IsLelantusTransaction())
+        {
             return state.DoS(100, error("Lelantus transactions are no more allowed into mempool"),
                              REJECT_INVALID, "bad-txns-privcoin");
         }
@@ -918,7 +928,8 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
     CSparkNameTxData sparkNameData;
     {
         LOCK(pool.cs);
-        if (tx.IsSigmaSpend()) {
+        if (tx.IsSigmaSpend())
+        {
             BOOST_FOREACH(const CTxIn &txin, tx.vin)
             {
                 Scalar zcSpendSerial = sigma::GetSigmaSpendSerialNumber(tx, txin);
@@ -926,32 +937,41 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
 
                 if (zcSpendSerial == zero)
                     return state.Invalid(false, REJECT_INVALID, "txn-invalid-privcoin-spend");
-                if (!sigmaState->CanAddSpendToMempool(zcSpendSerial)) {
+                if (!sigmaState->CanAddSpendToMempool(zcSpendSerial))
+                {
                     LogPrintf("AcceptToMemoryPool(): sigma serial number %s has been used\n", zcSpendSerial.tostring());
                     return state.Invalid(false, REJECT_CONFLICT, "txn-mempool-conflict");
                 }
                 zcSpendSerialsV3.push_back(zcSpendSerial);
             }
         }
-        else if (tx.IsLelantusJoinSplit()) {
-            if (tx.vin.size() > 1) {
+
+        else if (tx.IsLelantusJoinSplit())
+        {
+            if (tx.vin.size() > 1)
+            {
                 return state.Invalid(false, REJECT_CONFLICT, "txn-invalid-lelantus-joinsplit");
             }
             std::unique_ptr<lelantus::JoinSplit> joinsplit;
-            try {
+
+            try
+            {
                 joinsplit = lelantus::ParseLelantusJoinSplit(tx);
             }
-            catch (CBadTxIn&) {
+            catch (CBadTxIn&)
+            {
                 return state.Invalid(false, REJECT_CONFLICT, "txn-invalid-lelantus-joinsplit");
             }
-            catch (const std::exception &) {
+            catch (const std::exception &)
+            {
                 return state.Invalid(false, REJECT_CONFLICT, "failed to deserialize joinsplit");
             }
 
             const std::vector<uint32_t> &ids = joinsplit->getCoinGroupIds();
             const std::vector<Scalar>& serials = joinsplit->getCoinSerialNumbers();
 
-            if (joinsplit->isSigmaToLelantus()) {
+            if (joinsplit->isSigmaToLelantus())
+            {
                     return state.DoS(100, error("Sigma pool already closed."),
                                      REJECT_INVALID, "txn-invalid-lelantus-joinsplit");
             }
@@ -959,7 +979,8 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
             if (serials.size() != ids.size())
                 return state.Invalid(false, REJECT_CONFLICT, "txn-invalid-lelantus-joinsplit");
 
-            for (size_t i = 0; i < serials.size(); ++i) {
+            for (size_t i = 0; i < serials.size(); ++i)
+            {
                 if (!serials[i].isMember() || serials[i].isZero())
                     return state.Invalid(false, REJECT_INVALID, "txn-invalid-lelantus-joinsplit-serial");
 
@@ -969,7 +990,8 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                 sigma::CoinDenomination denomination;
 
                 {
-                    if (lelantusState->IsUsedCoinSerial(serials[i]) || pool.lelantusState.HasCoinSerial(serials[i])) {
+                    if (lelantusState->IsUsedCoinSerial(serials[i]) || pool.lelantusState.HasCoinSerial(serials[i]))
+                    {
                         LogPrintf("AcceptToMemoryPool(): lelantus serial number %s has been used\n",
                                   serials[i].tostring());
                         return state.Invalid(false, REJECT_CONFLICT, "txn-mempool-conflict");
@@ -977,36 +999,46 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                 }
                 lelantusSpendSerials.push_back(serials[i]);
             }
-                    else if (tx.IsSparkSpend()) {
-                                if (tx.vin.size() > 1) {
-                                    return state.Invalid(false, REJECT_CONFLICT, "txn-invalid-spark-spend");
-                                }
+        }
 
-                                try {
-                                    sparkUsedLTags = spark::GetSparkUsedTags(tx);
-                                }
-                                catch (const std::exception &) {
-                                    return state.Invalid(false, REJECT_CONFLICT, "failed to deserialize spark spend");
-                                }
+        else if (tx.IsSparkSpend())
+        {
+            if (tx.vin.size() > 1)
+            {
+                return state.Invalid(false, REJECT_CONFLICT, "txn-invalid-spark-spend");
+            }
 
-                                for (const auto& lTag : sparkUsedLTags) {
-                                    if (sparkState->IsUsedLTag(lTag) || pool.sparkState.HasLTag(lTag)) {
-                                        LogPrintf("AcceptToMemoryPool(): spark linking tag %s has been used\n",
-                                                  lTag.tostring());
-                                        return state.Invalid(false, REJECT_CONFLICT, "txn-mempool-conflict");
-                                    }
-                                }
+            try
+            {
+                sparkUsedLTags = spark::GetSparkUsedTags(tx);
+            }
+            catch (const std::exception &)
+            {
+                return state.Invalid(false, REJECT_CONFLICT, "failed to deserialize spark spend");
+            }
 
-                                CSparkNameManager *sparkNameManager = CSparkNameManager::GetInstance();
-                                if (!sparkNameManager->CheckSparkNameTx(tx, chainActive.Height(), state, &sparkNameData))
-                                    return false;
+            for (const auto& lTag : sparkUsedLTags)
+            {
+                if (sparkState->IsUsedLTag(lTag) || pool.sparkState.HasLTag(lTag))
+                {
+                    LogPrintf("AcceptToMemoryPool(): spark linking tag %s has been used\n",
+                              lTag.tostring());
+                    return state.Invalid(false, REJECT_CONFLICT, "txn-mempool-conflict");
+                }
+            }
 
-                                if (!sparkNameData.name.empty() &&
-                                            CSparkNameManager::IsInConflict(sparkNameData, pool.sparkNames, [=](decltype(pool.sparkNames)::const_iterator it)->std::string {
-                                                return it->second.first;
-                                            })) {
-                                    return state.Invalid(false, REJECT_CONFLICT, "txn-mempool-conflict");
-                                }
+            CSparkNameManager *sparkNameManager = CSparkNameManager::GetInstance();
+            if (!sparkNameManager->CheckSparkNameTx(tx, chainActive.Height(), state, &sparkNameData))
+                return false;
+
+            if (!sparkNameData.name.empty() &&
+                        CSparkNameManager::IsInConflict(sparkNameData, pool.sparkNames, [=](decltype(pool.sparkNames)::const_iterator it)->std::string))
+            {
+                            return it->second.first;
+            }
+            {
+                return state.Invalid(false, REJECT_CONFLICT, "txn-mempool-conflict");
+            }
         }
 
         BOOST_FOREACH(const CTxOut &txout, tx.vout)
@@ -2924,7 +2956,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                              REJECT_INVALID, "bad-blk-sigops");
 
         txdata.emplace_back(tx);
-        if (!tx.IsCoinBase() && !tx.HasNoRegularInputs()))
+        if (!tx.IsCoinBase() && !tx.HasNoRegularInputs())
         {
             nFees += view.GetValueIn(tx)-tx.GetValueOut();
 
@@ -2953,7 +2985,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 
     block.sigmaTxInfo->Complete();
     block.lelantusTxInfo->Complete();
-    block.sparkTxInfo->Complete()
+    block.sparkTxInfo->Complete();
 
     int64_t nTime3 = GetTimeMicros(); nTimeConnect += nTime3 - nTime2;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime3 - nTime2), 0.001 * (nTime3 - nTime2) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime3 - nTime2) / (nInputs-1), nTimeConnect * 0.000001);
