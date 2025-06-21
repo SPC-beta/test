@@ -79,7 +79,7 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason)
         // future-proofing. That's also enough to spend a 20-of-20
         // CHECKMULTISIG scriptPubKey, though such a scriptPubKey is not
         // considered standard.
-        if (!txin.scriptSig.IsZerocoinSpend() && !txin.scriptSig.IsSigmaSpend() && !txin.scriptSig.IsLelantusJoinSplit() && !txin.scriptSig.IsSparkSpend() && !txin.IsZerocoinRemint()) {
+        if (!txin.scriptSig.IsPrivcoinSpend() && !txin.scriptSig.IsSigmaSpend() && !txin.scriptSig.IsLelantusJoinSplit() && !txin.scriptSig.IsSparkSpend() && !txin.IsPrivcoinRemint()) {
             reason = "scriptsig-size";
             return false;
         }
@@ -131,9 +131,9 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason)
 bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
 {
     if (tx.IsCoinBase()
-    || tx.IsZerocoinSpend()
+    || tx.IsPrivcoinSpend()
     || tx.IsSigmaSpend()
-    || tx.IsZerocoinRemint()
+    || tx.IsPrivcoinRemint()
     || tx.IsLelantusJoinSplit()
     || tx.IsSparkSpend())
         return true; // Coinbases don't use vin normally
