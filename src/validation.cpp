@@ -704,6 +704,12 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
         }
     }
 
+    int nTxHeight = nHeight;
+    if (nTxHeight == INT_MAX) {
+        LOCK(cs_main);
+        nTxHeight = chainActive.Height();
+    }
+
     if (hasExchangeUTXOs && !isVerifyDB && nTxHeight < ::Params().GetConsensus().nExchangeAddressStartBlock)
         return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address");
 
