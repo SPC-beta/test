@@ -144,6 +144,8 @@ public:
         consensus.nxt = 90;
         consensus.nEvoSporkStartBlock = 91;
         consensus.nLelantusStartBlock = 100;
+        consensus.nSparkStartBlock = INT_MAX;
+        consensus.nLelantusGracefulPeriod = INT_MAX;
         consensus.no_zero_payee = 20000;
         consensus.DIP0008Height = INT_MAX;
         consensus.nEvoSporkStopBlock = INT_MAX;
@@ -227,6 +229,10 @@ public:
         consensus.nMaxLelantusInputPerTransaction = 100;
         consensus.nMaxValueLelantusSpendPerTransaction = 100100 * COIN;
         consensus.nMaxValueLelantusMint = 100100 * COIN;
+
+        consensus.nMaxValueSparkSpendPerTransaction = 100100 * COIN;
+        consensus.nMaxValueSparkSpendPerBlock = 120000 * COIN;
+        consensus.nMaxSparkOutLimitPerTx = 100;
 
         for (const auto& str : lelantus::lelantus_blacklist) {
             GroupElement coin;
