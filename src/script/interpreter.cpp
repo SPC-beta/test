@@ -1026,7 +1026,7 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
             // Size limits
             if (stack.size() + altstack.size() > 1000)
                 return set_error(serror, SCRIPT_ERR_STACK_SIZE);
-            fFirstOpCode = false
+            fFirstOpCode = false;
         }
     }
     catch (...)
