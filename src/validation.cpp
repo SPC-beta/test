@@ -38,8 +38,10 @@
 #include "ui_interface.h"
 #include "undo.h"
 #include "util.h"
+#ifdef ENABLE_WALLET
 #include "wallet/wallet.h"
 #include "wallet/walletdb.h"
+#endif // ENABLE_WALLET
 #include "batchproof_container.h"
 #include "sigma.h"
 #include "lelantus.h"
@@ -53,7 +55,7 @@
 #include "blacklists.h"
 #include "sigma/coinspend.h"
 #include "warnings.h"
-
+#include "sparkname.h"
 #include "masternode-payments.h"
 
 #include "evo/specialtx.h"
@@ -130,6 +132,7 @@ static void CheckBlockIndex(const Consensus::Params& consensusParams);
 CScript COINBASE_FLAGS;
 
 const std::string strMessageMagic = "BZX 2022 Signed Message:\n";
+const std::string strLelantusMessageMagic = "BZX 2025 Signed Message:\n";
 
 // Internal stuff
 namespace {
@@ -322,6 +325,74 @@ bool CheckFinalTx(const CTransaction &tx, int flags)
     return IsFinalTx(tx, nBlockHeight, nBlockTime);
 }
 
+bool VerifyPrivateTxOwn(const uint256& txid, const std::vector<unsigned char>& vchSig, const std::string& message)
+{
+    CTransactionRef tx;
+    uint256 hashBlock;
+    if(!GetTransaction(txid, tx, Params().GetConsensus(), hashBlock, true))
+        return false;
+
+    if (tx->IsLelantusJoinSplit()) {
+        CHashWriter ss(SER_GETHASH, 0);
+        ss << strLelantusMessageMagic;
+        ss << message;
+
+        std::unique_ptr<lelantus::JoinSplit> joinsplit;
+        try {
+            joinsplit = lelantus::ParseLelantusJoinSplit(*tx);
+        } catch (const std::exception&) {
+            return false;
+        }
+        const auto& pubKeys = joinsplit->GetEcdsaPubkeys();
+
+        if((pubKeys.size() *64) != vchSig.size()) {
+            LogPrintf("Verification to serialNumbers and ecdsaSignatures/ecdsaPubkeys number mismatch.");
+            return false;
+        }
+
+        uint32_t count = 0;
+
+        for (const auto& pub : pubKeys) {
+            ss << count;
+            uint256 metahash = ss.GetHash();
+
+            // Check sizes
+            if (pub.size() != 33 ) {
+                LogPrintf("Verification failed due to incorrect size of ecdsaSignature.");
+                return false;
+            }
+
+            // Verify signature
+            secp256k1_pubkey pubkey;
+            secp256k1_ecdsa_signature signature;
+
+            if (!secp256k1_ec_pubkey_parse(OpenSSLContext::get_context(), &pubkey, pub.data(), 33)) {
+                LogPrintf("Verification failed due to unable to parse ecdsaPubkey.");
+                return false;
+            }
+
+            if (1 != secp256k1_ecdsa_signature_parse_compact(OpenSSLContext::get_context(), &signature, &vchSig[count * 64]) ) {
+                LogPrintf("Verification failed due to signature cannot be parsed.");
+                return false;
+            }
+
+            if (!secp256k1_ecdsa_verify(
+                    OpenSSLContext::get_context(), &signature, metahash.begin(), &pubkey)) {
+                LogPrintf("Verification failed due to signature cannot be verified.");
+                return false;
+            }
+
+            count++;
+        }
+    } else if (tx->IsCoinBase()) {
+        throw std::runtime_error("This is a coinbase transaction and not a private transaction");
+    } else {
+        throw std::runtime_error("Currently this is allowed only for Lelantus transactions");
+    }
+
+    return true;
+}
+
 /**
  * Calculates the block height and previous block's median time past at
  * which the transaction will be considered final in the context of BIP 68.
@@ -510,7 +581,7 @@ unsigned int GetLegacySigOpCount(const CTransaction& tx)
 
 unsigned int GetP2SHSigOpCount(const CTransaction &tx, const CCoinsViewCache &inputs)
 {
-    if (tx.IsCoinBase() || tx.IsPrivcoinSpend() || tx.IsSigmaSpend() || tx.IsLelantusJoinSplit())
+    if (tx.IsCoinBase() || tx.HasNoRegularInputs())
         return 0;
 
     unsigned int nSigOps = 0;
@@ -546,7 +617,7 @@ int64_t GetTransactionSigOpCost(const CTransaction &tx, const CCoinsViewCache &i
 {
     int64_t nSigOps = GetLegacySigOpCount(tx);
 
-    if (tx.IsCoinBase() || tx.IsPrivcoinSpend() || tx.IsSigmaSpend() || tx.IsPrivcoinRemint() || tx.IsLelantusJoinSplit())
+    if (tx.IsCoinBase() || tx.HasNoRegularInputs())
         return nSigOps;
 
     if (flags & SCRIPT_VERIFY_P2SH) {
@@ -564,7 +635,7 @@ int GetUTXOConfirmations(const COutPoint& outpoint)
     return (nPrevoutHeight > -1 && chainActive.Tip()) ? chainActive.Height() - nPrevoutHeight + 1 : -1;
 }
 
-bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fCheckDuplicateInputs, uint256 hashTx,  bool isVerifyDB, int nHeight, bool isCheckWallet, bool fStatefulPrivcoinCheck, sigma::CSigmaTxInfo *sigmaTxInfo, lelantus::CLelantusTxInfo* lelantusTxInfo)
+bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fCheckDuplicateInputs, uint256 hashTx,  bool isVerifyDB, int nHeight, bool isCheckWallet, bool fStatefulPrivcoinCheck, sigma::CSigmaTxInfo *sigmaTxInfo, lelantus::CLelantusTxInfo* lelantusTxInfo, spark::CSparkTxInfo* sparkTxInfo)
 {
     LogPrintf("CheckTransaction nHeight=%s, isVerifyDB=%s, isCheckWallet=%s, txHash=%s\n", nHeight, isVerifyDB, isCheckWallet, tx.GetHash().ToString());
 
@@ -600,7 +671,7 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
     // Check for duplicate inputs - note that this check is slow so we skip it in CheckBlock
     {
         std::set<COutPoint> vInOutPoints;
-        if (tx.IsSigmaSpend() || tx.IsLelantusJoinSplit()) {
+        if (tx.HasPrivateInputs()) {
             std::set<CScript> spendScripts;
             for (const auto& txin: tx.vin)
             {
@@ -618,6 +689,24 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
         }
     }
 
+    // input scripts cannot have OP_EXCHANGEADDR at all
+    for (const auto &vin: tx.vin) {
+        if (vin.scriptSig.size() >= 1 && vin.scriptSig[0] == OP_EXCHANGEADDR) {
+            return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address");
+        }
+    }
+
+    bool hasExchangeUTXOs = false;
+    for (const auto &vout : tx.vout) {
+        if (vout.scriptPubKey.size() >= 1 && vout.scriptPubKey[0] == OP_EXCHANGEADDR) {
+            hasExchangeUTXOs = true;
+            break;
+        }
+    }
+
+    if (hasExchangeUTXOs && !isVerifyDB && nTxHeight < ::Params().GetConsensus().nExchangeAddressStartBlock)
+        return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address");
+
     if (tx.IsCoinBase())
     {
         size_t minCbSize = 2;
@@ -627,13 +716,16 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
         }
         if (tx.vin[0].scriptSig.size() < minCbSize || tx.vin[0].scriptSig.size() > 100)
             return state.DoS(100, false, REJECT_INVALID, "bad-cb-length");
+        if (hasExchangeUTXOs)
+            return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address");
     }
     else
     {
         for (const auto& txin : tx.vin)
             if (txin.prevout.IsNull() && !(txin.scriptSig.IsPrivcoinSpend()
                 || txin.IsPrivcoinRemint()
-                || txin.IsLelantusJoinSplit() ))
+                || txin.IsLelantusJoinSplit()
+                || tx.IsSparkSpend()))
                 return state.DoS(10, false, REJECT_INVALID, "bad-txns-prevout-null");
 
         if (tx.IsPrivcoinV3SigmaTransaction()) {
@@ -641,11 +733,19 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
         }
 
         if (tx.IsLelantusTransaction()) {
+            if (hasExchangeUTXOs)
+                return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address");
             if (!CheckLelantusTransaction(tx, state, hashTx, isVerifyDB, nHeight, isCheckWallet, fStatefulPrivcoinCheck, sigmaTxInfo, lelantusTxInfo))
                 return false;
         }
 
-        const auto &params = ::Params().GetConsensus();
+        if (tx.IsSparkTransaction()) {
+            if (hasExchangeUTXOs)
+                return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address");
+            if (!CheckSparkTransaction(tx, state, hashTx, isVerifyDB, nHeight, isCheckWallet, fStatefulZerocoinCheck, sparkTxInfo))
+                return false;
+        }
+
         if (tx.IsPrivcoinSpend() || tx.IsPrivcoinMint()) {
                 return state.DoS(1, error("Privcoin is disabled at this point"));
         }
@@ -687,13 +787,17 @@ bool ContextualCheckTransaction(const CTransaction& tx, CValidationState &state,
                 tx.nType != TRANSACTION_COINBASE &&
                 tx.nType != TRANSACTION_QUORUM_COMMITMENT &&
                 tx.nType != TRANSACTION_SPORK &&
-                tx.nType != TRANSACTION_LELANTUS) {
+                tx.nType != TRANSACTION_LELANTUS &&
+                tx.nType != TRANSACTION_SPARK) {
                 return state.DoS(100, false, REJECT_INVALID, "bad-txns-type");
             }
             if (tx.IsCoinBase() && tx.nType != TRANSACTION_COINBASE)
                 return state.DoS(100, false, REJECT_INVALID, "bad-txns-cb-type");
             if (tx.nType == TRANSACTION_SPORK &&
                     !(nHeight >= consensusParams.nEvoSporkStartBlock && nHeight < consensusParams.nEvoSporkStopBlock))
+                return state.DoS(100, false, REJECT_INVALID, "bad-txns-type");
+
+            if (tx.nType == TRANSACTION_SPARK && nHeight < consensusParams.nSparkStartBlock)
                 return state.DoS(100, false, REJECT_INVALID, "bad-txns-type");
         }
         else if (tx.nType != TRANSACTION_NORMAL) {
@@ -769,6 +873,26 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
         }
     }
 
+    bool startSpark = (chainActive.Height() >= consensus.nSparkStartBlock);
+    if (startSpark) {
+        if (tx.IsLelantusMint() && !tx.IsLelantusJoinSplit()) {
+            return state.DoS(100, error("Lelantus mints no more allowed in mempool"),
+                             REJECT_INVALID, "bad-txns-zerocoin");
+        }
+    } else {
+        if(tx.IsSparkTransaction()) {
+            return state.DoS(100, error("Spark transactions are not allowed in mempool yet"),
+                             REJECT_INVALID, "bad-txns-zerocoin");
+        }
+    }
+
+    if (chainActive.Height() >= consensus.nLelantusGracefulPeriod) {
+        if(tx.IsLelantusTransaction()) {
+            return state.DoS(100, error("Lelantus transactions are no more allowed into mempool"),
+                             REJECT_INVALID, "bad-txns-zerocoin");
+        }
+    }
+
     // V3 sigma spends.
     sigma::CSigmaState *sigmaState = sigma::CSigmaState::GetState();
     std::vector<Scalar> zcSpendSerialsV3;
@@ -779,6 +903,13 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
     std::vector<Scalar> lelantusSpendSerials;
     std::vector<GroupElement> lelantusMintPubcoins;
     std::vector<uint64_t> lelantusAmounts;
+
+    // Spark
+    spark::CSparkState *sparkState = spark::CSparkState::GetState();
+    std::vector<spark::Coin> sparkMintCoins;
+    std::vector<GroupElement> sparkUsedLTags;
+
+    CSparkNameTxData sparkNameData;
     {
         LOCK(pool.cs);
         if (tx.IsSigmaSpend()) {
@@ -807,12 +938,17 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
             catch (CBadTxIn&) {
                 return state.Invalid(false, REJECT_CONFLICT, "txn-invalid-lelantus-joinsplit");
             }
-            catch (...) {
+            catch (const std::exception &) {
                 return state.Invalid(false, REJECT_CONFLICT, "failed to deserialize joinsplit");
             }
 
             const std::vector<uint32_t> &ids = joinsplit->getCoinGroupIds();
             const std::vector<Scalar>& serials = joinsplit->getCoinSerialNumbers();
+
+            if (joinsplit->isSigmaToLelantus(){
+                    return state.DoS(100, error("Sigma pool already closed."),
+                                     REJECT_INVALID, "txn-invalid-lelantus-joinsplit");
+            }
 
             if (serials.size() != ids.size())
                 return state.Invalid(false, REJECT_CONFLICT, "txn-invalid-lelantus-joinsplit");
