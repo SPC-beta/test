@@ -1032,10 +1032,10 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                 return false;
 
             if (!sparkNameData.name.empty() &&
-                        CSparkNameManager::IsInConflict(sparkNameData, pool.sparkNames, [=](decltype(pool.sparkNames)::const_iterator it)->std::string))
+                        CSparkNameManager::IsInConflict(sparkNameData, pool.sparkNames, [=](decltype(pool.sparkNames)::const_iterator it)->std::string
             {
                             return it->second.first;
-            }
+                        }))
             {
                 return state.Invalid(false, REJECT_CONFLICT, "txn-mempool-conflict");
             }
