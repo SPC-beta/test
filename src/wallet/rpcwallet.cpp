@@ -4169,7 +4169,7 @@ UniValue joinsplit(const JSONRPCRequest& request) {
                 "    }\n"
                 "2. subtractfeefromamount   (string, optional) A json array with addresses.\n"
                 "                           The fee will be equally deducted from the amount of each selected address.\n"
-                "                           Those recipients will receive less firos than you enter in their corresponding amount field.\n"
+                "                           Those recipients will receive less BZXs than you enter in their corresponding amount field.\n"
                 "                           If no addresses are specified here, the sender pays the fee.\n"
                 "    [\n"
                 "      \"address\"            (string) Subtract fee from this address\n"
@@ -5221,9 +5221,9 @@ static const CRPCCommand commands[] =
     { "wallet",             "addmultisigaddress",       &addmultisigaddress,       true,   {"nrequired","keys","account"} },
     { "wallet",             "backupwallet",             &backupwallet,             true,   {"destination"} },
     { "wallet",             "bumpfee",                  &bumpfee,                  true,   {"txid", "options"} },
-    { "wallet",             "dumpprivkey",              &dumpprivkey_firo,        true,   {"address"}  },
+    { "wallet",             "dumpprivkey",              &dumpprivkey_bzx,        true,   {"address"}  },
     { "wallet",             "dumpsparkviewkey",         &dumpsparkviewkey,        true,   {}  },
-    { "wallet",             "dumpwallet",               &dumpwallet_firo,         true,   {"filename"} },
+    { "wallet",             "dumpwallet",               &dumpwallet_bzx,         true,   {"filename"} },
     { "wallet",             "encryptwallet",            &encryptwallet,            true,   {"passphrase"} },
     { "wallet",             "getaccountaddress",        &getaccountaddress,        true,   {"account"} },
     { "wallet",             "getaccount",               &getaccount,               true,   {"address"} },

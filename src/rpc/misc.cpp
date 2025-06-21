@@ -1961,27 +1961,6 @@ UniValue getprivcoinpoolbalance(const JSONRPCRequest& request)
     return  getprivcoinpoolbalance();
 }
 
-UniValue getCVE17144amount(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() != 0)
-        throw std::runtime_error(
-                "getCVE17144amount\n"
-                "\nReturns the total amount of forged coins during CVE-2018-17144 attacks.\n"
-                "\nArguments: none\n"
-                "\nResult:\n"
-                "{\n"
-                "  \"total\"  (string) The total balance\n"
-                "}\n"
-                "\nExamples:\n"
-                + HelpExampleCli("getCVE17144amount", "")
-                + HelpExampleRpc("getCVE17144amount", "")
-        );
-    UniValue results(UniValue::VOBJ);
-    results.push_back(Pair("firstWay",getCVE17144amount()));
-    results.push_back(Pair("secondWay",getCVE17144amountNew()));
-    return results;
-}
-
 UniValue getinfoex(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 0)
@@ -2108,7 +2087,6 @@ static const CRPCCommand commands[] =
     { "hidden",             "getinfoex",              &getinfoex,              false },
     { "addressindex",       "gettotalsupply",         &gettotalsupply,         false },
     { "addressindex",       "getprivcoinpoolbalance", &getprivcoinpoolbalance, false },
-    { "addressindex",       "getCVE17144amount",      &getCVE17144amount,      false },
         /* Mobile related */
     { "mobile",             "getanonymityset",        &getanonymityset,        false  },
     { "mobile",             "getmintmetadata",        &getmintmetadata,        true  },

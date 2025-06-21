@@ -1579,7 +1579,7 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
     }
 
     if (tx.IsSparkSpend()) {
-        if(markFiroSpendTransactionSerial) {
+        if(markBZXSpendTransactionSerial) {
             LogPrintf("Adding spends to mempool state..\n");
             for (const auto &usedLTag: sparkUsedLTags)
                 pool.sparkState.AddSpendToMempool(usedLTag, hash);
@@ -1658,7 +1658,7 @@ bool AcceptToMemoryPoolWithTime(CTxMemPool& pool, CValidationState &state, const
     std::vector<COutPoint> coins_to_uncache;
     bool res = false;
     try {
-        res = AcceptToMemoryPoolWorker(pool, state, tx, fLimitFree, pfMissingInputs, nAcceptTime, plTxnReplaced, fOverrideMempoolLimit, nAbsurdFee, coins_to_uncache, isCheckWalletTransaction, markFiroSpendTransactionSerial);
+        res = AcceptToMemoryPoolWorker(pool, state, tx, fLimitFree, pfMissingInputs, nAcceptTime, plTxnReplaced, fOverrideMempoolLimit, nAbsurdFee, coins_to_uncache, isCheckWalletTransaction, markBZXSpendTransactionSerial);
     }
     catch (const std::exception &x) {
         state.Error(x.what());

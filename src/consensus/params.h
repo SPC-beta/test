@@ -220,14 +220,6 @@ struct Params {
 
     unsigned nMaxSparkOutLimitPerTx;
 
-    // Value of maximum spark spend per transaction
-    int64_t nMaxValueSparkSpendPerTransaction;
-
-    // Value of maximum spark spend per block.
-    int64_t nMaxValueSparkSpendPerBlock;
-
-    unsigned nMaxSparkOutLimitPerTx;
-
     // Number of block that introduces ability to specify super-transparent addresses
     int nExchangeAddressStartBlock;
 
