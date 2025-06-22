@@ -1622,7 +1622,7 @@ void ListTransactions(CWallet * const pwallet, const CWalletTx& wtx, const std::
             if (wtx.tx->HasNoRegularInputs()) {
                 entry.push_back(Pair("category", "spend"));
             }
-            else if (wtx.tx->IsLelantusMint() || wtx.tx->IsSparkMint()) {
+            else if (wtx.tx->IsPrivcoinMint() || wtx.tx->IsSigmaMint() || wtx.tx->IsLelantusMint() || wtx.tx->IsSparkMint()) {
                 entry.push_back(Pair("category", "mint"));
             }
             else {
