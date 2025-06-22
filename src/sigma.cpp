@@ -408,30 +408,6 @@ bool CheckSigmaTransaction(
         return state.DoS(100, false,
                          REJECT_INVALID,
                          "Sigma already is not available, start using Lelantus.");
-    bool const allowSigma = false;
-
-    if (!isVerifyDB && !isCheckWallet) {
-        if (allowSigma && sigmaState.IsSurgeConditionDetected()) {
-            return state.DoS(100, false,
-                REJECT_INVALID,
-                "Sigma surge protection is ON.");
-        }
-    }
-
-    // Check Mint Sigma Transaction
-    if (allowSigma) {
-        for (const CTxOut &txout : tx.vout) {
-            if (!txout.scriptPubKey.empty() && txout.scriptPubKey.IsSigmaMint()) {
-                try {
-                    if (!CheckSigmaMintTransaction(txout, state, hashTx, fStatefulSigmaCheck, sigmaTxInfo))
-                        return false;
-                }
-                catch (const std::exception &x) {
-                    return state.Error(x.what());
-                }
-            }
-        }
-    }
 
     // Check Sigma Spend Transaction
     if(tx.IsSigmaSpend()) {

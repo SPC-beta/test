@@ -970,12 +970,6 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
             const std::vector<uint32_t> &ids = joinsplit->getCoinGroupIds();
             const std::vector<Scalar>& serials = joinsplit->getCoinSerialNumbers();
 
-            if (joinsplit->isSigmaToLelantus())
-            {
-                    return state.DoS(100, error("Sigma pool already closed."),
-                                     REJECT_INVALID, "txn-invalid-lelantus-joinsplit");
-            }
-
             if (serials.size() != ids.size())
                 return state.Invalid(false, REJECT_CONFLICT, "txn-invalid-lelantus-joinsplit");
 

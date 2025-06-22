@@ -658,7 +658,7 @@ void CDbIndexHelper::ConnectTransaction(CTransaction const & tx, int height, int
         }
     }
 
-    if(tx.IsLelantusJoinSplit() || tx.IsSparkSpend())
+    if(tx.IsPrivcoinSpend() || tx.IsSigmaSpend() || tx.IsLelantusJoinSplit() || tx.IsSparkSpend())
         handlePrivcoinSpend(tx.vout.begin(), tx.vout.end(), tx.GetHash(), height, txNumber, view, addressIndex, tx);
 
     no = 0;
@@ -702,7 +702,7 @@ void CDbIndexHelper::DisconnectTransactionInputs(CTransaction const & tx, int he
 
 void CDbIndexHelper::DisconnectTransactionOutputs(CTransaction const & tx, int height, int txNumber, CCoinsViewCache const & view)
 {
-    if(tx.IsLelantusJoinSplit() || tx.IsSparkSpend())
+    if(tx.IsPrivcoinSpend() || tx.IsSigmaSpend() || tx.IsLelantusJoinSplit() || tx.IsSparkSpend())
         handlePrivcoinSpend(tx.vout.begin(), tx.vout.end(), tx.GetHash(), height, txNumber, view, addressIndex, tx);
 
     size_t no = 0;
