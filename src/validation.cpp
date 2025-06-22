@@ -4466,10 +4466,16 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
         block.fChecked = true;
 
     if (!lelantus::CheckLelantusBlock(state, block))
+    {
+        LogPrintf("CheckBlock - CheckLelantusBlock -> failed!\n");
         return false;
+    }
 
     if (!spark::CheckSparkBlock(state, block))
+    {
+        LogPrintf("CheckBlock - CheckSparkBlock -> failed!\n");
         return false;
+    }
 
     return true;
 }
