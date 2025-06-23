@@ -156,7 +156,7 @@ public:
         consensus.nEvoSporkStopBlock = 9999999999;
         consensus.nEvoMasternodeMinimumConfirmations = 35;
         consensus.evoSporkKeyID = "XFWzf2xwwARUY3fLhY83P4TDh2pSybUQ8y";
-        consensus.new_version = INT_MAX;
+        consensus.new_version = 9999999999;
 
         consensus.stage3DevelopmentFundAddress = "XFWzf2xwwARUY3fLhY83P4TDh2pSybUQ8y";
 
