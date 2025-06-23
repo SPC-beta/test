@@ -280,7 +280,6 @@ public:
         nBits          = 0;
         nNonce         = 0;
 
-        sigmaMintedPubCoins.clear();
         lelantusMintedPubCoins.clear();
         lelantusMintData.clear();
         anonymitySetHash.clear();
@@ -289,9 +288,7 @@ public:
         spentLTags.clear();
         ltagTxhash.clear();
         sparkTxHashContext.clear();
-        sigmaSpentSerials.clear();
         lelantusSpentSerials.clear();
-        activeDisablingSporks.clear();
         addedSparkNames.clear();
         removedSparkNames.clear();
     }
@@ -467,54 +464,32 @@ public:
         READWRITE(nBits);
         READWRITE(nNonce);
 
-        const auto &params = Params().GetConsensus();
-
-        if (!(s.GetType() & SER_GETHASH)
-                && nHeight >= params.nLelantusStartBlock
-                && nVersion >= LELANTUS_PROTOCOL_ENABLEMENT_VERSION) {
-            if(nVersion == LELANTUS_PROTOCOL_ENABLEMENT_VERSION) {
-                std::map<int, std::vector<lelantus::PublicCoin>>  lelantusPubCoins;
+        if (!(s.GetType() & SER_GETHASH)) {
+            std::map<int, std::vector<lelantus::PublicCoin>>  lelantusPubCoins;
                 READWRITE(lelantusPubCoins);
                 for(auto& itr : lelantusPubCoins) {
                     if(!itr.second.empty()) {
                         for(auto& coin : itr.second)
-                        lelantusMintedPubCoins[itr.first].push_back(std::make_pair(coin,uint256()));
+                        lelantusMintedPubCoins[itr.first].push_back(std::make_pair(coin, uint256()));
                     }
                 }
-            }
-            if (GetBoolArg("-mobile", false)) {
-                READWRITE(lelantusMintData);
-            }
-        }
-
-        if (!(s.GetType() & SER_GETHASH) && nHeight >= params.nLelantusStartBlock) {
-            READWRITE(sigmaMintedPubCoins);
-            READWRITE(sigmaSpentSerials);
             READWRITE(lelantusMintedPubCoins);
             READWRITE(lelantusSpentSerials);
             READWRITE(anonymitySetHash);
-        }
-
-        if (!(s.GetType() & SER_GETHASH) && nHeight >= params.nSparkStartBlock) {
             READWRITE(sparkMintedCoins);
             READWRITE(sparkSetHash);
             READWRITE(spentLTags);
-
-            if (GetBoolArg("-mobile", false)) {
-                READWRITE(sparkTxHashContext);
-                READWRITE(ltagTxhash);
-            }
-        }
-
-        if (!(s.GetType() & SER_GETHASH) && nHeight >= params.nEvoSporkStartBlock && nHeight < params.nEvoSporkStopBlock)
-            READWRITE(activeDisablingSporks);
-
-        nDiskBlockVersion = nVersion;
-
-        if (!(s.GetType() & SER_GETHASH) && nHeight >= params.nSparkNamesStartBlock) {
             READWRITE(addedSparkNames);
             READWRITE(removedSparkNames);
         }
+
+        if (GetBoolArg("-mobile", false)) {
+            READWRITE(lelantusMintData);
+            READWRITE(sparkTxHashContext);
+            READWRITE(ltagTxhash);
+        }
+
+        nDiskBlockVersion = nVersion;
     }
 
     uint256 GetBlockHash() const

@@ -209,7 +209,7 @@ public:
         assert(consensus.hashGenesisBlock == uint256S("0x000004d916d2e66f820fc0ba0b2554b6491a9c5bfc026ea515df5df2ceafcd53"));
         assert(genesis.hashMerkleRoot == uint256S("0xfede7817612c884cc527b1598013f6ef1feceea08bb80e1ffb0765dd74ba6a53"));
         vSeeds.push_back(CDNSSeedData("51.91.156.251", "51.91.156.251", false));
-        vSeeds.push_back(CDNSSeedData("51.91.156.249", "51.91.156.249", false));
+        vSeeds.push_back(CDNSSeedData("176.57.189.38:29", "176.57.189.38:29", false));
         vSeeds.push_back(CDNSSeedData("bzx.pool4u.net:29149","bzx.pool4u.net:29149", false));
         base58Prefixes[PUBKEY_ADDRESS] = std::vector < unsigned char > (1, 75);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector < unsigned char > (1, 34);

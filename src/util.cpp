@@ -613,8 +613,6 @@ void ReadConfigFile(const std::string& confPath)
            {
                std::string strHeader =
                        "addnode=51.91.156.251\n"
-                       "addnode=51.91.156.249\n"
-                       "addnode=bzx.pool4u.net:29149\n"
                        "#reindex=1\n"
                        "#rescan=1\n"
                        "#zapwallettxes=2\n"
