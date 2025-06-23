@@ -16,9 +16,7 @@
 #include "transactionrecord.h"
 #include "transactiontablemodel.h"
 #include "walletmodel.h"
-#include "pcodemodel.h"
 
-#include "ui_interface.h"
 
 #include <QComboBox>
 #include <QDateTimeEdit>
@@ -43,7 +41,7 @@ char const * CopyRapText{"Copy RAP address/label"};
 
 TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *parent) :
     QWidget(parent), model(0), transactionProxyModel(0),
-    transactionView(0), abandonAction(0), columnResizingFixer(0)
+    transactionView(0), abandonAction(0)
 {
     // Build filter row
     setContentsMargins(0,0,0,0);
@@ -67,7 +65,6 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     headerLayout->addWidget(watchOnlyWidget);
 
     instantsendWidget = new QComboBox(this);
-    instantsendWidget->setFixedWidth(24);
     instantsendWidget->addItem(tr("All"), TransactionFilterProxy::InstantSendFilter_All);
     instantsendWidget->addItem(tr("Locked by InstantSend"), TransactionFilterProxy::InstantSendFilter_Yes);
     instantsendWidget->addItem(tr("Not locked by InstantSend"), TransactionFilterProxy::InstantSendFilter_No);
@@ -108,6 +105,11 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     typeWidget->addItem(tr("Anonymize"), TransactionFilterProxy::TYPE(TransactionRecord::Anonymize));
     typeWidget->addItem(tr("Sent to RAP address"), TransactionFilterProxy::TYPE(TransactionRecord::SendToPcode));
     typeWidget->addItem(tr("Received with RAP address"), TransactionFilterProxy::TYPE(TransactionRecord::RecvWithPcode));
+    typeWidget->addItem(tr("Mint spark to yourself"), TransactionFilterProxy::TYPE(TransactionRecord::MintSparkToSelf));
+    typeWidget->addItem(tr("Spend spark to yourself"), TransactionFilterProxy::TYPE(TransactionRecord::SpendSparkToSelf));
+    typeWidget->addItem(tr("Mint spark to"), TransactionFilterProxy::TYPE(TransactionRecord::MintSparkTo));
+    typeWidget->addItem(tr("Spend spark to"), TransactionFilterProxy::TYPE(TransactionRecord::SpendSparkTo));
+    typeWidget->addItem(tr("Received Spark"), TransactionFilterProxy::TYPE(TransactionRecord::RecvSpark));
 
     headerLayout->addWidget(typeWidget);
 
@@ -158,7 +160,6 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     // Actions
     abandonAction = new QAction(tr("Abandon transaction"), this);
     resendAction = new QAction(tr("Re-broadcast transaction"), this);
-    reconsiderBip47TxAction = new QAction(tr("Reconsider BIP47 transaction"), this);
 
     QAction *copyAddressAction = new QAction(tr("Copy address"), this);
     copyLabelAction = new QAction(tr(CopyLabelText), this);
@@ -181,18 +182,20 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     contextMenu->addAction(abandonAction);
     contextMenu->addAction(editLabelAction);
     contextMenu->addAction(resendAction);
-    contextMenu->addAction(reconsiderBip47TxAction);
 
     // Connect actions
+
     connect(dateWidget, qOverload<int>(&QComboBox::activated), this, &TransactionView::chooseDate);
     connect(typeWidget, qOverload<int>(&QComboBox::activated), this, &TransactionView::chooseType);
     connect(watchOnlyWidget, qOverload<int>(&QComboBox::activated), this, &TransactionView::chooseWatchonly);
     connect(instantsendWidget, qOverload<int>(&QComboBox::activated), this, &TransactionView::chooseInstantSend);
     connect(addressWidget, &QLineEdit::textChanged, this, &TransactionView::changedPrefix);
     connect(amountWidget, &QLineEdit::textChanged, this, &TransactionView::changedAmount);
+
     connect(view, &QTableView::doubleClicked, this, &TransactionView::doubleClicked);
     connect(view, &QTableView::customContextMenuRequested, this, &TransactionView::contextualMenu);
     connect(view->horizontalHeader(), &QHeaderView::sectionResized, this, &TransactionView::updateHeaderSizes);
+
     connect(abandonAction, &QAction::triggered, this, &TransactionView::abandonTx);
     connect(copyAddressAction, &QAction::triggered, this, &TransactionView::copyAddress);
     connect(copyLabelAction, &QAction::triggered, this, &TransactionView::copyLabel);
@@ -204,7 +207,6 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     connect(showDetailsAction, &QAction::triggered, this, &TransactionView::showDetails);
     connect(this, &TransactionView::doubleClicked, this, &TransactionView::showDetails);
     connect(resendAction, &QAction::triggered, this, &TransactionView::rebroadcastTx);
-    connect(reconsiderBip47TxAction, &QAction::triggered, this, &TransactionView::reconsiderBip47Tx);
 }
 
 void TransactionView::setModel(WalletModel *_model)
@@ -220,13 +222,12 @@ void TransactionView::setModel(WalletModel *_model)
 
         transactionProxyModel->setSortRole(Qt::EditRole);
 
-        transactionView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         transactionView->setModel(transactionProxyModel);
         transactionView->setAlternatingRowColors(true);
         transactionView->setSelectionBehavior(QAbstractItemView::SelectRows);
         transactionView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        transactionView->horizontalHeader()->setSortIndicator(TransactionTableModel::Date, Qt::DescendingOrder);
         transactionView->setSortingEnabled(true);
-        transactionView->sortByColumn(TransactionTableModel::Date, Qt::DescendingOrder);
         transactionView->verticalHeader()->hide();
 
         transactionView->setColumnWidth(TransactionTableModel::Status, STATUS_COLUMN_WIDTH);
@@ -234,14 +235,16 @@ void TransactionView::setModel(WalletModel *_model)
         transactionView->setColumnWidth(TransactionTableModel::InstantSend, INSTANTSEND_COLUMN_WIDTH);
         transactionView->setColumnWidth(TransactionTableModel::Date, DATE_COLUMN_WIDTH);
         transactionView->setColumnWidth(TransactionTableModel::Type, TYPE_COLUMN_WIDTH);
-        transactionView->setColumnWidth(TransactionTableModel::Amount, AMOUNT_MINIMUM_COLUMN_WIDTH);
-
-        columnResizingFixer = new GUIUtil::TableViewLastColumnResizingFixer(transactionView, AMOUNT_MINIMUM_COLUMN_WIDTH, MINIMUM_COLUMN_WIDTH, this);
+        transactionView->setColumnWidth(TransactionTableModel::ToAddress, ADDRESS_COLUMN_WIDTH);
+        transactionView->horizontalHeader()->setSectionResizeMode(TransactionTableModel::Amount, QHeaderView::Fixed);
+        transactionView->horizontalHeader()->setMinimumSectionSize(23);
+        transactionView->horizontalHeader()->setStretchLastSection(true);
+        transactionView->horizontalHeader()->setMaximumSectionSize(300);
 
         if (_model->getOptionsModel())
         {
             // Add third party transaction URLs to context menu
-            QStringList listUrls = _model->getOptionsModel()->getThirdPartyTxUrls().split("|", QString::SkipEmptyParts);
+            QStringList listUrls = _model->getOptionsModel()->getThirdPartyTxUrls().split("|", Qt::SkipEmptyParts);
             for (int i = 0; i < listUrls.size(); ++i)
             {
                 QString url = listUrls[i].trimmed();
@@ -280,30 +283,30 @@ void TransactionView::chooseDate(int idx)
         break;
     case Today:
         transactionProxyModel->setDateRange(
-                QDateTime(current),
+                QDateTime(GUIUtil::StartOfDay(current)),
                 TransactionFilterProxy::MAX_DATE);
         break;
     case ThisWeek: {
         // Find last Monday
         QDate startOfWeek = current.addDays(-(current.dayOfWeek()-1));
         transactionProxyModel->setDateRange(
-                QDateTime(startOfWeek),
+                QDateTime(GUIUtil::StartOfDay(startOfWeek)),
                 TransactionFilterProxy::MAX_DATE);
 
         } break;
     case ThisMonth:
         transactionProxyModel->setDateRange(
-                QDateTime(QDate(current.year(), current.month(), 1)),
+                QDateTime(GUIUtil::StartOfDay(QDate(current.year(), current.month(), 1))),
                 TransactionFilterProxy::MAX_DATE);
         break;
     case LastMonth:
         transactionProxyModel->setDateRange(
-                QDateTime(QDate(current.year(), current.month(), 1).addMonths(-1)),
-                QDateTime(QDate(current.year(), current.month(), 1)));
+                QDateTime(GUIUtil::StartOfDay(QDate(current.year(), current.month(), 1).addMonths(-1))),
+                QDateTime(GUIUtil::StartOfDay(QDate(current.year(), current.month(), 1))));
         break;
     case ThisYear:
         transactionProxyModel->setDateRange(
-                QDateTime(QDate(current.year(), 1, 1)),
+                QDateTime(GUIUtil::StartOfDay(QDate(current.year(), 1, 1))),
                 TransactionFilterProxy::MAX_DATE);
         break;
     case Range:
@@ -409,7 +412,6 @@ void TransactionView::contextualMenu(const QPoint &point)
         copyLabelAction->setText(tr(CopyLabelText));
     abandonAction->setEnabled(model->transactionCanBeAbandoned(hash));
     resendAction->setEnabled(model->transactionCanBeRebroadcast(hash));
-    reconsiderBip47TxAction->setVisible(model->getWallet()->IsCrypted() && model->getPcodeModel()->isBip47Transaction(hash));
 
     if(index.isValid())
     {
@@ -428,7 +430,7 @@ void TransactionView::updateHeaderSizes(int logicalIndex, int oldSize, int newSi
         {TransactionTableModel::Amount, amountWidget}
     };
 
-    if(logicalIndex <= TransactionTableModel::ToAddress)
+    if(logicalIndex <= TransactionTableModel::Amount)
         return;
 
     for(std::pair<int, QWidget*> const & p : headerWidgets) {
@@ -476,20 +478,6 @@ void TransactionView::rebroadcastTx()
 
     // Update the table
     model->getTransactionTableModel()->updateTransaction(hashQStr, CT_UPDATED, true);
-}
-
-void TransactionView::reconsiderBip47Tx()
-{
-    if(!transactionView || !transactionView->selectionModel())
-        return;
-    QModelIndexList selection = transactionView->selectionModel()->selectedRows(0);
-
-    // get the hash from the TxHashRole (QVariant / QString)
-    uint256 hash;
-    QString hashQStr = selection.at(0).data(TransactionTableModel::TxHashRole).toString();
-    hash.SetHex(hashQStr.toStdString());
-
-    model->getPcodeModel()->reconsiderBip47Tx(hash);
 }
 
 void TransactionView::copyAddress()
@@ -542,7 +530,7 @@ void TransactionView::editLabel()
         {
             address = selection.at(0).data(TransactionTableModel::AddressRole).toString();
             addressBook = model->getAddressTableModel();
-            mode = EditAddressDialog::NewSendingAddress;
+            mode = model->validateAddress(address) ? EditAddressDialog::NewSendingAddress : EditAddressDialog::NewSparkSendingAddress;
         }
 
         if(!addressBook || address.isEmpty())
@@ -562,6 +550,12 @@ void TransactionView::editLabel()
                 mode = type == AddressTableModel::Receive
                     ? EditAddressDialog::EditReceivingAddress
                     : EditAddressDialog::EditSendingAddress;
+            }
+            else if(mode == EditAddressDialog::NewSparkSendingAddress)
+            {
+                mode = type == AddressTableModel::Receive
+                    ? EditAddressDialog::EditSparkReceivingAddress
+                    : EditAddressDialog::EditSparkSendingAddress;
             }
             else
                 mode = EditAddressDialog::EditPcode;
@@ -646,8 +640,8 @@ void TransactionView::dateRangeChanged()
     if(!transactionProxyModel)
         return;
     transactionProxyModel->setDateRange(
-            QDateTime(dateFrom->date()),
-            QDateTime(dateTo->date()).addDays(1));
+            GUIUtil::StartOfDay(dateFrom->date()),
+            GUIUtil::StartOfDay(dateTo->date()).addDays(1));
 }
 
 void TransactionView::updateCalendarWidgets()
@@ -674,19 +668,6 @@ void TransactionView::focusTransaction(const QModelIndex &idx)
     transactionView->setFocus();
 }
 
-// We override the virtual resizeEvent of the QWidget to adjust tables column
-// sizes as the tables width is proportional to the dialogs width.
-void TransactionView::resizeEvent(QResizeEvent* event)
-{
-    if(!transactionView || !transactionView->selectionModel())
-        return;
-
-    QWidget::resizeEvent(event);
-    disconnect(transactionView->horizontalHeader(), &QHeaderView::sectionResized, this, &TransactionView::updateHeaderSizes);
-    columnResizingFixer->stretchColumnWidth(TransactionTableModel::ToAddress);
-    connect(transactionView->horizontalHeader(), &QHeaderView::sectionResized, this, &TransactionView::updateHeaderSizes);
-}
-
 // Need to override default Ctrl+C action for amount as default behaviour is just to copy DisplayRole text
 bool TransactionView::eventFilter(QObject *obj, QEvent *event)
 {
@@ -707,4 +688,65 @@ void TransactionView::updateWatchOnlyColumn(bool fHaveWatchOnly)
 {
     watchOnlyWidget->setVisible(fHaveWatchOnly);
     transactionView->setColumnHidden(TransactionTableModel::Watchonly, !fHaveWatchOnly);
+}
+
+// Handles resize events for the TransactionView widget by adjusting internal component sizes.
+void TransactionView::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event); 
+
+    // Retrieve new dimensions from the resize event
+    const int newWidth = event->size().width();
+    const int newHeight = event->size().height();
+
+    adjustTextSize(newWidth, newHeight);
+
+    int headerHeight = newHeight * 0.1; 
+
+    // Calculate the height of widgets in the header subtracting a small margin
+    int widgetHeight = headerHeight - 5; 
+
+    // Determine widths for specific widgets as percentages of total width
+    int comboBoxesWidgetWidth = newWidth * 0.10; 
+    int addressWidgetWidth = newWidth * 0.25; 
+
+    dateWidget->setFixedWidth(comboBoxesWidgetWidth);
+    typeWidget->setFixedWidth(comboBoxesWidgetWidth);
+    amountWidget->setFixedWidth(comboBoxesWidgetWidth);
+    instantsendWidget->setFixedWidth(comboBoxesWidgetWidth);
+
+    int tableViewHeight = newHeight - headerHeight; 
+    
+    // Calculate and set column widths based on new width, keeping proportions
+    int statusColumnWidth = newWidth * 0.05;
+    int watchOnlyColumnWidth = newWidth * 0.05;
+    int instantSendColumnWidth = newWidth * 0.05;
+    int dateColumnWidth = newWidth * 0.08;
+    int typeColumnWidth = newWidth * 0.10;
+    int addressColumnWidth = newWidth * 0.25; 
+
+    transactionView->setColumnWidth(TransactionTableModel::Status, statusColumnWidth);
+    transactionView->setColumnWidth(TransactionTableModel::Watchonly, watchOnlyColumnWidth);
+    transactionView->setColumnWidth(TransactionTableModel::InstantSend, instantSendColumnWidth);
+    transactionView->setColumnWidth(TransactionTableModel::Date, dateColumnWidth);
+    transactionView->setColumnWidth(TransactionTableModel::Type, typeColumnWidth);
+    transactionView->setColumnWidth(TransactionTableModel::ToAddress, addressColumnWidth);
+}
+void TransactionView::adjustTextSize(int width,int height){
+
+    const double fontSizeScalingFactor = 65.0;
+    int baseFontSize = std::min(width, height) / fontSizeScalingFactor;
+    int fontSize = std::min(15, std::max(12, baseFontSize));
+    QFont font = this->font();
+    font.setPointSize(fontSize);
+
+    // Set font size for all labels
+    transactionView->setFont(font);
+    transactionView->horizontalHeader()->setFont(font);
+    transactionView->verticalHeader()->setFont(font);
+    dateWidget->setFont(font);
+    typeWidget->setFont(font);
+    amountWidget->setFont(font);
+    instantsendWidget->setFont(font);
+    addressWidget->setFont(font);
 }
