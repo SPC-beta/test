@@ -442,7 +442,7 @@ MigrateLelantusToSparkDialog::MigrateLelantusToSparkDialog(WalletModel *_model):
         ignore->setStyleSheet("margin-top:30px;margin-bottom:60px;margin-left:20px;margin-right:50px;");
         QPushButton *migrate = new QPushButton(this);
         migrate->setText("Migrate");
-        migrate->setStyleSheet("color:#9b1c2e;background-color:none;margin-top:30px;margin-bottom:60px;margin-left:50px;margin-right:20px;border:1px solid #9b1c2e;");
+        migrate->setStyleSheet("color:#a610a9;background-color:none;margin-top:30px;margin-bottom:60px;margin-left:50px;margin-right:20px;border:1px solid #a610a9;");
         QHBoxLayout *groupButton = new QHBoxLayout(this);
         groupButton->addWidget(ignore);
         groupButton->addWidget(migrate);
