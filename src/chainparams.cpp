@@ -153,10 +153,10 @@ public:
         consensus.nLelantusStartBlock = 100;
         consensus.no_zero_payee = 20000;
         consensus.DIP0008Height = 9999999999;
-        consensus.nEvoSporkStopBlock = 9999999999;
+        consensus.nEvoSporkStopBlock = consensus.nSparkStartBlock;
         consensus.nEvoMasternodeMinimumConfirmations = 35;
         consensus.evoSporkKeyID = "XFWzf2xwwARUY3fLhY83P4TDh2pSybUQ8y";
-        consensus.new_version = 9999999999;
+        consensus.new_version = consensus.nSparkStartBlock;
 
         consensus.stage3DevelopmentFundAddress = "XFWzf2xwwARUY3fLhY83P4TDh2pSybUQ8y";
 
@@ -164,7 +164,7 @@ public:
         consensus.nExchangeAddressStartBlock = consensus.nSparkStartBlock;
 
         // spark names
-        consensus.nSparkNamesStartBlock = nSparkStartBlock;
+        consensus.nSparkNamesStartBlock = consensus.nSparkStartBlock;
         consensus.nSparkNamesFee = standardSparkNamesFee;
 
         consensus.nSparkStartBlock = 9999999999;
