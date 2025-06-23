@@ -41,7 +41,7 @@ set(CMAKE_TRY_COMPILE_PLATFORM_VARIABLES
   CMAKE_CXX_LINK_EXECUTABLE
 )
 
-project(FiroCore
+project(BZXCore
   VERSION ${CLIENT_VERSION_MAJOR}.${CLIENT_VERSION_MINOR}.${CLIENT_VERSION_REVISION}
   DESCRIPTION "BZX client software"
   HOMEPAGE_URL "https://BZX.org/"
@@ -107,7 +107,7 @@ include(CMakeDependentOption)
 # When adding a new option, end the <help_text> with a full stop for consistency.
 option(BUILD_DAEMON "Build ${BITCOIN_DAEMON_NAME} executable." ON)
 option(BUILD_GUI "Build ${BITCOIN_GUI_NAME} executable." ON)
-option(BUILD_CLI "Build ${BITCOIN_FIRO_CLI_NAME} executable." ON)
+option(BUILD_CLI "Build ${BITCOIN_BZX_CLI_NAME} executable." ON)
 
 
 option(BUILD_UTIL_CHAINSTATE "Build experimental BZX-chainstate executable." OFF)
@@ -883,7 +883,7 @@ endif()
 include(WarnAboutGlobalProperties)
 
 # Generate archive files
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Firo client software")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "BZX client software")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_VERBATIM_VARIABLES YES)
 include(CPack)
