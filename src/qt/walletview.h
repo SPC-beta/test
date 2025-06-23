@@ -13,7 +13,6 @@
 #include "automintnotification.h"
 #include "amount.h"
 #include "masternodelist.h"
-#include "lelantusdialog.h"
 
 #include <QStackedWidget>
 
@@ -22,18 +21,9 @@ class ClientModel;
 class OverviewPage;
 class PlatformStyle;
 class ReceiveCoinsDialog;
-class CreatePcodeDialog;
 class SendCoinsDialog;
-class SendMPDialog;
-class TradeHistoryDialog;
-class LookupSPDialog;
-class LookupTXDialog;
-class LookupAddressDialog;
-class MetaDExDialog;
-class MetaDExCancelDialog;
 class SendCoinsRecipient;
 class TransactionView;
-class TXHistoryDialog;
 class WalletModel;
 class AddressBookPage;
 
@@ -77,7 +67,6 @@ public:
 private:
     void setupTransactionPage();
     void setupSendCoinPage();
-    void setupLelantusPage();
 
 private:
     ClientModel *clientModel;
@@ -87,16 +76,10 @@ private:
     QWidget *transactionsPage;
     QWidget *smartPropertyPage;
     ReceiveCoinsDialog *receiveCoinsPage;
-    CreatePcodeDialog *createPcodePage;
     AddressBookPage *usedSendingAddressesPage;
     AddressBookPage *usedReceivingAddressesPage;
     QWidget *sendCoinsPage;
     SendCoinsDialog *sendBZXView;
-    TradeHistoryDialog *tradeHistoryTab;
-    MetaDExDialog *metaDExTab;
-    MetaDExCancelDialog *cancelTab;
-    LelantusDialog *lelantusView;
-    QWidget *lelantusPage;
     TransactionView *BZXTransactionList;
     QWidget *BZXTransactionsView;
     MasternodeList *masternodeListPage;
@@ -104,7 +87,7 @@ private:
     QProgressDialog *progressDialog;
     const PlatformStyle *platformStyle;
 
-    AutomintNotification *automintNotification;
+    AutomintSparkNotification *automintSparkNotification;
 
 public Q_SLOTS:
     /** Switch to overview (home) page */
@@ -119,11 +102,8 @@ public Q_SLOTS:
     void gotoMasternodePage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
-    void gotoCreatePcodePage();
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
-    /** Switch to lelantus page */
-    void gotoLelantusPage();
 
     /** Show Sign/Verify Message dialog and switch to sign message tab */
     void gotoSignMessageTab(QString addr = "");
@@ -141,11 +121,16 @@ public Q_SLOTS:
     void backupWallet();
     /** Change encrypted wallet passphrase */
     void changePassphrase();
+    /** Show the Spark view key */
+    void exportViewKey();
     /** Ask for passphrase to unlock wallet temporarily */
     void unlockWallet(const QString & info = "");
 
     /** Show used sending addresses */
     void usedSendingAddresses();
+
+    void updateAddressbook();
+
     /** Show used receiving addresses */
     void usedReceivingAddresses();
 
@@ -159,20 +144,20 @@ public Q_SLOTS:
     void requestedSyncWarningInfo();
 
     /** Show automint notification */
-    void showAutomintNotification();
+    void showAutomintSparkNotification();
 
     /** Re-position automint notification */
-    void repositionAutomintNotification();
+    void repositionAutomintSparkNotification();
 
     /** Check mintable amount to close automint notification */
-    void checkMintableAmount(
+    void checkMintableSparkAmount(
         CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount, CAmount anonymizableBalance);
 
     /** Close automint notification */
-    void closeAutomintNotification();
+    void closeAutomintSparkNotification();
 
     /** Ask user to do auto mint */
-    void askMintAll(AutoMintMode mode);
+    void askMintSparkAll(AutoMintSparkMode mode);
 
 Q_SIGNALS:
     /** Signal that we want to show the main window */
