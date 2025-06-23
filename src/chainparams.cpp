@@ -164,7 +164,7 @@ public:
         consensus.nExchangeAddressStartBlock = consensus.nSparkStartBlock;
 
         // spark names
-        consensus.nSparkNamesStartBlock = 9999999999;
+        consensus.nSparkNamesStartBlock = nSparkStartBlock;
         consensus.nSparkNamesFee = standardSparkNamesFee;
 
         consensus.nSparkStartBlock = 9999999999;
