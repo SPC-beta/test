@@ -56,7 +56,25 @@ void WalletModelTransaction::reassignAmounts(int nChangePosRet)
         {
             if (i == nChangePosRet)
                 i++;
-            rcp.amount = walletTransaction->tx->vout[i].nValue;
+            if (walletTransaction->tx->vout[i].scriptPubKey.IsSparkSMint()) {
+                bool ok = true;
+                spark::Coin coin(spark::Params::get_default());
+                try {
+                    spark::ParseSparkMintCoin(walletTransaction->tx->vout[i].scriptPubKey, coin);
+                } catch (std::invalid_argument&) {
+                    ok = false;
+                }
+
+                if (ok) {
+                    CSparkMintMeta mintMeta;
+                    coin.setSerialContext(spark::getSerialContext(* walletTransaction->tx));
+                    if (pwalletMain->sparkWallet->getMintMeta(coin, mintMeta)) {
+                        rcp.amount = mintMeta.v;
+                    }
+                }
+            } else {
+                rcp.amount = walletTransaction->tx->vout[i].nValue;
+            }
             i++;
         }
     }
@@ -65,7 +83,7 @@ void WalletModelTransaction::reassignAmounts(int nChangePosRet)
 CAmount WalletModelTransaction::getTotalTransactionAmount()
 {
     CAmount totalTransactionAmount = 0;
-    Q_FOREACH(const SendCoinsRecipient &rcp, recipients)
+    for (const SendCoinsRecipient &rcp : recipients)
     {
         totalTransactionAmount += rcp.amount;
     }
