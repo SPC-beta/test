@@ -1,5 +1,5 @@
-#ifndef FIRO_QT_SPARKMODEL_H
-#define FIRO_QT_SPARKMODEL_H
+#ifndef BZX_QT_SPARKMODEL_H
+#define BZX_QT_SPARKMODEL_H
 
 #include "automintdialog.h"
 #include "automintmodel.h"
@@ -55,4 +55,4 @@ private:
     CWallet *wallet;
 };
 
-#endif // FIRO_QT_SPARKMODEL_H
+#endif // BZX_QT_SPARKMODEL_H
