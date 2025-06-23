@@ -69,7 +69,7 @@ if(WIN32)
     )
 
     # Optionally, make your executables depend on the copy target
-    # add_dependencies(firo-cli copy_mingw_dlls)
+    # add_dependencies(BZX-cli copy_mingw_dlls)
 
     # Install the DLLs to the install package bin folder
     install(FILES ${FOUND_DLLS} DESTINATION bin)
