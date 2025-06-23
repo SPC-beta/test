@@ -688,7 +688,7 @@ bool CheckLelantusMintTransaction(
         return state.DoS(100,
                 false,
                 PUBCOIN_NOT_VALIDATE,
-                "CheckLelantusMintTransaction: double mint");
+                "CheckLelantusMintTransaction: double mint\n");
     }
 
     if (lelantusTxInfo != NULL && !lelantusTxInfo->fInfoIsComplete) {
@@ -725,7 +725,7 @@ bool CheckLelantusTransaction(
         if (tx.IsLelantusMint() && !tx.IsLelantusJoinSplit())
             return state.DoS(100, false,
                              REJECT_INVALID,
-                             "Lelantus already is not available, start using Spark.");
+                             "Lelantus already is not available, start using Spark.\n");
     }
 
     // accept lelantus spends until nLelantusGracefulPeriod passed, to allow migration of funds from lelantus to spark
@@ -733,7 +733,7 @@ bool CheckLelantusTransaction(
         if (tx.IsLelantusJoinSplit())
             return state.DoS(100, false,
                              REJECT_INVALID,
-                             "Lelantus is fully disabled.");
+                             "Lelantus is fully disabled.\n");
     }
 
     bool const allowLelantus = (realHeight >= consensus.nLelantusStartBlock);
@@ -742,7 +742,7 @@ bool CheckLelantusTransaction(
         if (allowLelantus && lelantusState.IsSurgeConditionDetected()) {
             return state.DoS(100, false,
                 REJECT_INVALID,
-                "Lelantus surge protection is ON.");
+                "Lelantus surge protection is ON.\n");
         }
     }
 
