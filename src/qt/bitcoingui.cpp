@@ -40,8 +40,6 @@
 #include "evo/deterministicmns.h"
 #include "masternode-sync.h"
 #include "masternodelist.h"
-#include "elysium_qtutils.h"
-
 #include <iostream>
 
 #include <QAction>
@@ -97,8 +95,6 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     labelWalletHDStatusIcon(0),
     connectionsControl(0),
     labelBlocksIcon(0),
-    labelElysiumPendingIcon(0),
-    labelElysiumPendingText(0),
     progressBarLabel(0),
     progressBar(0),
     progressDialog(0),
@@ -121,13 +117,13 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     encryptWalletAction(0),
     backupWalletAction(0),
     changePassphraseAction(0),
+    exportViewKeyAction(0),
     aboutQtAction(0),
     openRPCConsoleAction(0),
     openAction(0),
     showHelpMessageAction(0),
     lelantusAction(0),
     masternodeAction(0),
-    createPcodeAction(0),
     logoAction(0),
     trayIcon(0),
     trayIconMenu(0),
@@ -246,13 +242,6 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     framePendingLayout->setContentsMargins(3,0,3,0);
     framePendingLayout->setSpacing(3);
     framePendingLayout->addStretch();
-    labelElysiumPendingIcon = new QLabel();
-    labelElysiumPendingText = new QLabel("You have Elysium transactions awaiting confirmation.");
-    framePendingLayout->addWidget(labelElysiumPendingIcon);
-    framePendingLayout->addWidget(labelElysiumPendingText);
-    framePendingLayout->addStretch();
-    labelElysiumPendingIcon->hide();
-    labelElysiumPendingText->hide();
 
     // Progress bar and label for blocks download
     progressBarLabel = new QLabel();
@@ -277,9 +266,10 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
 
     // Install event filter to be able to catch status tip events (QEvent::StatusTip)
     this->installEventFilter(this);
-
+#ifdef ENABLE_WALLET
     // Initially wallet actions should be disabled
     setWalletActionsEnabled(false);
+#endif // ENABLE_WALLET
 
     // Subscribe to notifications from core
     subscribeToCoreSignals();
@@ -326,7 +316,7 @@ void BitcoinGUI::createActions()
 	tabGroup->addAction(overviewAction);
 
 	sendCoinsAction = new QAction(tr("&Send"), this);
-	sendCoinsAction->setStatusTip(tr("Send coins to a address"));
+    sendCoinsAction->setStatusTip(tr("Send coins to a address"));
 	sendCoinsAction->setToolTip(sendCoinsAction->statusTip());
 	sendCoinsAction->setCheckable(true);
 	sendCoinsAction->setShortcut(QKeySequence(Qt::ALT + key++));
@@ -337,7 +327,7 @@ void BitcoinGUI::createActions()
 	sendCoinsMenuAction->setToolTip(sendCoinsMenuAction->statusTip());
 
 	receiveCoinsAction = new QAction(tr("&Receive"), this);
-	receiveCoinsAction->setStatusTip(tr("Request payments (generates QR codes and BZX: URIs)"));
+    receiveCoinsAction->setStatusTip(tr("Request payments (generates QR codes and BZX: URIs)"));
 	receiveCoinsAction->setToolTip(receiveCoinsAction->statusTip());
 	receiveCoinsAction->setCheckable(true);
 	receiveCoinsAction->setShortcut(QKeySequence(Qt::ALT + key++));
@@ -361,7 +351,7 @@ void BitcoinGUI::createActions()
     lelantusAction->setCheckable(true);
     lelantusAction->setShortcut(QKeySequence(Qt::ALT + key++));
     tabGroup->addAction(lelantusAction);
-    lelantusAction->setVisible(true);
+    lelantusAction->setVisible(false);
 
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
     // can be triggered from the tray menu, and need to show the GUI to be useful.
@@ -377,30 +367,22 @@ void BitcoinGUI::createActions()
     tabGroup->addAction(masternodeAction);
 #endif
 
-    createPcodeAction = new QAction(tr("RA&P addresses"), this);
-    createPcodeAction->setStatusTip(tr("Create RAP addresses (BIP47 payment codes)"));
-    createPcodeAction->setToolTip(createPcodeAction->statusTip());
-    createPcodeAction->setCheckable(true);
-    createPcodeAction->setShortcut(QKeySequence(Qt::ALT + key++));
-    tabGroup->addAction(createPcodeAction);
-
 #ifdef ENABLE_WALLET
     connect(masternodeAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
     connect(masternodeAction, &QAction::triggered, this, &BitcoinGUI::gotoMasternodePage);
-    connect(overviewAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
+	connect(overviewAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
     connect(overviewAction, &QAction::triggered, this, &BitcoinGUI::gotoOverviewPage);
-    connect(sendCoinsAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
-    connect(sendCoinsAction, &QAction::triggered, [this]{ gotoSendCoinsPage(); });
-    connect(sendCoinsMenuAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
-    connect(sendCoinsMenuAction, &QAction::triggered, [this]{ gotoSendCoinsPage(); });
-    connect(receiveCoinsAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
-    connect(receiveCoinsAction, &QAction::triggered, this, &BitcoinGUI::gotoReceiveCoinsPage);
-    connect(receiveCoinsMenuAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
-    connect(receiveCoinsMenuAction, &QAction::triggered, this, &BitcoinGUI::gotoReceiveCoinsPage);
-    connect(historyAction, &QAction::triggered, this, [this]{ showNormalIfMinimized(); });
-    connect(historyAction, &QAction::triggered, this, &BitcoinGUI::gotoHistoryPage);
-    connect(lelantusAction, &QAction::triggered, this, &BitcoinGUI::gotoLelantusPage);
-    connect(createPcodeAction, &QAction::triggered, this, &BitcoinGUI::gotoCreatePcodePage);
+	connect(sendCoinsAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
+	connect(sendCoinsAction, &QAction::triggered, [this]{ gotoSendCoinsPage(); });
+	connect(sendCoinsMenuAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
+	connect(sendCoinsMenuAction, &QAction::triggered, [this]{ gotoSendCoinsPage(); });
+	connect(receiveCoinsAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
+	connect(receiveCoinsAction, &QAction::triggered, this, &BitcoinGUI::gotoReceiveCoinsPage);
+	connect(receiveCoinsMenuAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
+	connect(receiveCoinsMenuAction, &QAction::triggered, this, &BitcoinGUI::gotoReceiveCoinsPage);
+	connect(historyAction, &QAction::triggered, this, [this]{ showNormalIfMinimized(); });
+	connect(historyAction, &QAction::triggered, this, &BitcoinGUI::gotoHistoryPage);
+
 #endif // ENABLE_WALLET
 
     quitAction = new QAction(tr("E&xit"), this);
@@ -423,12 +405,15 @@ void BitcoinGUI::createActions()
     optionsAction->setEnabled(false);
     toggleHideAction = new QAction(tr("&Show / Hide"), this);
     toggleHideAction->setStatusTip(tr("Show or hide the main Window"));
-
+#ifdef ENABLE_WALLET
     encryptWalletAction = new QAction(tr("&Encrypt Wallet..."), this);
     encryptWalletAction->setStatusTip(tr("Encrypt the private keys that belong to your wallet"));
     encryptWalletAction->setCheckable(true);
+#endif // ENABLE_WALLET
     backupWalletAction = new QAction(tr("&Backup Wallet..."), this);
     backupWalletAction->setStatusTip(tr("Backup wallet to another location"));
+    exportViewKeyAction = new QAction(tr("&Export View Key..."), this);
+    exportViewKeyAction->setStatusTip(tr("Export Spark view key"));
     changePassphraseAction = new QAction(tr("&Change Passphrase..."), this);
     changePassphraseAction->setStatusTip(tr("Change the passphrase used for wallet encryption"));
     signMessageAction = new QAction(tr("Sign &message..."), this);
@@ -443,7 +428,7 @@ void BitcoinGUI::createActions()
 
     usedSendingAddressesAction = new QAction(tr("&Sending addresses..."), this);
     usedSendingAddressesAction->setStatusTip(tr("Show the list of used sending addresses and labels"));
-    usedReceivingAddressesAction = new QAction(tr("&Receiving addresses..."), this);
+    usedReceivingAddressesAction = new QAction( tr("&Receiving addresses..."), this);
     usedReceivingAddressesAction->setStatusTip(tr("Show the list of used receiving addresses and labels"));
 
     openAction = new QAction(tr("Open &URI..."), this);
@@ -470,6 +455,7 @@ void BitcoinGUI::createActions()
     {
         connect(encryptWalletAction, &QAction::triggered, walletFrame, &WalletFrame::encryptWallet);
         connect(backupWalletAction, &QAction::triggered, walletFrame, &WalletFrame::backupWallet);
+        connect(exportViewKeyAction, &QAction::triggered, walletFrame, &WalletFrame::exportViewKey);
         connect(changePassphraseAction, &QAction::triggered, walletFrame, &WalletFrame::changePassphrase);
         connect(signMessageAction, &QAction::triggered, [this]{ gotoSignMessageTab(); });
         connect(verifyMessageAction, &QAction::triggered, [this]{ gotoVerifyMessageTab(); });
@@ -492,6 +478,7 @@ void BitcoinGUI::createMenuBar()
 #else
     // Get the main window's menu bar on other platforms
     appMenuBar = menuBar();
+    appMenuBar->setStyleSheet("QMenuBar::item { color: #000000; }");
 #endif
 
     // Configure the menus
@@ -502,6 +489,7 @@ void BitcoinGUI::createMenuBar()
         file->addAction(backupWalletAction);
         file->addAction(signMessageAction);
         file->addAction(verifyMessageAction);
+        file->addAction(exportViewKeyAction);
         file->addSeparator();
         file->addAction(usedSendingAddressesAction);
         file->addAction(usedReceivingAddressesAction);
@@ -534,7 +522,7 @@ void BitcoinGUI::createToolBars()
 {
     if(walletFrame)
     {
-        QToolBar *toolbar = addToolBar(tr("Tabs toolbar"));
+        toolbar = addToolBar(tr("Tabs toolbar"));
         toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
         toolbar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         toolbar->setToolButtonStyle(Qt::ToolButtonTextOnly);
@@ -546,12 +534,11 @@ void BitcoinGUI::createToolBars()
         toolbar->addAction(historyAction);
         toolbar->addAction(lelantusAction);
         toolbar->addAction(masternodeAction);
-        toolbar->addAction(createPcodeAction);
 
-        QLabel *logoLabel = new QLabel();
+        logoLabel = new QLabel();
         logoLabel->setObjectName("lblToolbarLogo");
         logoLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
+        
         toolbar->addWidget(logoLabel);
 
         overviewAction->setChecked(true);
@@ -593,7 +580,6 @@ void BitcoinGUI::setClientModel(ClientModel *_clientModel)
 
 #ifdef ENABLE_WALLET
         if(walletFrame)
-
         {
             walletFrame->setClientModel(_clientModel);
         }
@@ -606,22 +592,13 @@ void BitcoinGUI::setClientModel(ClientModel *_clientModel)
             // be aware of the tray icon disable state change reported by the OptionsModel object.
             connect(optionsModel, &OptionsModel::hideTrayIconChanged, this, &BitcoinGUI::setTrayIconVisible);
 
-            // update lelantus page if option is changed.
-            connect(optionsModel, &OptionsModel::lelantusPageChanged, this, &BitcoinGUI::updateLelantusPage);
-
-            // update RAP Addresses page if option is changed.
-            connect(optionsModel, &OptionsModel::enableRapAddressesChanged, this, &BitcoinGUI::setRapAddressesVisible);
-            createPcodeAction->setVisible(optionsModel->getRapAddresses());
-
             // initialize the disable state of the tray icon with the current value in the model.
             setTrayIconVisible(optionsModel->getHideTrayIcon());
         }
         {
+#ifdef ENABLE_WALLET
             auto blocks = clientModel->getNumBlocks();
             checkMasternodeVisibility(blocks);
-
-#ifdef ENABLE_WALLET
-            checkLelantusVisibility(blocks);
 #endif // ENABLE_WALLET
         }
     } else {
@@ -676,13 +653,13 @@ void BitcoinGUI::setWalletActionsEnabled(bool enabled)
     sendCoinsMenuAction->setEnabled(enabled);
     receiveCoinsAction->setEnabled(enabled);
     receiveCoinsMenuAction->setEnabled(enabled);
-    createPcodeAction->setEnabled(enabled);
     historyAction->setEnabled(enabled);
     lelantusAction->setEnabled(enabled);
     masternodeAction->setEnabled(enabled);
     encryptWalletAction->setEnabled(enabled);
     backupWalletAction->setEnabled(enabled);
     changePassphraseAction->setEnabled(enabled);
+    exportViewKeyAction->setEnabled(enabled);
     signMessageAction->setEnabled(enabled);
     verifyMessageAction->setEnabled(enabled);
     usedSendingAddressesAction->setEnabled(enabled);
@@ -766,7 +743,6 @@ void BitcoinGUI::aboutClicked()
 
     HelpMessageDialog dlg(this, true);
     dlg.exec();
-
 }
 
 void BitcoinGUI::showDebugWindow()
@@ -835,12 +811,6 @@ void BitcoinGUI::gotoReceiveCoinsPage()
     if (walletFrame) walletFrame->gotoReceiveCoinsPage();
 }
 
-void BitcoinGUI::gotoCreatePcodePage()
-{
-    createPcodeAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoCreatePcodePage();
-}
-
 void BitcoinGUI::gotoSendCoinsPage(QString addr)
 {
     sendCoinsAction->setChecked(true);
@@ -850,12 +820,6 @@ void BitcoinGUI::gotoSendCoinsPage(QString addr)
 void BitcoinGUI::gotoSignMessageTab(QString addr)
 {
     if (walletFrame) walletFrame->gotoSignMessageTab(addr);
-}
-
-void BitcoinGUI::gotoLelantusPage()
-{
-    lelantusAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoLelantusPage();
 }
 
 void BitcoinGUI::gotoVerifyMessageTab(QString addr)
@@ -1022,10 +986,8 @@ void BitcoinGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVer
     progressBar->setToolTip(tooltip);
 
 #ifdef ENABLE_WALLET
-    checkLelantusVisibility(count);
-#endif // ENABLE_WALLET
-
     checkMasternodeVisibility(count);
+#endif // ENABLE_WALLET
 }
 
 
@@ -1187,7 +1149,6 @@ void BitcoinGUI::showEvent(QShowEvent *event)
     // enable the debug window when the main window shows up
     openRPCConsoleAction->setEnabled(true);
     aboutAction->setEnabled(true);
-    openRepairAction->setEnabled(true);
     optionsAction->setEnabled(true);
 }
 
@@ -1218,7 +1179,7 @@ void BitcoinGUI::dropEvent(QDropEvent *event)
 {
     if(event->mimeData()->hasUrls())
     {
-        Q_FOREACH(const QUrl &uri, event->mimeData()->urls())
+        for (const QUrl &uri : event->mimeData()->urls())
         {
             Q_EMIT receivedURI(uri.toString());
         }
@@ -1249,19 +1210,6 @@ bool BitcoinGUI::handlePaymentRequest(const SendCoinsRecipient& recipient)
         return true;
     }
     return false;
-}
-
-void BitcoinGUI::setElysiumPendingStatus(bool pending)
-{
-    if (!pending) {
-        labelElysiumPendingIcon->hide();
-        labelElysiumPendingText->hide();
-    } else {
-        labelElysiumPendingIcon->show();
-        labelElysiumPendingText->show();
-        labelElysiumPendingIcon->setPixmap(QIcon(":/icons/elysium_hourglass").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
-        labelElysiumPendingIcon->setToolTip(tr("You have Elysium transactions awaiting confirmation."));
-    }
 }
 
 void BitcoinGUI::setHDStatus(int hdEnabled)
@@ -1362,7 +1310,7 @@ void BitcoinGUI::showProgress(const QString &title, int nProgress)
 
 void BitcoinGUI::updateProgressBarLabel(const QString& text)
 {
-    if (progressBarLabel)
+    if (progressBarLabel) 
     {
         progressBarLabel->setVisible(!text.isEmpty());
         progressBarLabel->setText(text);
@@ -1381,18 +1329,6 @@ void BitcoinGUI::showModalOverlay()
 {
     if (modalOverlay && (progressBar->isVisible() || modalOverlay->isLayerVisible()))
         modalOverlay->toggleVisibility();
-}
-
-void BitcoinGUI::updateLelantusPage()
-{
-    auto blocks = clientModel->getNumBlocks();
-    checkLelantusVisibility(blocks);
-}
-
-void BitcoinGUI::setRapAddressesVisible(bool checked)
-{
-    gotoOverviewPage();
-    createPcodeAction->setVisible(checked);
 }
 
 static bool ThreadSafeMessageBox(BitcoinGUI *gui, const std::string& message, const std::string& caption, unsigned int style)
@@ -1431,11 +1367,6 @@ void BitcoinGUI::checkMasternodeVisibility(int numBlocks)
     masternodeAction->setVisible(true);
 }
 
-void BitcoinGUI::checkLelantusVisibility(int numBlocks)
-{
-    lelantusAction->setVisible(true);
-}
-
 /** Get restart command-line parameters and request restart */
 void BitcoinGUI::handleRestart(QStringList args)
 {
@@ -1459,9 +1390,9 @@ UnitDisplayStatusBarControl::UnitDisplayStatusBarControl(const PlatformStyle *pl
     QList<BitcoinUnits::Unit> units = BitcoinUnits::availableUnits();
     int max_width = 0;
     const QFontMetrics fm(font());
-    Q_FOREACH (const BitcoinUnits::Unit unit, units)
+    for (const BitcoinUnits::Unit unit : units)
     {
-        max_width = qMax(max_width, fm.width(BitcoinUnits::name(unit)));
+        max_width = qMax(max_width, GUIUtil::TextWidth(fm, BitcoinUnits::name(unit)));
     }
     setMinimumSize(max_width, 0);
     setAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -1477,7 +1408,7 @@ void UnitDisplayStatusBarControl::mousePressEvent(QMouseEvent *event)
 void UnitDisplayStatusBarControl::createContextMenu()
 {
     menu = new QMenu(this);
-    Q_FOREACH(BitcoinUnits::Unit u, BitcoinUnits::availableUnits())
+    for (BitcoinUnits::Unit u : BitcoinUnits::availableUnits())
     {
         QAction *menuAction = new QAction(QString(BitcoinUnits::name(u)), this);
         menuAction->setData(QVariant(u));
@@ -1520,5 +1451,29 @@ void UnitDisplayStatusBarControl::onMenuSelection(QAction* action)
     if (action)
     {
         optionsModel->setDisplayUnit(action->data());
+    }
+}
+
+// Handles resize events for the BitcoinGUI widget by adjusting internal component sizes.
+void BitcoinGUI::resizeEvent(QResizeEvent* event) {
+    QMainWindow::resizeEvent(event);  
+
+    // Retrieve new dimensions from the resize event
+    int newWidth = event->size().width();
+    int actionWidth = newWidth / 6;
+
+    if (toolbar) {
+        // Set widths for each action dynamically
+        QWidget* overviewWidget = overviewAction ? toolbar->widgetForAction(overviewAction) : nullptr;
+        QWidget* receiveWidget = receiveCoinsAction ? toolbar->widgetForAction(receiveCoinsAction) : nullptr;
+        QWidget* historyWidget = historyAction ? toolbar->widgetForAction(historyAction) : nullptr;
+        QWidget* sendCoinsWidget = sendCoinsAction ? toolbar->widgetForAction(sendCoinsAction) : nullptr;
+        QWidget* masternodeWidget = masternodeAction ? toolbar->widgetForAction(masternodeAction) : nullptr;
+
+        if (overviewWidget) overviewWidget->setMinimumWidth(actionWidth);
+        if (receiveWidget) receiveWidget->setMinimumWidth(actionWidth);
+        if (historyWidget) historyWidget->setMinimumWidth(actionWidth);
+        if (sendCoinsWidget) sendCoinsWidget->setMinimumWidth(actionWidth);
+        if (masternodeWidget) masternodeWidget->setMinimumWidth(actionWidth);
     }
 }
