@@ -351,7 +351,7 @@ QComboBox::drop-down {
 }
 
 QComboBox::indicator {
-    background-color: #f4f4f4;
+    background-color: transparent;
     selection-background-color: #3d3939;
     color: #110202;
     selection-color: #FFFFFF;
@@ -373,6 +373,7 @@ QComboBox QAbstractItemView::item {
 QComboBox::item {
     color: #110202;
     font: 12pt 'Source Sans Pro';
+    max-height: 25px;
 }
 
 QComboBox::item:alternate {
@@ -747,11 +748,11 @@ QSlider::handle:horizontal {
     margin-top: -5px;
     margin-bottom: -5px;
     border-radius: 9px;
-        background-color: #a610a9;
+	background-color: #a610a9;
 }
 
 QSlider::handle:horizontal:hover {
-        background-color: #6f0771;
+	background-color: #6f0771;
 }
 
 QSlider::sub-page:horizontal {
@@ -819,7 +820,10 @@ QTableView::item:selected {
     color: #FFFFFF;
     font: 12pt 'Source Sans Pro';
 }
-
+/* QTreeView */
+QTreeView::item {
+    color: #000000;
+}
 /* QTableWidget */
 
 QTableWidget {
@@ -1246,33 +1250,10 @@ QDialog#LelantusDialog QRadioButton#radioCustomFee {
     margin-top: 7px;
 }
 
-/* LookupAddressDialog */
-
-QWidget#LookupAddressDialog QLabel#addressInfo,
-QWidget#LookupAddressDialog QLabel#balanceInfo {
-    font-weight: bold;
-}
-
-/* LookupSPDialog */
-
-QWidget#LookupSPDialog QLabel#spInfo,
-QWidget#LookupSPDialog QLabel#tokenInfo,
-QWidget#LookupSPDialog QLabel#crowdInfo {
-    font-weight: bold;
-}
-
 /* ManualMintDialog */
 
 QDialog#ManualMintDialog QLabel#availableAmount,
 QDialog#ManualMintDialog QLabel#totalAmount {
-    font-weight: bold;
-}
-
-/* MetaDExCancelDialog */
-
-QWidget#MetaDExCancelDialog QLabel#label_3,
-QWidget#MetaDExCancelDialog QLabel#label_2,
-QWidget#MetaDExCancelDialog QLabel#label {
     font-weight: bold;
 }
 
