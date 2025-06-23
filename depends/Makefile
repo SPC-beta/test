@@ -188,7 +188,7 @@ $(host_prefix)/.stamp_$(final_build_id): $(native_packages) $(packages)
 	$(AT)echo copying packages: $^
 	$(AT)echo to: $(@D)
 	$(AT)cd $(@D); $(foreach package,$^, tar xf $($(package)_cached); )
-        $(AT)echo To build BZX with these packages, pass \'--toolchain $(@D)/toolchain.cmake\' to the first CMake invocation.
+	$(AT)echo To build BZX with these packages, pass \'--toolchain $(@D)/toolchain.cmake\' to the first CMake invocation.
 	$(AT)touch $@
 
 # $PATH is not preserved between ./configure and make by convention. Its
