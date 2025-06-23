@@ -22,7 +22,7 @@
 #include "splashscreen.h"
 #include "utilitydialog.h"
 #include "winshutdownmonitor.h"
-
+#include "askpassphrasedialog.h"
 #ifdef ENABLE_WALLET
 #include "paymentserver.h"
 #include "walletmodel.h"
@@ -44,6 +44,7 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/thread.hpp>
+#include <fstream>
 
 #include <QApplication>
 #include <QDebug>
@@ -236,6 +237,9 @@ public:
     WId getMainWinId() const;
 
 public Q_SLOTS:
+#ifdef ENABLE_WALLET
+    void unlockWallet_(void * wallet);
+#endif
     void initializeResult(int retval);
     void shutdownResult(int retval);
     /// Handle runaway exceptions. Shows a message box with the problem and quits the program.
@@ -347,6 +351,15 @@ void BitcoinCore::shutdown()
     }
 }
 
+#ifdef ENABLE_WALLET
+static void unlockWallet(BitcoinApplication* application, CWallet* wallet)
+{
+    Q_UNUSED(wallet);
+    QMetaObject::invokeMethod(application, "unlockWallet_", Qt::QueuedConnection,
+                              Q_ARG(void *, wallet));
+}
+#endif
+
 BitcoinApplication::BitcoinApplication(int &argc, char **argv):
     QApplication(argc, argv),
     coreThread(0),
@@ -371,6 +384,10 @@ BitcoinApplication::BitcoinApplication(int &argc, char **argv):
     if (!platformStyle) // Fall back to "other" if specified name not found
         platformStyle = PlatformStyle::instantiate("other");
     assert(platformStyle);
+
+#ifdef ENABLE_WALLET
+    UnlockWallet.connect(boost::bind(unlockWallet, this, _1));
+#endif
 }
 
 BitcoinApplication::~BitcoinApplication()
@@ -388,6 +405,8 @@ BitcoinApplication::~BitcoinApplication()
 #ifdef ENABLE_WALLET
     delete paymentServer;
     paymentServer = 0;
+    UnlockWallet.disconnect(boost::bind(unlockWallet, this, _1));
+
 #endif
     delete optionsModel;
     optionsModel = 0;
@@ -399,6 +418,23 @@ BitcoinApplication::~BitcoinApplication()
 void BitcoinApplication::createPaymentServer()
 {
     paymentServer = new PaymentServer(this);
+}
+
+void BitcoinApplication::unlockWallet_(void * wallet)
+{
+    CWallet * wallet_ = reinterpret_cast<CWallet *>(wallet);
+
+    QString info = tr("You need to unlock to allow Spark wallet be created.");
+
+    walletModel = new WalletModel(platformStyle, wallet_, optionsModel);
+
+    // Unlock wallet when requested by wallet model
+    if (walletModel->getEncryptionStatus() == WalletModel::Locked)
+    {
+        AskPassphraseDialog dlg(AskPassphraseDialog::Unlock, this->window, info);
+        dlg.setModel(walletModel);
+        dlg.exec();
+    }
 }
 #endif
 
@@ -418,7 +454,7 @@ void BitcoinApplication::createWindow(const NetworkStyle *networkStyle)
 
 void BitcoinApplication::createSplashScreen(const NetworkStyle *networkStyle)
 {
-    SplashScreen *splash = new SplashScreen(QPixmap(), 0);
+    SplashScreen *splash = new SplashScreen(QPixmap(), Qt::WindowFlags());
     // We don't hold a direct pointer to the splash screen after creation, but the splash
     // screen will take care of deleting itself when slotFinish happens.
     splash->show();
@@ -496,7 +532,6 @@ void BitcoinApplication::initializeResult(int retval)
     {
         // Log this only after AppInit2 finishes, as then logging setup is guaranteed complete
         qWarning() << "Platform customization:" << platformStyle->getName();
-
         clientModel = new ClientModel(optionsModel);
         window->setClientModel(clientModel);
 
@@ -507,7 +542,7 @@ void BitcoinApplication::initializeResult(int retval)
 
             window->addWallet(BitcoinGUI::DEFAULT_WALLET, walletModel);
             window->setCurrentWallet(BitcoinGUI::DEFAULT_WALLET);
-
+        }
 #endif
 
         // If -min option passed, start window minimized.
@@ -522,9 +557,10 @@ void BitcoinApplication::initializeResult(int retval)
         Q_EMIT splashFinished(window);
 
 #ifdef ENABLE_WALLET
-        if(newWallet)
-            NotifyMnemonic::notify();
-        }
+
+        if (pwalletMain)
+            if(newWallet)
+                NotifyMnemonic::notify();
 
         // Now that initialization/startup is done, process any command-line
         // BZX: URIs or payment requests:
