@@ -4,7 +4,7 @@
 
 # Wallet functionality used by bitcoind and bitcoin-wallet executables.
 
-add_library(firo_wallet STATIC EXCLUDE_FROM_ALL
+add_library(BZX_wallet STATIC EXCLUDE_FROM_ALL
   ../activemasternode.cpp
   ../masternode-sync.cpp
   ../sigma.cpp
@@ -37,7 +37,7 @@ add_library(firo_wallet STATIC EXCLUDE_FROM_ALL
   walletdb.cpp
   authhelper.cpp
 )
-target_link_libraries(firo_wallet
+target_link_libraries(BZX_wallet
   PUBLIC
     core_interface
     bitcoin_util
@@ -47,5 +47,5 @@ target_link_libraries(firo_wallet
     leveldb
 )
 
-# Firo only supports BDB for wallet storage.
-target_link_libraries(firo_wallet PUBLIC BerkeleyDB::BerkeleyDB)
+# BZX only supports BDB for wallet storage.
+target_link_libraries(BZX_wallet PUBLIC BerkeleyDB::BerkeleyDB)
