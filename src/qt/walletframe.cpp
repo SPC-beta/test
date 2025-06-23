@@ -146,13 +146,6 @@ void WalletFrame::gotoReceiveCoinsPage()
         i.value()->gotoReceiveCoinsPage();
 }
 
-void WalletFrame::gotoCreatePcodePage()
-{
-    QMap<QString, WalletView*>::const_iterator i;
-    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-        i.value()->gotoCreatePcodePage();
-}
-
 void WalletFrame::gotoSendCoinsPage(QString addr)
 {
     QMap<QString, WalletView*>::const_iterator i;
@@ -165,13 +158,6 @@ void WalletFrame::gotoSignMessageTab(QString addr)
     WalletView *walletView = currentWalletView();
     if (walletView)
         walletView->gotoSignMessageTab(addr);
-}
-
-void WalletFrame::gotoLelantusPage()
-{
-    QMap<QString, WalletView*>::const_iterator i;
-    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-        i.value()->gotoLelantusPage();
 }
 
 void WalletFrame::gotoVerifyMessageTab(QString addr)
@@ -193,6 +179,13 @@ void WalletFrame::backupWallet()
     WalletView *walletView = currentWalletView();
     if (walletView)
         walletView->backupWallet();
+}
+
+void WalletFrame::exportViewKey()
+{
+    WalletView *walletView = currentWalletView();
+    if (walletView)
+        walletView->exportViewKey();
 }
 
 void WalletFrame::changePassphrase()
@@ -231,4 +224,11 @@ WalletView *WalletFrame::currentWalletView()
 void WalletFrame::outOfSyncWarningClicked()
 {
     Q_EMIT requestedSyncWarningInfo();
+}
+
+void WalletFrame::updateAddressbook() {
+    WalletView *walletView = currentWalletView();
+
+    if (walletView)
+        walletView->updateAddressbook();
 }
