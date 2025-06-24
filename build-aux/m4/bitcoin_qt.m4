@@ -7,7 +7,7 @@ dnl Output: If qt version is auto, set bitcoin_enable_qt to false. Else, exit.
 AC_DEFUN([BITCOIN_QT_FAIL],[
   if test "$bitcoin_qt_want_version" = "auto" && test "$bitcoin_qt_force" != "yes"; then
     if test "$bitcoin_enable_qt" != "no"; then
-      AC_MSG_WARN([$1; dash-qt frontend will not be built])
+      AC_MSG_WARN([$1; bitcoin-qt frontend will not be built])
     fi
     bitcoin_enable_qt=no
     bitcoin_enable_qt_test=no
@@ -54,7 +54,7 @@ AC_DEFUN([BITCOIN_QT_INIT],[
   dnl enable qt support
   AC_ARG_WITH([gui],
     [AS_HELP_STRING([--with-gui@<:@=no|qt5|auto@:>@],
-    [build dash-qt GUI (default=auto)])],
+    [build bitcoin-qt GUI (default=auto)])],
     [
      bitcoin_qt_want_version=$withval
      if test "$bitcoin_qt_want_version" = "yes"; then
@@ -70,8 +70,6 @@ AC_DEFUN([BITCOIN_QT_INIT],[
                  [qt_lib_suffix= ]); bitcoin_qt_want_version=qt5],
         [qt_lib_suffix= ])
 
-  AS_CASE([$host], [*android*], [qt_lib_suffix=_$ANDROID_ARCH])
-
   AC_ARG_WITH([qt-incdir],[AS_HELP_STRING([--with-qt-incdir=INC_DIR],[specify qt include path (overridden by pkgconfig)])], [qt_include_path=$withval], [])
   AC_ARG_WITH([qt-libdir],[AS_HELP_STRING([--with-qt-libdir=LIB_DIR],[specify qt lib path (overridden by pkgconfig)])], [qt_lib_path=$withval], [])
   AC_ARG_WITH([qt-plugindir],[AS_HELP_STRING([--with-qt-plugindir=PLUGIN_DIR],[specify qt plugin path (overridden by pkgconfig)])], [qt_plugin_path=$withval], [])
@@ -80,18 +78,9 @@ AC_DEFUN([BITCOIN_QT_INIT],[
 
   AC_ARG_WITH([qtdbus],
     [AS_HELP_STRING([--with-qtdbus],
-    [enable DBus support (default is yes if qt is enabled and QtDBus is found, except on Android)])],
+    [enable DBus support (default is yes if qt is enabled and QtDBus is found)])],
     [use_dbus=$withval],
     [use_dbus=auto])
-
-  dnl Android doesn't support D-Bus and certainly doesn't use it for notifications
-  case $host in
-    *android*)
-      if test "$use_dbus" != "yes"; then
-        use_dbus=no
-      fi
-    ;;
-  esac
 
   AC_SUBST(QT_TRANSLATION_DIR,$qt_translation_path)
 ])
@@ -132,15 +121,10 @@ AC_DEFUN([BITCOIN_QT_CONFIGURE],[
       if test -d "$qt_plugin_path/accessible"; then
         QT_LIBS="$QT_LIBS -L$qt_plugin_path/accessible"
       fi
-      if test -d "$qt_plugin_path/platforms/android"; then
-        QT_LIBS="$QT_LIBS -L$qt_plugin_path/platforms/android -lqtfreetype -lEGL"
-      fi
     fi
 
-    if test "$TARGET_OS" != "android"; then
-      _BITCOIN_QT_CHECK_STATIC_PLUGIN([QMinimalIntegrationPlugin], [-lqminimal])
-      AC_DEFINE([QT_QPA_PLATFORM_MINIMAL], [1], [Define this symbol if the minimal qt platform exists])
-    fi
+    _BITCOIN_QT_CHECK_STATIC_PLUGIN([QMinimalIntegrationPlugin], [-lqminimal])
+    AC_DEFINE([QT_QPA_PLATFORM_MINIMAL], [1], [Define this symbol if the minimal qt platform exists])
     if test "$TARGET_OS" = "windows"; then
       dnl Linking against wtsapi32 is required. See #17749 and
       dnl https://bugreports.qt.io/browse/QTBUG-27097.
@@ -159,9 +143,6 @@ AC_DEFUN([BITCOIN_QT_CONFIGURE],[
       _BITCOIN_QT_CHECK_STATIC_PLUGIN([QCocoaIntegrationPlugin], [-lqcocoa])
       _BITCOIN_QT_CHECK_STATIC_PLUGIN([QMacStylePlugin], [-lqmacstyle])
       AC_DEFINE([QT_QPA_PLATFORM_COCOA], [1], [Define this symbol if the qt platform is cocoa])
-    elif test "$TARGET_OS" = "android"; then
-      QT_LIBS="-Wl,--export-dynamic,--undefined=JNI_OnLoad -lplugins_platforms_qtforandroid${qt_lib_suffix} -ljnigraphics -landroid -lqtfreetype${qt_lib_suffix} $QT_LIBS"
-      AC_DEFINE([QT_QPA_PLATFORM_ANDROID], [1], [Define this symbol if the qt platform is android])
     fi
   fi
   CPPFLAGS=$TEMP_CPPFLAGS
@@ -226,22 +207,7 @@ AC_DEFUN([BITCOIN_QT_CONFIGURE],[
   BITCOIN_QT_PATH_PROGS([LUPDATE], [lupdate-qt5 lupdate5 lupdate],$qt_bin_path, yes)
   BITCOIN_QT_PATH_PROGS([LCONVERT], [lconvert-qt5 lconvert5 lconvert], $qt_bin_path, yes)
 
-  BITCOIN_QT_CHECK([
-    AC_CACHE_CHECK([whether $RCC accepts --format-version option],
-                   [ac_cv_prog_rcc_accepts_format_version],
-                   [ac_cv_prog_rcc_accepts_format_version=no
-                    echo '<!DOCTYPE RCC><RCC version="1.0"/>' > conftest.qrc
-                    $RCC --format-version 1 conftest.qrc >/dev/null 2>&1 && ac_cv_prog_rcc_accepts_format_version=yes
-                    rm -f conftest.qrc])
-    if test "$ac_cv_prog_rcc_accepts_format_version" = yes; then
-      RCCFLAGS="--format-version 1"
-    else
-      RCCFLAGS=
-    fi
-    AC_SUBST(RCCFLAGS)
-  ])
-
-  MOC_DEFS='-DHAVE_CONFIG_H -I$(srcdir)'
+  MOC_DEFS='-I$(srcdir)'
   case $host in
     *darwin*)
      BITCOIN_QT_CHECK([
@@ -371,9 +337,6 @@ AC_DEFUN([_BITCOIN_QT_CHECK_STATIC_LIBS], [
     PKG_CHECK_MODULES([QT_SERVICE], [${qt_lib_prefix}ServiceSupport${qt_lib_suffix}], [QT_LIBS="$QT_SERVICE_LIBS $QT_LIBS"])
   elif test "$TARGET_OS" = "windows"; then
     PKG_CHECK_MODULES([QT_WINDOWSUIAUTOMATION], [${qt_lib_prefix}WindowsUIAutomationSupport${qt_lib_suffix}], [QT_LIBS="$QT_WINDOWSUIAUTOMATION_LIBS $QT_LIBS"])
-  elif test "$TARGET_OS" = "android"; then
-    PKG_CHECK_MODULES([QT_EGL], [${qt_lib_prefix}EglSupport${qt_lib_suffix}], [QT_LIBS="$QT_EGL_LIBS $QT_LIBS"])
-    PKG_CHECK_MODULES([QT_SERVICE], [${qt_lib_prefix}ServiceSupport${qt_lib_suffix}], [QT_LIBS="$QT_SERVICE_LIBS $QT_LIBS"])
   fi
 ])
 
