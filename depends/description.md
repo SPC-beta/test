@@ -1,4 +1,4 @@
-This is a system of building and caching dependencies necessary for building Bitcoin.
+This is a system of building and caching dependencies necessary for building Dash Core.
 There are several features that make it different from most similar systems:
 
 ### It is designed to be builder and host agnostic
@@ -11,7 +11,7 @@ on new hosts.
 ### No reliance on timestamps
 
 File presence is used to determine what needs to be built. This makes the
-results distributable and easily digestible by automated builders.
+results distributable and easily digestable by automated builders.
 
 ### Each build only has its specified dependencies available at build-time.
 
@@ -27,7 +27,7 @@ etc), and as well as a hash of the same data for each recursive dependency. If
 any portion of a package's build recipe changes, it will be rebuilt as well as
 any other package that depends on it. If any of the main makefiles (Makefile,
 funcs.mk, etc) are changed, all packages will be rebuilt. After building, the
-results are cached into a tarball that can be reused and distributed.
+results are cached into a tarball that can be re-used and distributed.
 
 ### Package build results are (relatively) deterministic.
 
