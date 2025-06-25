@@ -60,6 +60,7 @@ target_compile_definitions(leveldb
     HAVE_FULLFSYNC=$<BOOL:${HAVE_FULLFSYNC}>
     HAVE_O_CLOEXEC=$<BOOL:${HAVE_O_CLOEXEC}>
     FALLTHROUGH_INTENDED=[[fallthrough]]
+    LEVELDB_IS_BIG_ENDIAN=$<STREQUAL:${CMAKE_CXX_BYTE_ORDER},BIG_ENDIAN>
     $<$<NOT:$<BOOL:${WIN32}>>:LEVELDB_PLATFORM_POSIX>
     $<$<BOOL:${WIN32}>:LEVELDB_PLATFORM_WINDOWS>
     $<$<BOOL:${WIN32}>:_UNICODE;UNICODE>
@@ -87,8 +88,9 @@ if(MSVC)
     _CRT_NONSTDC_NO_WARNINGS
   )
 else()
-  try_append_cxx_flags("-Wconditional-uninitialized" TARGET nowarn_leveldb_interface SKIP_LINK
-    IF_CHECK_PASSED "-Wno-conditional-uninitialized"
+  target_compile_options(nowarn_leveldb_interface INTERFACE
+    -Wno-conditional-uninitialized
+    -Wno-suggest-override
   )
 endif()
 

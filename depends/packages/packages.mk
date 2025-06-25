@@ -1,25 +1,31 @@
-packages:=
+packages:=boost openssl libevent gmp zlib backtrace tor bls-dash
+darwin_packages:=zeromq
+linux_packages:=zeromq
+native_packages := native_ccache native_cmake
 
-boost_packages = boost
+qt_linux_packages:=qt expat libxcb xcb_proto libXau xproto freetype fontconfig libxkbcommon libxcb_util libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm
 
-libevent_packages = libevent
-
-qrencode_linux_packages = qrencode
-qrencode_darwin_packages = qrencode
-qrencode_mingw32_packages = qrencode
-
-qt_linux_packages:=qt expat libxcb xcb_proto libXau xproto freetype fontconfig libxkbcommon libxcb_util libxcb_util_cursor libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm
 qt_darwin_packages=qt
 qt_mingw32_packages=qt
-ifneq ($(host),$(build))
-qt_native_packages := native_qt
-endif
 
+bdb_packages=bdb
 sqlite_packages=sqlite
+qrencode_packages=qrencode
 
 zmq_packages=zeromq
 
-multiprocess_packages = capnp
-multiprocess_native_packages = native_libmultiprocess native_capnp
+upnp_packages=miniupnpc
 
-usdt_linux_packages=systemtap
+darwin_native_packages = native_ds_store native_mac_alias
+
+$(host_arch)_$(host_os)_native_packages += native_b2
+
+ifneq ($(build_os),darwin)
+darwin_native_packages += native_cctools native_libtapi native_libdmg-hfsplus
+
+ifeq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
+darwin_native_packages+= native_clang
+endif
+
+endif
+

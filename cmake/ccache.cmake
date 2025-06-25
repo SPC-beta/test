@@ -23,8 +23,6 @@ if(NOT MSVC)
   else()
     set(WITH_CCACHE OFF)
   endif()
-else()
-  set(WITH_CCACHE OFF)
 endif()
 
 mark_as_advanced(CCACHE_EXECUTABLE)
