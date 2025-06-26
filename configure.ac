@@ -468,8 +468,6 @@ case $host in
      ;;
 esac
 
-AC_CHECK_LIB([tor], [tor_main], [AC_MSG_NOTICE([Tor found])], [AC_MSG_ERROR([Can't find Tor library])], [-lssl -lcrypto -levent -lz -pthread])
-
 if test x$use_pkgconfig = xyes; then
   m4_ifndef([PKG_PROG_PKG_CONFIG], [AC_MSG_ERROR(PKG_PROG_PKG_CONFIG macro not found. Please install pkg-config and re-run autogen.sh.)])
   m4_ifdef([PKG_PROG_PKG_CONFIG], [
