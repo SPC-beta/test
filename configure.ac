@@ -468,6 +468,8 @@ case $host in
      ;;
 esac
 
+AC_CHECK_LIB([tor], [tor_main], [AC_MSG_NOTICE([Tor found])], [AC_MSG_ERROR([Can't find Tor library])], [-lssl -lcrypto -levent -lz -pthread])
+
 if test x$use_pkgconfig = xyes; then
   m4_ifndef([PKG_PROG_PKG_CONFIG], [AC_MSG_ERROR(PKG_PROG_PKG_CONFIG macro not found. Please install pkg-config and re-run autogen.sh.)])
   m4_ifdef([PKG_PROG_PKG_CONFIG], [
@@ -1389,7 +1391,6 @@ if test x$openssl_prefix != x; then
 fi
 
 AX_SUBDIRS_CONFIGURE([src/secp256k1], [[--disable-shared], [--with-pic], [--with-bignum=no], [--enable-module-recovery], [--enable-experimental], [--enable-module-ecdh], [--enable-endomorphism]])
-AX_SUBDIRS_CONFIGURE([src/tor], [[--disable-system-torrc], [--disable-systemd], [--disable-lzma], [--disable-asciidoc], [--disable-libscrypt], [--disable-gcc-hardening], [--enable-pic], [--disable-unittests], [--disable-tool-name-check]])
 AC_OUTPUT
 
 dnl Taken from https://wiki.debian.org/RpathIssue

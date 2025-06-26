@@ -1,13 +1,13 @@
-package=libXau
-$(package)_version=1.0.12
+package=libX11
+$(package)_version=1.8.12
 $(package)_download_path=http://xorg.freedesktop.org/releases/individual/lib/
 $(package)_file_name=$(package)-$($(package)_version).tar.xz
-$(package)_sha256_hash=74d0e4dfa3d39ad8939e99bda37f5967aba528211076828464d2777d477fc0fb
-$(package)_dependencies=xproto
+$(package)_sha256_hash=fa026f9bb0124f4d6c808f9aef4057aad65e7b35d8ff43951cef0abe06bb9a9a
+$(package)_dependencies=libxcb xtrans xextproto xproto
 
 define $(package)_set_vars
-  $(package)_config_opts=--disable-shared
-  $(package)_config_opts_linux=--with-pic
+$(package)_config_opts=--disable-xkb
+$(package)_config_opts_linux=--with-pic
 endef
 
 define $(package)_config_cmds
