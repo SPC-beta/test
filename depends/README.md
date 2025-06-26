@@ -84,6 +84,9 @@ For linux RISC-V 64-bit cross compilation (there are no packages for 32-bit):
 
     sudo apt-get install g++-riscv64-linux-gnu binutils-riscv64-linux-gnu
 
+RISC-V known issue: gcc-7.3.0 and gcc-7.3.1 result in a broken `test_dash` executable (see https://github.com/bitcoin/bitcoin/pull/13543),
+this is apparently fixed in gcc-8.1.0.
+
 For linux S390X cross compilation:
 
     sudo apt-get install g++-s390x-linux-gnu binutils-s390x-linux-gnu
@@ -105,7 +108,7 @@ The following can be set when running make: `make FOO=bar`
 - `SDK_PATH`: Path where SDKs can be found (used by macOS)
 - `FALLBACK_DOWNLOAD_PATH`: If a source file can't be fetched, try here before giving up
 - `C_STANDARD`: Set the C standard version used. Defaults to `c11`.
-- `CXX_STANDARD`: Set the C++ standard version used. Defaults to `c++20`.
+- `CXX_STANDARD`: Set the C++ standard version used. Defaults to `c++17`.
 - `NO_QT`: Don't download/build/cache Qt and its dependencies
 - `NO_QR`: Don't download/build/cache packages needed for enabling qrencode
 - `NO_ZMQ`: Don't download/build/cache packages needed for enabling ZeroMQ
