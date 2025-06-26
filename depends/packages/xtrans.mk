@@ -1,13 +1,12 @@
-package=libXau
-$(package)_version=1.0.12
+package=xtrans
+$(package)_version=1.6.0
 $(package)_download_path=http://xorg.freedesktop.org/releases/individual/lib/
 $(package)_file_name=$(package)-$($(package)_version).tar.xz
-$(package)_sha256_hash=74d0e4dfa3d39ad8939e99bda37f5967aba528211076828464d2777d477fc0fb
-$(package)_dependencies=xproto
+$(package)_sha256_hash=faafea166bf2451a173d9d593352940ec6404145c5d1da5c213423ce4d359e92
+$(package)_dependencies=
 
 define $(package)_set_vars
-  $(package)_config_opts=--disable-shared
-  $(package)_config_opts_linux=--with-pic
+$(package)_config_opts_linux=--with-pic 
 endef
 
 define $(package)_config_cmds

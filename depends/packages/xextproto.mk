@@ -1,11 +1,11 @@
-package=expat
-$(package)_version=2.7.1
-$(package)_download_path=https://github.com/libexpat/libexpat/releases/download/R_2_7_1/
+package=xextproto
+$(package)_version=7.3.0
+$(package)_download_path=http://xorg.freedesktop.org/releases/individual/proto
 $(package)_file_name=$(package)-$($(package)_version).tar.bz2
-$(package)_sha256_hash=45c98ae1e9b5127325d25186cf8c511fa814078e9efeae7987a574b482b79b3d
+$(package)_sha256_hash=f3f4b23ac8db9c3a9e0d8edb591713f3d70ef9c3b175970dd8823dfc92aa5bb0
 
 define $(package)_set_vars
-$(package)_config_opts=
+$(package)_config_opts=--disable-shared
 endef
 
 define $(package)_config_cmds
