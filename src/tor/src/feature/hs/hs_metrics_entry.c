@@ -92,7 +92,7 @@ const hs_metrics_entry_t base_metrics[] =
     .type = METRICS_TYPE_HISTOGRAM,
     .name = METRICS_NAME(hs_intro_circ_build_time),
     .buckets = hs_metrics_circ_build_time_buckets,
-    .bucket_count = hs_metrics_circ_build_time_buckets_size,
+    .bucket_count = ARRAY_LENGTH(hs_metrics_circ_build_time_buckets),
     .help = "The introduction circuit build time in milliseconds",
   },
   {
@@ -100,8 +100,20 @@ const hs_metrics_entry_t base_metrics[] =
     .type = METRICS_TYPE_HISTOGRAM,
     .name = METRICS_NAME(hs_rend_circ_build_time),
     .buckets = hs_metrics_circ_build_time_buckets,
-    .bucket_count = hs_metrics_circ_build_time_buckets_size,
+    .bucket_count = ARRAY_LENGTH(hs_metrics_circ_build_time_buckets),
     .help = "The rendezvous circuit build time in milliseconds",
+  },
+  {
+    .key = HS_METRICS_POW_NUM_PQUEUE_RDV,
+    .type = METRICS_TYPE_GAUGE,
+    .name = METRICS_NAME(hs_rdv_pow_pqueue_count),
+    .help = "Number of requests waiting in the proof of work priority queue",
+  },
+  {
+    .key = HS_METRICS_POW_SUGGESTED_EFFORT,
+    .type = METRICS_TYPE_GAUGE,
+    .name = METRICS_NAME(hs_pow_suggested_effort),
+    .help = "Suggested effort for requests with a proof of work client puzzle",
   },
 };
 
