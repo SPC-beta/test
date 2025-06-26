@@ -20,8 +20,3 @@ upnp_packages=miniupnpc
 natpmp_packages=libnatpmp
 
 $(host_arch)_$(host_os)_native_packages += native_b2
-
-multiprocess_packages = libmultiprocess capnp
-multiprocess_native_packages = native_libmultiprocess native_capnp
-
-usdt_linux_packages=systemtap
