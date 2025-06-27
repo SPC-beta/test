@@ -239,13 +239,13 @@ std::string CCbTx::ToString() const
 
 void CCbTx::ToJson(UniValue& obj) const
 {
-    obj.clear();
+    UniValue obj;;
     obj.setObject();
-    obj.push_back(Pair("version", (int)nVersion));
-    obj.push_back(Pair("height", (int)nHeight));
-    obj.push_back(Pair("merkleRootMNList", merkleRootMNList.ToString()));
+    obj.pushKV("version", (int)nVersion);
+    obj.pushKV("height", (int)nHeight);
+    obj.pushKV("merkleRootMNList", merkleRootMNList.ToString());
     if (nVersion >= 2) {
-        obj.push_back(Pair("merkleRootQuorums", merkleRootQuorums.ToString()));
+        obj.pushKV("merkleRootQuorums", merkleRootQuorums.ToString());
     }
 }
 
@@ -255,7 +255,7 @@ bool CbtxToJson(const CTransaction& tx, UniValue& obj) {
     if (GetTxPayload(tx.vExtraPayload, cbTx)) {
         UniValue cbTxObj;
         cbTx.ToJson(cbTxObj);
-        obj.push_back(Pair("cbTx", cbTxObj));
+        obj.pushKV("cbTx", cbTxObj);
         return true;
     }
     return false;

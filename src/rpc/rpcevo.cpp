@@ -360,9 +360,9 @@ UniValue BuildDMNListEntry(CWallet* pwallet, const CDeterministicMNCPtr& dmn, bo
     }
 
     UniValue walletObj(UniValue::VOBJ);
-    walletObj.push_back(Pair("hasOwnerKey", hasOwnerKey));
-    walletObj.push_back(Pair("ownsCollateral", ownsCollateral));
-    walletObj.push_back(Pair("ownsPayeeScript", CheckWalletOwnsScript(pwallet, dmn->pdmnState->scriptPayout)));
+    walletobj.pushKV("hasOwnerKey", hasOwnerKey);
+    walletobj.pushKV("ownsCollateral", ownsCollateral);
+    walletobj.pushKV("ownsPayeeScript", CheckWalletOwnsScript(pwallet, dmn->pdmnState->scriptPayout));
     o.push_back(Pair("wallet", walletObj));
 
     return o;

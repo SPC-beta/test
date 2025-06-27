@@ -1449,13 +1449,13 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool fByA
         {
             UniValue obj(UniValue::VOBJ);
             if(fIsWatchonly)
-                obj.push_back(Pair("involvesWatchonly", true));
-            obj.push_back(Pair("address",       address.ToString()));
-            obj.push_back(Pair("account",       strAccount));
-            obj.push_back(Pair("amount",        ValueFromAmount(nAmount)));
-            obj.push_back(Pair("confirmations", (nConf == std::numeric_limits<int>::max() ? 0 : nConf)));
+                obj.pushKV("involvesWatchonly", true);
+            obj.pushKV("address",       address.ToString());
+            obj.pushKV("account",       strAccount);
+            obj.pushKV("amount",        ValueFromAmount(nAmount));
+            obj.pushKV("confirmations", (nConf == std::numeric_limits<int>::max() ? 0 : nConf));
             if (!fByAccounts)
-                obj.push_back(Pair("label", strAccount));
+                obj.pushKV("label", strAccount);
             UniValue transactions(UniValue::VARR);
             if (it != mapTally.end())
             {
@@ -1464,7 +1464,7 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool fByA
                     transactions.push_back(_item.GetHex());
                 }
             }
-            obj.push_back(Pair("txids", transactions));
+            obj.pushKV("txids", transactions);
             ret.push_back(obj);
         }
     }
@@ -1477,10 +1477,10 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool fByA
             int nConf = (*it).second.nConf;
             UniValue obj(UniValue::VOBJ);
             if((*it).second.fIsWatchonly)
-                obj.push_back(Pair("involvesWatchonly", true));
-            obj.push_back(Pair("account",       (*it).first));
-            obj.push_back(Pair("amount",        ValueFromAmount(nAmount)));
-            obj.push_back(Pair("confirmations", (nConf == std::numeric_limits<int>::max() ? 0 : nConf)));
+                obj.pushKV("involvesWatchonly", true);
+            obj.pushKV("account",       (*it).first);
+            obj.pushKV("amount",        ValueFromAmount(nAmount));
+            obj.pushKV("confirmations", (nConf == std::numeric_limits<int>::max() ? 0 : nConf));
             ret.push_back(obj);
         }
     }
@@ -2705,20 +2705,20 @@ UniValue getwalletinfo(const JSONRPCRequest& request)
     LOCK2(cs_main, pwallet->cs_wallet);
 
     UniValue obj(UniValue::VOBJ);
-    obj.push_back(Pair("walletversion", pwallet->GetVersion()));
-    obj.push_back(Pair("balance",       ValueFromAmount(pwallet->GetBalance())));
-    obj.push_back(Pair("unconfirmed_balance", ValueFromAmount(pwallet->GetUnconfirmedBalance())));
-    obj.push_back(Pair("immature_balance",    ValueFromAmount(pwallet->GetImmatureBalance())));
-    obj.push_back(Pair("txcount",       (int)pwallet->mapWallet.size()));
-    obj.push_back(Pair("keypoololdest", pwallet->GetOldestKeyPoolTime()));
-    obj.push_back(Pair("keypoolsize",   (int)pwallet->GetKeyPoolSize()));
+    obj.pushKV("walletversion", pwallet->GetVersion());
+    obj.pushKV("balance",       ValueFromAmount(pwallet->GetBalance()));
+    obj.pushKV("unconfirmed_balance", ValueFromAmount(pwallet->GetUnconfirmedBalance()));
+    obj.pushKV("immature_balance",    ValueFromAmount(pwallet->GetImmatureBalance()));
+    obj.pushKV("txcount",       (int)pwallet->mapWallet.size());
+    obj.pushKV("keypoololdest", pwallet->GetOldestKeyPoolTime());
+    obj.pushKV("keypoolsize",   (int)pwallet->GetKeyPoolSize());
     if (pwallet->IsCrypted()) {
-        obj.push_back(Pair("unlocked_until", pwallet->nRelockTime));
+        obj.pushKV("unlocked_until", pwallet->nRelockTime);
     }
-    obj.push_back(Pair("paytxfee",      ValueFromAmount(payTxFee.GetFeePerK())));
+    obj.pushKV("paytxfee",      ValueFromAmount(payTxFee.GetFeePerK()));
     CKeyID masterKeyID = pwallet->GetHDChain().masterKeyID;
     if (!masterKeyID.IsNull())
-         obj.push_back(Pair("hdmasterkeyid", masterKeyID.GetHex()));
+         obj.pushKV("hdmasterkeyid", masterKeyID.GetHex());
     return obj;
 }
 

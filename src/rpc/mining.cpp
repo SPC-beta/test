@@ -336,15 +336,15 @@ UniValue getmininginfo(const JSONRPCRequest& request)
     LOCK(cs_main);
 
     UniValue obj(UniValue::VOBJ);
-    obj.push_back(Pair("blocks",           (int)chainActive.Height()));
-    obj.push_back(Pair("currentblocksize", (uint64_t)nLastBlockSize));
-    obj.push_back(Pair("currentblocktx",   (uint64_t)nLastBlockTx));
-    obj.push_back(Pair("difficulty",       (double)GetDifficulty()));
-    obj.push_back(Pair("errors",           GetWarnings("statusbar")));
-    obj.push_back(Pair("genproclimit",     (int)GetArg("-genproclimit", DEFAULT_GENERATE_THREADS)));
-    obj.push_back(Pair("networkhashps",    getnetworkhashps(request)));
-    obj.push_back(Pair("pooledtx",         (uint64_t)mempool.size()));
-    obj.push_back(Pair("chain",            Params().NetworkIDString()));
+    obj.pushKV("blocks",           (int)chainActive.Height());
+    obj.pushKV("currentblocksize", (uint64_t)nLastBlockSize);
+    obj.pushKV("currentblocktx",   (uint64_t)nLastBlockTx);
+    obj.pushKV("difficulty",       (double)GetDifficulty());
+    obj.pushKV("errors",           GetWarnings("statusbar"));
+    obj.pushKV("genproclimit",     (int)GetArg("-genproclimit", DEFAULT_GENERATE_THREADS));
+    obj.pushKV("networkhashps",    getnetworkhashps(request));
+    obj.pushKV("pooledtx",         (uint64_t)mempool.size());
+    obj.pushKV("chain",            Params().NetworkIDString());
     return obj;
 }
 
@@ -800,9 +800,9 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
             ExtractDestination(txout.scriptPubKey, address1);
             CBitcoinAddress address2(address1);
             UniValue obj(UniValue::VOBJ);
-            obj.push_back(Pair("payee", address2.ToString().c_str()));
-            obj.push_back(Pair("script", HexStr(txout.scriptPubKey)));
-            obj.push_back(Pair("amount", txout.nValue));
+            obj.pushKV("payee", address2.ToString().c_str());
+            obj.pushKV("script", HexStr(txout.scriptPubKey));
+            obj.pushKV("amount", txout.nValue);
             masternodeObj.push_back(obj);
             result.push_back(Pair("masternode", masternodeObj));
             result.push_back(Pair("masternode_payments_started", true));

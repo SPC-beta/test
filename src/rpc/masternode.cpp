@@ -128,8 +128,8 @@ UniValue masternode_count(const JSONRPCRequest& request)
     if (request.params.size() == 1) {
         UniValue obj(UniValue::VOBJ);
 
-        obj.push_back(Pair("total", total));
-        obj.push_back(Pair("enabled", enabled));
+        obj.pushKV("total", total);
+        obj.pushKV("enabled", enabled);
 
         return obj;
     }
@@ -166,11 +166,11 @@ UniValue GetNextMasternodeForPayment(int heightShift)
 
     UniValue obj(UniValue::VOBJ);
 
-    obj.push_back(Pair("height",        mnList.GetHeight() + heightShift));
-    obj.push_back(Pair("IP:port",       payee->pdmnState->addr.ToString()));
-    obj.push_back(Pair("proTxHash",     payee->proTxHash.ToString()));
-    obj.push_back(Pair("outpoint",      payee->collateralOutpoint.ToStringShort()));
-    obj.push_back(Pair("payee",         payeeAddr.IsValid() ? payeeAddr.ToString() : "UNKNOWN"));
+    obj.pushKV("height",        mnList.GetHeight() + heightShift);
+    obj.pushKV("IP:port",       payee->pdmnState->addr.ToString());
+    obj.pushKV("proTxHash",     payee->proTxHash.ToString());
+    obj.pushKV("outpoint",      payee->collateralOutpoint.ToStringShort());
+    obj.pushKV("payee",         payeeAddr.IsValid() ? payeeAddr.ToString() : "UNKNOWN");
     return obj;
 }
 
@@ -232,7 +232,7 @@ UniValue masternode_outputs(const JSONRPCRequest& request)
 
     UniValue obj(UniValue::VOBJ);
     for (const auto& out : vPossibleCoins) {
-        obj.push_back(Pair(out.tx->GetHash().ToString(), strprintf("%d", out.i)));
+        obj.pushKV(out.tx->GetHash().ToString(), strprintf("%d", out.i)));
     }
 
     return obj;
@@ -259,20 +259,20 @@ UniValue masternode_status(const JSONRPCRequest& request)
     UniValue mnObj(UniValue::VOBJ);
 
     // keep compatibility with legacy status for now (might get deprecated/removed later)
-    mnObj.push_back(Pair("outpoint", activeMasternodeInfo.outpoint.ToStringShort()));
-    mnObj.push_back(Pair("service", activeMasternodeInfo.service.ToString()));
+    mnobj.pushKV("outpoint", activeMasternodeInfo.outpoint.ToStringShort());
+    mnobj.pushKV("service", activeMasternodeInfo.service.ToString());
 
     auto dmn = deterministicMNManager->GetListAtChainTip().GetMN(activeMasternodeInfo.proTxHash);
     if (dmn) {
-        mnObj.push_back(Pair("proTxHash", dmn->proTxHash.ToString()));
-        mnObj.push_back(Pair("collateralHash", dmn->collateralOutpoint.hash.ToString()));
-        mnObj.push_back(Pair("collateralIndex", (int)dmn->collateralOutpoint.n));
+        mnobj.pushKV("proTxHash", dmn->proTxHash.ToString());
+        mnobj.pushKV("collateralHash", dmn->collateralOutpoint.hash.ToString());
+        mnobj.pushKV("collateralIndex", (int)dmn->collateralOutpoint.n);
         UniValue stateObj;
         dmn->pdmnState->ToJson(stateObj);
-        mnObj.push_back(Pair("dmnState", stateObj));
+        mnobj.pushKV("dmnState", stateObj);
     }
-    mnObj.push_back(Pair("state", activeMasternodeManager->GetStateString()));
-    mnObj.push_back(Pair("status", activeMasternodeManager->GetStatus()));
+    mnobj.pushKV("state", activeMasternodeManager->GetStateString());
+    mnobj.pushKV("status", activeMasternodeManager->GetStatus());
 
     return mnObj;
 }
@@ -319,7 +319,7 @@ UniValue masternode_winners(const JSONRPCRequest& request)
     UniValue obj(UniValue::VOBJ);
     auto mapPayments = GetRequiredPaymentsStrings(nHeight - nLast, nHeight + 20);
     for (const auto &p : mapPayments) {
-        obj.push_back(Pair(strprintf("%d", p.first), p.second));
+        obj.pushKV(strprintf("%d", p.first), p.second));
     }
 
     return obj;
@@ -448,7 +448,7 @@ UniValue masternodelist(const JSONRPCRequest& request)
             std::string strAddress = dmn->pdmnState->addr.ToString(false);
             if (strFilter !="" && strAddress.find(strFilter) == std::string::npos &&
                 strOutpoint.find(strFilter) == std::string::npos) return;
-            obj.push_back(Pair(strOutpoint, strAddress));
+            obj.pushKV(strOutpoint, strAddress));
         } else if (strMode == "full") {
             std::ostringstream streamFull;
             streamFull << std::setw(18) <<
@@ -460,7 +460,7 @@ UniValue masternodelist(const JSONRPCRequest& request)
             std::string strFull = streamFull.str();
             if (strFilter !="" && strFull.find(strFilter) == std::string::npos &&
                 strOutpoint.find(strFilter) == std::string::npos) return;
-            obj.push_back(Pair(strOutpoint, strFull));
+            obj.pushKV(strOutpoint, strFull));
         } else if (strMode == "info") {
             std::ostringstream streamInfo;
             streamInfo << std::setw(18) <<
@@ -470,7 +470,7 @@ UniValue masternodelist(const JSONRPCRequest& request)
             std::string strInfo = streamInfo.str();
             if (strFilter !="" && strInfo.find(strFilter) == std::string::npos &&
                 strOutpoint.find(strFilter) == std::string::npos) return;
-            obj.push_back(Pair(strOutpoint, strInfo));
+            obj.pushKV(strOutpoint, strInfo));
         } else if (strMode == "json") {
             std::ostringstream streamInfo;
             streamInfo <<  dmn->proTxHash.ToString() << " " <<
@@ -497,31 +497,31 @@ UniValue masternodelist(const JSONRPCRequest& request)
             objMN.push_back(Pair("votingaddress", CBitcoinAddress(dmn->pdmnState->keyIDVoting).ToString()));
             objMN.push_back(Pair("collateraladdress", collateralAddressStr));
             objMN.push_back(Pair("pubkeyoperator", dmn->pdmnState->pubKeyOperator.Get().ToString()));
-            obj.push_back(Pair(strOutpoint, objMN));
+            obj.pushKV(strOutpoint, objMN));
         } else if (strMode == "lastpaidblock") {
             if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) return;
-            obj.push_back(Pair(strOutpoint, dmn->pdmnState->nLastPaidHeight));
+            obj.pushKV(strOutpoint, dmn->pdmnState->nLastPaidHeight));
         } else if (strMode == "lastpaidtime") {
             if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) return;
-            obj.push_back(Pair(strOutpoint, dmnToLastPaidTime(dmn)));
+            obj.pushKV(strOutpoint, dmnToLastPaidTime(dmn)));
         } else if (strMode == "payee") {
             if (strFilter !="" && payeeStr.find(strFilter) == std::string::npos &&
                 strOutpoint.find(strFilter) == std::string::npos) return;
-            obj.push_back(Pair(strOutpoint, payeeStr));
+            obj.pushKV(strOutpoint, payeeStr));
         } else if (strMode == "owneraddress") {
             if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) return;
-            obj.push_back(Pair(strOutpoint, CBitcoinAddress(dmn->pdmnState->keyIDOwner).ToString()));
+            obj.pushKV(strOutpoint, CBitcoinAddress(dmn->pdmnState->keyIDOwner).ToString()));
         } else if (strMode == "pubkeyoperator") {
             if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) return;
-            obj.push_back(Pair(strOutpoint, dmn->pdmnState->pubKeyOperator.Get().ToString()));
+            obj.pushKV(strOutpoint, dmn->pdmnState->pubKeyOperator.Get().ToString()));
         } else if (strMode == "status") {
             std::string strStatus = dmnToStatus(dmn);
             if (strFilter !="" && strStatus.find(strFilter) == std::string::npos &&
                 strOutpoint.find(strFilter) == std::string::npos) return;
-            obj.push_back(Pair(strOutpoint, strStatus));
+            obj.pushKV(strOutpoint, strStatus));
         } else if (strMode == "votingaddress") {
             if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) return;
-            obj.push_back(Pair(strOutpoint, CBitcoinAddress(dmn->pdmnState->keyIDVoting).ToString()));
+            obj.pushKV(strOutpoint, CBitcoinAddress(dmn->pdmnState->keyIDVoting).ToString()));
         }
     });
 

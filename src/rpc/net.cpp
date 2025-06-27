@@ -134,44 +134,44 @@ UniValue getpeerinfo(const JSONRPCRequest& request)
         UniValue obj(UniValue::VOBJ);
         CNodeStateStats statestats;
         bool fStateStats = GetNodeStateStats(stats.nodeid, statestats);
-        obj.push_back(Pair("id", stats.nodeid));
-        obj.push_back(Pair("addr", stats.addrName));
+        obj.pushKV("id", stats.nodeid);
+        obj.pushKV("addr", stats.addrName);
         if (!(stats.addrLocal.empty()))
-            obj.push_back(Pair("addrlocal", stats.addrLocal));
-        obj.push_back(Pair("services", strprintf("%016x", stats.nServices)));
+            obj.pushKV("addrlocal", stats.addrLocal);
+        obj.pushKV("services", strprintf("%016x", stats.nServices));
         if (!stats.verifiedProRegTxHash.IsNull()) {
-            obj.push_back(Pair("verified_proregtx_hash", stats.verifiedProRegTxHash.ToString()));
+            obj.pushKV("verified_proregtx_hash", stats.verifiedProRegTxHash.ToString());
         }
-        obj.push_back(Pair("relaytxes", stats.fRelayTxes));
-        obj.push_back(Pair("lastsend", stats.nLastSend));
-        obj.push_back(Pair("lastrecv", stats.nLastRecv));
-        obj.push_back(Pair("bytessent", stats.nSendBytes));
-        obj.push_back(Pair("bytesrecv", stats.nRecvBytes));
-        obj.push_back(Pair("conntime", stats.nTimeConnected));
-        obj.push_back(Pair("timeoffset", stats.nTimeOffset));
+        obj.pushKV("relaytxes", stats.fRelayTxes);
+        obj.pushKV("lastsend", stats.nLastSend);
+        obj.pushKV("lastrecv", stats.nLastRecv);
+        obj.pushKV("bytessent", stats.nSendBytes);
+        obj.pushKV("bytesrecv", stats.nRecvBytes);
+        obj.pushKV("conntime", stats.nTimeConnected);
+        obj.pushKV("timeoffset", stats.nTimeOffset);
         if (stats.dPingTime > 0.0)
-            obj.push_back(Pair("pingtime", stats.dPingTime));
+            obj.pushKV("pingtime", stats.dPingTime);
         if (stats.dMinPing < static_cast<double>(std::numeric_limits<int64_t>::max())/1e6)
-            obj.push_back(Pair("minping", stats.dMinPing));
+            obj.pushKV("minping", stats.dMinPing);
         if (stats.dPingWait > 0.0)
-            obj.push_back(Pair("pingwait", stats.dPingWait));
-        obj.push_back(Pair("version", stats.nVersion));
+            obj.pushKV("pingwait", stats.dPingWait);
+        obj.pushKV("version", stats.nVersion);
         // Use the sanitized form of subver here, to avoid tricksy remote peers from
         // corrupting or modifying the JSON output by putting special characters in
         // their ver message.
-        obj.push_back(Pair("subver", stats.cleanSubVer));
-        obj.push_back(Pair("inbound", stats.fInbound));
-        obj.push_back(Pair("addnode", stats.fAddnode));
-        obj.push_back(Pair("startingheight", stats.nStartingHeight));
+        obj.pushKV("subver", stats.cleanSubVer);
+        obj.pushKV("inbound", stats.fInbound);
+        obj.pushKV("addnode", stats.fAddnode);
+        obj.pushKV("startingheight", stats.nStartingHeight);
         if (fStateStats) {
-            obj.push_back(Pair("banscore", statestats.nMisbehavior));
-            obj.push_back(Pair("synced_headers", statestats.nSyncHeight));
-            obj.push_back(Pair("synced_blocks", statestats.nCommonHeight));
+            obj.pushKV("banscore", statestats.nMisbehavior);
+            obj.pushKV("synced_headers", statestats.nSyncHeight);
+            obj.pushKV("synced_blocks", statestats.nCommonHeight);
             UniValue heights(UniValue::VARR);
             BOOST_FOREACH(int height, statestats.vHeightInFlight) {
                 heights.push_back(height);
             }
-            obj.push_back(Pair("inflight", heights));
+            obj.pushKV("inflight", heights);
         }
         obj.pushKV("addr_processed", stats.nProcessedAddrs);
         obj.pushKV("addr_rate_limited", stats.nRatelimitedAddrs);
@@ -182,14 +182,14 @@ UniValue getpeerinfo(const JSONRPCRequest& request)
             if (i.second > 0)
                 sendPerMsgCmd.push_back(Pair(i.first, i.second));
         }
-        obj.push_back(Pair("bytessent_per_msg", sendPerMsgCmd));
+        obj.pushKV("bytessent_per_msg", sendPerMsgCmd);
 
         UniValue recvPerMsgCmd(UniValue::VOBJ);
         BOOST_FOREACH(const mapMsgCmdSize::value_type &i, stats.mapRecvBytesPerMsgCmd) {
             if (i.second > 0)
                 recvPerMsgCmd.push_back(Pair(i.first, i.second));
         }
-        obj.push_back(Pair("bytesrecv_per_msg", recvPerMsgCmd));
+        obj.pushKV("bytesrecv_per_msg", recvPerMsgCmd);
 
         ret.push_back(obj);
     }
@@ -317,8 +317,8 @@ UniValue getaddednodeinfo(const JSONRPCRequest& request)
 
     for (const AddedNodeInfo& info : vInfo) {
         UniValue obj(UniValue::VOBJ);
-        obj.push_back(Pair("addednode", info.strAddedNode));
-        obj.push_back(Pair("connected", info.fConnected));
+        obj.pushKV("addednode", info.strAddedNode);
+        obj.pushKV("connected", info.fConnected);
         UniValue addresses(UniValue::VARR);
         if (info.fConnected) {
             UniValue address(UniValue::VOBJ);
@@ -326,7 +326,7 @@ UniValue getaddednodeinfo(const JSONRPCRequest& request)
             address.push_back(Pair("connected", info.fInbound ? "inbound" : "outbound"));
             addresses.push_back(address);
         }
-        obj.push_back(Pair("addresses", addresses));
+        obj.pushKV("addresses", addresses);
         ret.push_back(obj);
     }
 
@@ -363,9 +363,9 @@ UniValue getnettotals(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
 
     UniValue obj(UniValue::VOBJ);
-    obj.push_back(Pair("totalbytesrecv", g_connman->GetTotalBytesRecv()));
-    obj.push_back(Pair("totalbytessent", g_connman->GetTotalBytesSent()));
-    obj.push_back(Pair("timemillis", GetTimeMillis()));
+    obj.pushKV("totalbytesrecv", g_connman->GetTotalBytesRecv());
+    obj.pushKV("totalbytessent", g_connman->GetTotalBytesSent());
+    obj.pushKV("timemillis", GetTimeMillis());
 
     UniValue outboundLimit(UniValue::VOBJ);
     outboundLimit.push_back(Pair("timeframe", g_connman->GetMaxOutboundTimeframe()));
@@ -374,7 +374,7 @@ UniValue getnettotals(const JSONRPCRequest& request)
     outboundLimit.push_back(Pair("serve_historical_blocks", !g_connman->OutboundTargetReached(true)));
     outboundLimit.push_back(Pair("bytes_left_in_cycle", g_connman->GetOutboundTargetBytesLeft()));
     outboundLimit.push_back(Pair("time_left_in_cycle", g_connman->GetMaxOutboundTimeLeftInCycle()));
-    obj.push_back(Pair("uploadtarget", outboundLimit));
+    obj.pushKV("uploadtarget", outboundLimit);
     return obj;
 }
 
@@ -389,11 +389,11 @@ static UniValue GetNetworksInfo()
         proxyType proxy;
         UniValue obj(UniValue::VOBJ);
         GetProxy(network, proxy);
-        obj.push_back(Pair("name", GetNetworkName(network)));
-        obj.push_back(Pair("limited", IsLimited(network)));
-        obj.push_back(Pair("reachable", IsReachable(network)));
-        obj.push_back(Pair("proxy", proxy.IsValid() ? proxy.proxy.ToStringIPPort() : std::string()));
-        obj.push_back(Pair("proxy_randomize_credentials", proxy.randomize_credentials));
+        obj.pushKV("name", GetNetworkName(network));
+        obj.pushKV("limited", IsLimited(network));
+        obj.pushKV("reachable", IsReachable(network));
+        obj.pushKV("proxy", proxy.IsValid() ? proxy.proxy.ToStringIPPort() : std::string());
+        obj.pushKV("proxy_randomize_credentials", proxy.randomize_credentials);
         networks.push_back(obj);
     }
     return networks;
@@ -444,20 +444,20 @@ UniValue getnetworkinfo(const JSONRPCRequest& request)
 
     LOCK(cs_main);
     UniValue obj(UniValue::VOBJ);
-    obj.push_back(Pair("version",       CLIENT_VERSION));
-    obj.push_back(Pair("subversion",    strSubVersion));
-    obj.push_back(Pair("protocolversion",PROTOCOL_VERSION));
+    obj.pushKV("version",       CLIENT_VERSION);
+    obj.pushKV("subversion",    strSubVersion);
+    obj.pushKV("protocolversion",PROTOCOL_VERSION);
     if(g_connman)
-        obj.push_back(Pair("localservices", strprintf("%016x", g_connman->GetLocalServices())));
-    obj.push_back(Pair("localrelay",     fRelayTxes));
-    obj.push_back(Pair("timeoffset",    GetTimeOffset()));
+        obj.pushKV("localservices", strprintf("%016x", g_connman->GetLocalServices()));
+    obj.pushKV("localrelay",     fRelayTxes);
+    obj.pushKV("timeoffset",    GetTimeOffset());
     if (g_connman) {
-        obj.push_back(Pair("networkactive", g_connman->GetNetworkActive()));
-        obj.push_back(Pair("connections",   (int)g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL)));
+        obj.pushKV("networkactive", g_connman->GetNetworkActive());
+        obj.pushKV("connections",   (int)g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL));
     }
-    obj.push_back(Pair("networks",      GetNetworksInfo()));
-    obj.push_back(Pair("relayfee",      ValueFromAmount(::minRelayTxFee.GetFeePerK())));
-    obj.push_back(Pair("incrementalfee", ValueFromAmount(::incrementalRelayFee.GetFeePerK())));
+    obj.pushKV("networks",      GetNetworksInfo());
+    obj.pushKV("relayfee",      ValueFromAmount(::minRelayTxFee.GetFeePerK()));
+    obj.pushKV("incrementalfee", ValueFromAmount(::incrementalRelayFee.GetFeePerK()));
     UniValue localAddresses(UniValue::VARR);
     {
         LOCK(cs_mapLocalHost);
@@ -470,8 +470,8 @@ UniValue getnetworkinfo(const JSONRPCRequest& request)
             localAddresses.push_back(rec);
         }
     }
-    obj.push_back(Pair("localaddresses", localAddresses));
-    obj.push_back(Pair("warnings",       GetWarnings("statusbar")));
+    obj.pushKV("localaddresses", localAddresses);
+    obj.pushKV("warnings",       GetWarnings("statusbar"));
     return obj;
 }
 
