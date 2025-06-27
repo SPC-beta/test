@@ -42,7 +42,8 @@ NO_UPNP ?=
 NO_NATPMP ?=
 MULTIPROCESS ?=
 FALLBACK_DOWNLOAD_PATH ?= https://bitcoincore.org/depends-sources
-FALLBACK_DOWNLOAD_PATH_ALTERNATIVE ?= https://firo.org/depends-sources
+FALLBACK_DOWNLOAD_PATH_1 ?= https://firo.org/depends-sources
+FALLBACK_DOWNLOAD_PATH_2 ?= http://dash-depends-sources.s3-website-us-west-2.amazonaws.com
 
 BUILD = $(shell ./config.guess)
 HOST ?= $(BUILD)
