@@ -1,8 +1,9 @@
 // Copyright 2014 BitPay Inc.
 // Distributed under the MIT software license, see the accompanying
-// file COPYING or https://opensource.org/licenses/mit-license.php.
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <iomanip>
+#include <sstream>
 #include <stdio.h>
 #include "univalue.h"
 #include "univalue_escapes.h"
@@ -13,20 +14,20 @@ static std::string json_escape(const std::string& inS)
     outS.reserve(inS.size() * 2);
 
     for (unsigned int i = 0; i < inS.size(); i++) {
-        unsigned char ch = static_cast<unsigned char>(inS[i]);
+        unsigned char ch = inS[i];
         const char *escStr = escapes[ch];
 
         if (escStr)
             outS += escStr;
         else
-            outS += static_cast<char>(ch);
+            outS += ch;
     }
 
     return outS;
 }
 
 std::string UniValue::write(unsigned int prettyIndent,
-                            unsigned int indentLevel) const
+                       unsigned int indentLevel) const
 {
     std::string s;
     s.reserve(1024);
@@ -76,6 +77,8 @@ void UniValue::writeArray(unsigned int prettyIndent, unsigned int indentLevel, s
         s += values[i].write(prettyIndent, indentLevel + 1);
         if (i != (values.size() - 1)) {
             s += ",";
+            if (prettyIndent)
+                s += " ";
         }
         if (prettyIndent)
             s += "\n";
