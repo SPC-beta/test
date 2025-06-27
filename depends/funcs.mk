@@ -39,7 +39,8 @@ define fetch_file
     ( $(call fetch_file_inner,$(1),$(2),$(3),$(4),$(5)) || \
       (sleep 5 && $(call fetch_file_inner,$(1),$(2),$(3),$(4),$(5))) || \
       (sleep 10 && $(call fetch_file_inner,$(1),$(2),$(3),$(4),$(5))) || \
-      $(call fetch_file_inner,$(1),$(FALLBACK_DOWNLOAD_PATH),$(3),$(4),$(5))))
+      $(call fetch_file_inner,$(1),$(FALLBACK_DOWNLOAD_PATH),$(3),$(4),$(5)) || \
+      $(call fetch_file_inner,$(1),$(FALLBACK_DOWNLOAD_PATH_ALTERNATIVE),$(3),$(4),$(5))))
 endef
 
 define int_get_build_recipe_hash
