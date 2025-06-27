@@ -1,12 +1,12 @@
 package=libxcb_util_render
-$(package)_version=0.3.9
+$(package)_version=0.3.10
 $(package)_download_path=https://xcb.freedesktop.org/dist
-$(package)_file_name=xcb-util-renderutil-$($(package)_version).tar.gz
-$(package)_sha256_hash=55eee797e3214fe39d0f3f4d9448cc53cffe06706d108824ea37bb79fcedcad5
+$(package)_file_name=xcb-util-renderutil-$($(package)_version).tar.xz
+$(package)_sha256_hash=3e15d4f0e22d8ddbfbb9f5d77db43eacd7a304029bf25a6166cc63caa96d04ba
 $(package)_dependencies=libxcb
 
 define $(package)_set_vars
-$(package)_config_opts=--disable-static --disable-devel-docs --without-doxygen
+$(package)_config_opts=--disable-devel-docs --without-doxygen
 $(package)_config_opts += --disable-dependency-tracking --enable-option-checking
 endef
 
