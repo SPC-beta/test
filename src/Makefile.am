@@ -103,8 +103,8 @@ if BUILD_BITCOIND
   bin_PROGRAMS += bitcoinzerod
 endif
 
-if BUILD_BITCOIN_UTILS
-  bin_PROGRAMS += bitcoinzero-cli bitcoinzero-tx
+if BUILD_BITCOIN_CLI
+  bin_PROGRAMS += bitcoinzero-cli
 endif
 
 .PHONY: FORCE check-symbols check-security
