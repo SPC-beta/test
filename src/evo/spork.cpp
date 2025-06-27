@@ -82,9 +82,9 @@ static bool IsTransactionAllowed(const CTransaction &tx, const ActiveSporkMap &s
 
 void CSporkTx::ToJson(UniValue& obj) const
 {
-    UniValue obj;;
+    obj.clear();
     obj.setObject();
-    obj.pushKV("version", nVersion);
+    obj.push_back(Pair("version", nVersion));
 
     UniValue jsonActions;
     jsonActions.setArray();
@@ -113,7 +113,7 @@ void CSporkTx::ToJson(UniValue& obj) const
         jsonActions.push_back(jsonAction);
     }
 
-    obj.pushKV("actions", jsonActions);
+    obj.push_back(Pair("actions", jsonActions));
 }
 
 // CSporkManager

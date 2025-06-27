@@ -393,24 +393,24 @@ std::string CProRegTx::ToString() const
 
 void CProRegTx::ToJson(UniValue& obj) const
 {
-    UniValue obj;;
+    obj.clear();
     obj.setObject();
-    obj.pushKV("version", nVersion);
-    obj.pushKV("collateralHash", collateralOutpoint.hash.ToString());
-    obj.pushKV("collateralIndex", (int)collateralOutpoint.n);
-    obj.pushKV("service", addr.ToString(false));
-    obj.pushKV("ownerAddress", CBitcoinAddress(keyIDOwner).ToString());
-    obj.pushKV("votingAddress", CBitcoinAddress(keyIDVoting).ToString());
+    obj.push_back(Pair("version", nVersion));
+    obj.push_back(Pair("collateralHash", collateralOutpoint.hash.ToString()));
+    obj.push_back(Pair("collateralIndex", (int)collateralOutpoint.n));
+    obj.push_back(Pair("service", addr.ToString(false)));
+    obj.push_back(Pair("ownerAddress", CBitcoinAddress(keyIDOwner).ToString()));
+    obj.push_back(Pair("votingAddress", CBitcoinAddress(keyIDVoting).ToString()));
 
     CTxDestination dest;
     if (ExtractDestination(scriptPayout, dest)) {
         CBitcoinAddress bitcoinAddress(dest);
-        obj.pushKV("payoutAddress", bitcoinAddress.ToString());
+        obj.push_back(Pair("payoutAddress", bitcoinAddress.ToString()));
     }
-    obj.pushKV("pubKeyOperator", pubKeyOperator.ToString());
-    obj.pushKV("operatorReward", (double)nOperatorReward / 100);
+    obj.push_back(Pair("pubKeyOperator", pubKeyOperator.ToString()));
+    obj.push_back(Pair("operatorReward", (double)nOperatorReward / 100));
 
-    obj.pushKV("inputsHash", inputsHash.ToString());
+    obj.push_back(Pair("inputsHash", inputsHash.ToString()));
 }
 
 std::string CProUpServTx::ToString() const
@@ -427,17 +427,17 @@ std::string CProUpServTx::ToString() const
 
 void CProUpServTx::ToJson(UniValue& obj) const
 {
-    UniValue obj;;
+    obj.clear();
     obj.setObject();
-    obj.pushKV("version", nVersion);
-    obj.pushKV("proTxHash", proTxHash.ToString());
-    obj.pushKV("service", addr.ToString(false));
+    obj.push_back(Pair("version", nVersion));
+    obj.push_back(Pair("proTxHash", proTxHash.ToString()));
+    obj.push_back(Pair("service", addr.ToString(false)));
     CTxDestination dest;
     if (ExtractDestination(scriptOperatorPayout, dest)) {
         CBitcoinAddress bitcoinAddress(dest);
-        obj.pushKV("operatorPayoutAddress", bitcoinAddress.ToString());
+        obj.push_back(Pair("operatorPayoutAddress", bitcoinAddress.ToString()));
     }
-    obj.pushKV("inputsHash", inputsHash.ToString());
+    obj.push_back(Pair("inputsHash", inputsHash.ToString()));
 }
 
 std::string CProUpRegTx::ToString() const
@@ -454,18 +454,18 @@ std::string CProUpRegTx::ToString() const
 
 void CProUpRegTx::ToJson(UniValue& obj) const
 {
-    UniValue obj;;
+    obj.clear();
     obj.setObject();
-    obj.pushKV("version", nVersion);
-    obj.pushKV("proTxHash", proTxHash.ToString());
-    obj.pushKV("votingAddress", CBitcoinAddress(keyIDVoting).ToString());
+    obj.push_back(Pair("version", nVersion));
+    obj.push_back(Pair("proTxHash", proTxHash.ToString()));
+    obj.push_back(Pair("votingAddress", CBitcoinAddress(keyIDVoting).ToString()));
     CTxDestination dest;
     if (ExtractDestination(scriptPayout, dest)) {
         CBitcoinAddress bitcoinAddress(dest);
-        obj.pushKV("payoutAddress", bitcoinAddress.ToString());
+        obj.push_back(Pair("payoutAddress", bitcoinAddress.ToString()));
     }
-    obj.pushKV("pubKeyOperator", pubKeyOperator.ToString());
-    obj.pushKV("inputsHash", inputsHash.ToString());
+    obj.push_back(Pair("pubKeyOperator", pubKeyOperator.ToString()));
+    obj.push_back(Pair("inputsHash", inputsHash.ToString()));
 }
 
 std::string CProUpRevTx::ToString() const
@@ -476,10 +476,10 @@ std::string CProUpRevTx::ToString() const
 
 void CProUpRevTx::ToJson(UniValue& obj) const
 {
-    UniValue obj;;
+    obj.clear();
     obj.setObject();
-    obj.pushKV("version", nVersion);
-    obj.pushKV("proTxHash", proTxHash.ToString());
-    obj.pushKV("reason", (int)nReason);
-    obj.pushKV("inputsHash", inputsHash.ToString());
+    obj.push_back(Pair("version", nVersion));
+    obj.push_back(Pair("proTxHash", proTxHash.ToString()));
+    obj.push_back(Pair("reason", (int)nReason));
+    obj.push_back(Pair("inputsHash", inputsHash.ToString()));
 }
