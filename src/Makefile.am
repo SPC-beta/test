@@ -107,6 +107,10 @@ if BUILD_BITCOIN_CLI
   bin_PROGRAMS += bitcoinzero-cli
 endif
 
+if BUILD_BITCOIN_TX
+  bin_PROGRAMS += bitcoinzero-tx
+endif
+
 .PHONY: FORCE check-symbols check-security
 # bitcoin core #
 BITCOIN_CORE_H = \
