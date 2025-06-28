@@ -31,7 +31,7 @@ endif
 endif
 
 LIBUNIVALUE = univalue/libunivalue.la
-
+UNIVALUE_CFLAGS='-I$(srcdir)/univalue/include'
 $(LIBUNIVALUE): $(wildcard univalue/lib/*) $(wildcard univalue/include/*)
 	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C $(@D) $(@F)
 
