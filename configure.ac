@@ -1488,10 +1488,7 @@ else
     use_boost=yes
 fi
 
-if test "x$use_boost" != "xyes"; then
-  use_boost=yes
-  AC_DEFINE([HAVE_WORKING_BOOST_SLEEP], [1], [Define this symbol if boost sleep works])
-fi
+AC_DEFINE([HAVE_WORKING_BOOST_SLEEP_FOR], [1], [Define this symbol if boost sleep works])
 
 if test x$use_boost = xyes; then
 
