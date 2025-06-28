@@ -1497,6 +1497,7 @@ if test x$want_boost = xno; then
 fi
 AX_BOOST_FILESYSTEM
 AX_BOOST_SYSTEM
+AX_BOOST_FILESYSTEM
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_THREAD
 AX_BOOST_CHRONO
@@ -1522,7 +1523,9 @@ fi
 
 BOOST_LIBS="$BOOST_LDFLAGS $BOOST_SYSTEM_LIB $BOOST_FILESYSTEM_LIB $BOOST_PROGRAM_OPTIONS_LIB $BOOST_THREAD_LIB $BOOST_CHRONO_LIB"
 
-AC_DEFINE(HAVE_WORKING_BOOST_SLEEP_FOR, 1, [Define this symbol if boost sleep_for works])]
+AC_DEFINE(HAVE_WORKING_BOOST_SLEEP_FOR, 1, [Define this symbol if boost sleep_for works])
+
+fi
 
 dnl Check for reduced exports
 if test x$use_reduce_exports = xyes; then
