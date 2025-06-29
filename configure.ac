@@ -114,7 +114,7 @@ AC_ARG_WITH([miniupnpc],
   [AS_HELP_STRING([--with-miniupnpc],
   [enable UPNP (default is yes if libminiupnpc is found)])],
   [use_upnp=$withval],
-  [use_upnp=auto])
+  [use_upnp=yes])
 
 AC_ARG_WITH([natpmp],
             [AS_HELP_STRING([--with-natpmp],
@@ -141,12 +141,6 @@ AC_ARG_ENABLE([extended-functional-tests],
     AS_HELP_STRING([--enable-extended-functional-tests],[enable expensive functional tests when using lcov (default no)]),
     [use_extended_functional_tests=$enableval],
     [use_extended_functional_tests=no])
-
-AC_ARG_ENABLE([fuzz],
-    AS_HELP_STRING([--enable-fuzz],
-    [enable building of fuzz targets (default no). enabling this will disable all other targets]),
-    [enable_fuzz=$enableval],
-    [enable_fuzz=no])
 
 AC_ARG_WITH([qrencode],
   [AS_HELP_STRING([--with-qrencode],
@@ -234,6 +228,8 @@ AC_ARG_ENABLE([zmq],
   [use_zmq=$enableval],
   [use_zmq=yes])
 
+AC_ARG_WITH([protoc-bindir],[AS_HELP_STRING([--with-protoc-bindir=BIN_DIR],[specify protoc bin path])], [protoc_bin_path=$withval], [])
+
 AC_ARG_ENABLE(man,
     [AS_HELP_STRING([--disable-man],
                     [do not install man pages (default is to install)])],,
@@ -246,13 +242,6 @@ AC_ARG_ENABLE([debug],
                     [use compiler flags and macros suited for debugging (default is no)])],
     [enable_debug=$enableval],
     [enable_debug=no])
-
-# Enable crash hooks
-AC_ARG_ENABLE([crash-hooks],
-    [AS_HELP_STRING([--enable-crash-hooks],
-                    [hook into exception/signal/assert handling to gather stack traces (default is no)])],
-    [enable_crashhooks=$enableval],
-    [enable_crashhooks=no])
 
 # Turn warnings into errors
 AC_ARG_ENABLE([werror],
@@ -293,11 +282,6 @@ else
     if test "x$GXX" = xyes; then
         CXXFLAGS="$CXXFLAGS -g1 -fno-omit-frame-pointer"
     fi
-fi
-
-AM_CONDITIONAL([ENABLE_CRASH_HOOKS], [test x$enable_crashhooks = xyes])
-if test "x$enable_crashhooks" = xyes; then
-    AC_DEFINE(ENABLE_CRASH_HOOKS, 1, [Define this symbol if crash hooks should be enabled])
 fi
 
 AX_CHECK_LINK_FLAG([-Wl,-wrap=__cxa_allocate_exception], [LINK_WRAP_SUPPORTED=yes],,,)
@@ -1093,53 +1077,17 @@ dnl it would break GCC's #include_next.
 AC_DEFUN([SUPPRESS_WARNINGS],
          [$(echo $1 |${SED} -E -e 's/(^| )-I/\1-isystem /g' -e 's;-isystem /usr/include([/ ]|$);-I/usr/include\1;g')])
 
-dnl enable-fuzz should disable all other targets
-if test "x$enable_fuzz" = "xyes"; then
-  AC_MSG_WARN(enable-fuzz will disable all other targets)
-  build_bitcoin_utils=no
-  build_bitcoin_cli=no
-  build_bitcoin_tx=no
-  build_bitcoin_wallet=no
-  build_bitcoind=no
-  build_bitcoin_libs=no
-  bitcoin_enable_qt=no
-  bitcoin_enable_qt_test=no
-  bitcoin_enable_qt_dbus=no
-  enable_wallet=no
-  use_bench=no
-  use_openssl=no
-  use_upnp=no
-  use_natpmp=no
-  use_zmq=no
+BITCOIN_QT_INIT
 
-  AC_MSG_CHECKING([whether main function is needed])
-  AX_CHECK_LINK_FLAG(
-    [[-fsanitize=$use_sanitizers]],
-    [AC_MSG_RESULT([no])],
-    [AC_MSG_RESULT([yes])
-     CPPFLAGS="$CPPFLAGS -DPROVIDE_MAIN_FUNCTION"],
-    [],
-    [AC_LANG_PROGRAM([[
-      #include <cstdint>
-      #include <cstddef>
-      extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) { return 0; }
-      /* comment to remove the main function ...
-     ]],[[
-      */ int not_main() {
-     ]])])
-else
-    BITCOIN_QT_INIT
+dnl sets $bitcoin_enable_qt, $bitcoin_enable_qt_test, $bitcoin_enable_qt_dbus
+BITCOIN_QT_CONFIGURE([5.11.3])
 
-    dnl sets $bitcoin_enable_qt, $bitcoin_enable_qt_test, $bitcoin_enable_qt_dbus
-    BITCOIN_QT_CONFIGURE([5.5.1])
-
-    dnl Keep a copy of the original $QT_INCLUDES and use it when invoking qt's moc
-    QT_INCLUDES_UNSUPPRESSED=$QT_INCLUDES
-    if test x$suppress_external_warnings != xno ; then
-      QT_INCLUDES=SUPPRESS_WARNINGS($QT_INCLUDES)
-      QT_DBUS_INCLUDES=SUPPRESS_WARNINGS($QT_DBUS_INCLUDES)
-      QT_TEST_INCLUDES=SUPPRESS_WARNINGS($QT_TEST_INCLUDES)
-    fi
+dnl Keep a copy of the original $QT_INCLUDES and use it when invoking qt's moc
+QT_INCLUDES_UNSUPPRESSED=$QT_INCLUDES
+if test "$suppress_external_warnings" != "no" ; then
+QT_INCLUDES=SUPPRESS_WARNINGS($QT_INCLUDES)
+QT_DBUS_INCLUDES=SUPPRESS_WARNINGS($QT_DBUS_INCLUDES)
+QT_TEST_INCLUDES=SUPPRESS_WARNINGS($QT_TEST_INCLUDES)
 fi
 
 if test x$enable_wallet != xno; then
@@ -1457,7 +1405,6 @@ AM_CONDITIONAL([EMBEDDED_UNIVALUE],[test x$need_bundled_univalue = xyes])
 AC_SUBST(UNIVALUE_CFLAGS)
 AC_SUBST(UNIVALUE_LIBS)
 
-
 AC_MSG_CHECKING([whether to build bitcoind])
 AM_CONDITIONAL([BUILD_BITCOIND], [test x$build_bitcoind = xyes])
 AC_MSG_RESULT($build_bitcoind)
@@ -1516,39 +1463,40 @@ fi
 
 dnl enable upnp support
 AC_MSG_CHECKING([whether to build with support for UPnP])
-if test x$have_miniupnpc = xno; then
-  if test x$use_upnp = xyes; then
-     AC_MSG_ERROR("UPnP requested but cannot be built. Use --without-miniupnpc.")
+if test "$have_miniupnpc" = "no"; then
+  if test "$use_upnp" = "yes"; then
+     AC_MSG_ERROR([UPnP requested but cannot be built. Use --without-miniupnpc])
   fi
-  AC_MSG_RESULT(no)
+  AC_MSG_RESULT([no])
   use_upnp=no
 else
-  if test x$use_upnp != xno; then
-    AC_MSG_RESULT(yes)
+  if test "$use_upnp" != "no"; then
+    AC_MSG_RESULT([yes])
     use_upnp=yes
-    AC_DEFINE([USE_UPNP], [1], [Define to 1 if UPnP support should be compiled in.])    if test x$TARGET_OS = xwindows; then
-      MINIUPNPC_CPPFLAGS="-DSTATICLIB -DMINIUPNP_STATICLIB"
+    AC_DEFINE([USE_UPNP], [1], [Define to 1 if UPnP support should be compiled in.])
+    if test "$TARGET_OS" = "windows"; then
+      MINIUPNPC_CPPFLAGS="$MINIUPNPC_CPPFLAGS -DMINIUPNP_STATICLIB"
     fi
   else
-    AC_MSG_RESULT(no)
+    AC_MSG_RESULT([no])
   fi
 fi
 
 dnl Enable NAT-PMP support.
 AC_MSG_CHECKING([whether to build with support for NAT-PMP])
-if test "x$have_natpmp" = xno; then
-  if test "x$use_natpmp" = xyes; then
+if test "$have_natpmp" = "no"; then
+  if test "$use_natpmp" = "yes"; then
      AC_MSG_ERROR([NAT-PMP requested but cannot be built. Use --without-natpmp])
   fi
   AC_MSG_RESULT([no])
   use_natpmp=no
 else
-  if test "x$use_natpmp" != xno; then
+  if test "$use_natpmp" != "no"; then
     AC_MSG_RESULT([yes])
     use_natpmp=yes
     AC_DEFINE([USE_NATPMP], [1], [Define to 1 if UPnP support should be compiled in.])
-    if test x$TARGET_OS = xwindows; then
-      NATPMP_CPPFLAGS="-DSTATICLIB -DNATPMP_STATICLIB"
+    if test "$TARGET_OS" = "windows"; then
+      NATPMP_CPPFLAGS="$NATPMP_CPPFLAGS -DSTATICLIB -DNATPMP_STATICLIB"
     fi
   else
     AC_MSG_RESULT([no])
@@ -1636,7 +1584,6 @@ AM_CONDITIONAL([BUILD_DARWIN], [test x$BUILD_OS = xdarwin])
 AM_CONDITIONAL([TARGET_WINDOWS], [test x$TARGET_OS = xwindows])
 AM_CONDITIONAL([ENABLE_WALLET],[test x$enable_wallet = xyes])
 AM_CONDITIONAL([ENABLE_TESTS],[test x$BUILD_TEST = xyes])
-AM_CONDITIONAL([ENABLE_FUZZ],[test x$enable_fuzz = xyes])
 AM_CONDITIONAL([ENABLE_QT],[test x$bitcoin_enable_qt = xyes])
 AM_CONDITIONAL([ENABLE_QT_TESTS],[test x$BUILD_TEST_QT = xyes])
 AM_CONDITIONAL([ENABLE_BENCH],[test x$use_bench = xyes])
@@ -1775,13 +1722,10 @@ echo "  with openssl        = $use_openssl"
 echo "  with zmq            = $use_zmq"
 echo "  with test           = $use_tests"
 echo "  with bench          = $use_bench"
-if test x$use_tests != xno; then
-    echo "  with fuzz           = $enable_fuzz"
-fi
 echo "  with upnp           = $use_upnp"
 echo "  with natpmp         = $use_natpmp"
+echo "  use asm             = $use_asm"
 echo "  debug enabled       = $enable_debug"
-echo "  crash hooks enabled = $enable_crashhooks"
 echo "  werror              = $enable_werror"
 echo
 echo "  target os           = $TARGET_OS"
