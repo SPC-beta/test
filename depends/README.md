@@ -110,7 +110,6 @@ The following can be set when running make: `make FOO=bar`
   build script logic) are searched for among the host system packages using
   `pkg-config`. It allows building with packages of other (newer) versions
 - `NO_NATPMP`: Don't download/build/cache packages needed for enabling NAT-PMP
-- `MULTIPROCESS`: build libmultiprocess (experimental, requires cmake)
 - `DEBUG`: Disable some optimizations and enable more runtime checking
 - `HOST_ID_SALT`: Optional salt to use when generating host package ids
 - `BUILD_ID_SALT`: Optional salt to use when generating build package ids

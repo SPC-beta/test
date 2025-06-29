@@ -12,15 +12,11 @@ qt_darwin_packages=qt
 qt_mingw32_packages=qt
 
 bdb_packages=bdb
-sqlite_packages=sqlite
 
 zmq_packages=zeromq
 
 upnp_packages=miniupnpc
 natpmp_packages=libnatpmp
-
-multiprocess_packages = libmultiprocess capnp
-multiprocess_native_packages = native_libmultiprocess native_capnp
 
 darwin_native_packages = native_ds_store native_mac_alias
 
