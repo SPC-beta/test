@@ -188,6 +188,12 @@ AC_ARG_ENABLE([lcov-branch-coverage],
   [use_lcov_branch=yes],
   [use_lcov_branch=no])
 
+AC_ARG_ENABLE([glibc-back-compat],
+  [AS_HELP_STRING([--enable-glibc-back-compat],
+  [enable backwards compatibility with glibc])],
+  [use_glibc_compat=$enableval],
+  [use_glibc_compat=no])
+
 AC_ARG_ENABLE([asm],
   [AS_HELP_STRING([--disable-asm],
   [disable assembly routines (enabled by default)])],
@@ -228,6 +234,20 @@ AC_ARG_ENABLE([debug],
                     [use compiler flags and macros suited for debugging (default is no)])],
     [enable_debug=$enableval],
     [enable_debug=no])
+
+# Enable exception stacktraces
+AC_ARG_ENABLE([stacktraces],
+    [AS_HELP_STRING([--enable-stacktraces],
+                    [gather and print exception stack traces (default is yes)])],
+    [enable_stacktraces=$enableval],
+    [enable_stacktraces=yes])
+
+# Enable crash hooks
+AC_ARG_ENABLE([crash-hooks],
+    [AS_HELP_STRING([--enable-crash-hooks],
+                    [hook into exception/signal/assert handling to gather stack traces (default is no)])],
+    [enable_crashhooks=$enableval],
+    [enable_crashhooks=no])
 
 dnl Pass compiler & linker flags that make builds deterministic
 AC_ARG_ENABLE([determinism],
@@ -279,6 +299,22 @@ else
     fi
 fi
 
+if test "x$enable_stacktraces" != xno; then
+  AC_CHECK_HEADERS([execinfo.h], [], [enable_stacktraces=no])
+fi
+
+AM_CONDITIONAL([ENABLE_STACKTRACES], [test x$enable_stacktraces = xyes])
+if test "x$enable_stacktraces" = xyes; then
+    AC_DEFINE(ENABLE_STACKTRACES, 1, [Define this symbol if stacktraces should be enabled])
+else
+    enable_crashhooks=no
+fi
+
+AM_CONDITIONAL([ENABLE_CRASH_HOOKS], [test x$enable_crashhooks = xyes])
+if test "x$enable_crashhooks" = xyes; then
+    AC_DEFINE(ENABLE_CRASH_HOOKS, 1, [Define this symbol if crash hooks should be enabled])
+fi
+
 AX_CHECK_LINK_FLAG([-Wl,-wrap=__cxa_allocate_exception], [LINK_WRAP_SUPPORTED=yes],,,)
 AM_CONDITIONAL([CRASH_HOOKS_WRAPPED_CXX_ABI],[test x$LINK_WRAP_SUPPORTED = xyes])
 
@@ -286,7 +322,7 @@ if test x$LINK_WRAP_SUPPORTED = "xyes"; then
   AC_DEFINE(CRASH_HOOKS_WRAPPED_CXX_ABI, 1, [Define this symbol to use wrapped CXX ABIs for exception stacktraces])
 fi
 
-# Needed for MinGW targets when debug symbols are enabled as compiled objects get very large
+# Needed for MinGW targets when debug symbols are enabled as compiled objects get very larg
 AX_CHECK_COMPILE_FLAG([-Wa,-mbig-obj], [CXXFLAGS="$CXXFLAGS -Wa,-mbig-obj"],,,)
 
 ERROR_CXXFLAGS=
@@ -729,6 +765,25 @@ AX_GCC_FUNC_ATTRIBUTE([dllexport])
 AX_GCC_FUNC_ATTRIBUTE([dllimport])
 AC_SEARCH_LIBS([clock_gettime],[rt])
 
+if test x$use_glibc_compat != xno; then
+
+  #__fdelt_chk's params and return type have changed from long unsigned int to long int.
+  # See which one is present here.
+  AC_MSG_CHECKING(__fdelt_chk type)
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#ifdef _FORTIFY_SOURCE
+                    #undef _FORTIFY_SOURCE
+                  #endif
+                  #define _FORTIFY_SOURCE 2
+                  #include <sys/select.h>
+     extern "C" long unsigned int __fdelt_warn(long unsigned int);]],[[]])],
+    [ fdelt_type="long unsigned int"],
+    [ fdelt_type="long int"])
+  AC_MSG_RESULT($fdelt_type)
+  AC_DEFINE_UNQUOTED(FDELT_TYPE, $fdelt_type,[parameter and return value type for __fdelt_chk])
+else
+  AC_SEARCH_LIBS([clock_gettime],[rt])
+fi
+
 if test x$TARGET_OS != xwindows; then
   dnl All windows code is PIC, forcing it on just adds useless compile warnings
   AX_CHECK_COMPILE_FLAG([-fPIC],[PIC_FLAGS="-fPIC"])
@@ -930,6 +985,15 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdint.h>
  [ AC_MSG_RESULT(yes); AC_DEFINE(CHAR_EQUALS_INT8, 1,[Define this symbol if type char equals int8_t]) ],
  [ AC_MSG_RESULT(no)]
 )
+
+# ensure backtrace() is found, check -lexecinfo if necessary
+if test x$TARGET_OS != xwindows; then
+  if test "x$enable_stacktraces" != xno; then
+    AC_SEARCH_LIBS([backtrace], [execinfo], [], [
+      AC_MSG_ERROR([Unable to find backtrace()])
+    ])
+  fi
+fi
 
 dnl LevelDB platform checks
 AC_MSG_CHECKING(for fdatasync)
@@ -1494,6 +1558,7 @@ AM_CONDITIONAL([ENABLE_QT_TESTS],[test x$BUILD_TEST_QT = xyes])
 AM_CONDITIONAL([ENABLE_BENCH],[test x$use_bench = xyes])
 AM_CONDITIONAL([USE_QRCODE], [test x$use_qr = xyes])
 AM_CONDITIONAL([USE_LCOV],[test x$use_lcov = xyes])
+AM_CONDITIONAL([GLIBC_BACK_COMPAT],[test x$use_glibc_compat = xyes])
 AM_CONDITIONAL([HARDEN],[test x$use_hardening = xyes])
 AM_CONDITIONAL([ENABLE_SSE42],[test x$enable_sse42 = xyes])
 AM_CONDITIONAL([ENABLE_SSE41],[test x$enable_sse41 = xyes])
@@ -1635,6 +1700,8 @@ echo "  with upnp           = $use_upnp"
 echo "  with natpmp         = $use_natpmp"
 echo "  use asm             = $use_asm"
 echo "  debug enabled       = $enable_debug"
+echo "  stacktraces enabled = $enable_stacktraces"
+echo "  crash hooks enabled = $enable_crashhooks"
 echo "  werror              = $enable_werror"
 echo
 echo "  target os           = $TARGET_OS"
