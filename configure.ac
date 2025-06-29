@@ -1264,13 +1264,6 @@ dnl univalue check
 
 need_bundled_univalue=yes
 
-dnl check if libgmp is present
-AC_CHECK_HEADER([gmp.h],, AC_MSG_ERROR(libgmp headers missing))
-AC_CHECK_LIB([gmp],  [__gmpz_init],GMP_LIBS=-lgmp, AC_MSG_ERROR(libgmp missing))
-
-dnl check if immer headers-only library is present
-AC_CHECK_HEADER([immer/map.hpp],, AC_MSG_ERROR(immer map headers missing))
-
 if test x$build_bitcoin_wallet$build_bitcoin_cli$build_bitcoin_tx$build_bitcoind$bitcoin_enable_qt$use_tests$use_bench = xnonononononono; then
   need_bundled_univalue=no
 else
