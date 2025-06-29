@@ -1504,7 +1504,7 @@ if test x$use_openssl = xyes; then
   AC_DEFINE([USE_OPENSSL],[1],[Define to 1 to use OpenSSL])
 fi
 
-AM_CONDITIONAL([ENABLE_ZMQ], [test "x$use_zmq" = "xyes"]
+AM_CONDITIONAL([ENABLE_ZMQ], [test "x$use_zmq" = "xyes"])
 
 AC_MSG_CHECKING([whether to build test_bitcoin])
 if test x$use_tests = xyes; then
