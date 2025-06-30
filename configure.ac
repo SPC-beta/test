@@ -121,12 +121,6 @@ AC_ARG_WITH([miniupnpc],
   [use_upnp=$withval],
   [use_upnp=yes])
 
-AC_ARG_WITH([natpmp],
-            [AS_HELP_STRING([--with-natpmp],
-                            [enable NAT-PMP (default is yes if libnatpmp is found)])],
-            [use_natpmp=$withval],
-            [use_natpmp=auto])
-
 AC_ARG_ENABLE(tests,
     AS_HELP_STRING([--disable-tests],[do not compile tests (default is to compile)]),
     [use_tests=$enableval],
@@ -636,7 +630,7 @@ case $host in
          case $host in
            *aarch64*)
              dnl The preferred Homebrew prefix for Apple Silicon is /opt/homebrew.
-             dnl Therefore, as we do not use pkg-config to detect miniupnpc and libnatpmp
+             dnl Therefore, as we do not use pkg-config to detect miniupnpc
              dnl packages, we should set the CPPFLAGS and LDFLAGS variables for them
              dnl explicitly.
              if test "x$use_upnp" != xno && $BREW list --versions miniupnpc >/dev/null; then
@@ -647,15 +641,6 @@ case $host in
                  CPPFLAGS="$CPPFLAGS -I$miniupnpc_prefix/include"
                fi
                LDFLAGS="$LDFLAGS -L$miniupnpc_prefix/lib"
-             fi
-             if test "x$use_natpmp" != xno && $BREW list --versions libnatpmp >/dev/null; then
-               libnatpmp_prefix=$($BREW --prefix libnatpmp 2>/dev/null)
-               if test "x$suppress_external_warnings" != xno; then
-                 CPPFLAGS="$CPPFLAGS -isystem $libnatpmp_prefix/include"
-               else
-                 CPPFLAGS="$CPPFLAGS -I$libnatpmp_prefix/include"
-               fi
-               LDFLAGS="$LDFLAGS -L$libnatpmp_prefix/lib"
              fi
              ;;
          esac
@@ -1136,42 +1121,36 @@ dnl Check for libminiupnpc (optional)
 if test x$use_upnp != xno; then
   AC_CHECK_HEADERS(
     [miniupnpc/miniwget.h miniupnpc/miniupnpc.h miniupnpc/upnpcommands.h miniupnpc/upnperrors.h],
-    [AC_CHECK_LIB([miniupnpc], [upnpDiscover], [MINIUPNPC_LIBS=-lminiupnpc], [have_miniupnpc=no])],
+    [AC_CHECK_LIB([miniupnpc], [main],[MINIUPNPC_LIBS=-lminiupnpc], [have_miniupnpc=no])],
     [have_miniupnpc=no]
   )
-dnl The minimum supported miniUPnPc API version is set to 10. This keeps compatibility
-dnl with Ubuntu 16.04 LTS and Debian 8 libminiupnpc-dev packages.
-if test x$have_miniupnpc != xno; then
-  AC_MSG_CHECKING([whether miniUPnPc API version is supported])
-  AC_PREPROC_IFELSE([AC_LANG_PROGRAM([[
-      @%:@include <miniupnpc/miniupnpc.h>
-    ]], [[
-      #if MINIUPNPC_API_VERSION >= 10
-      // Everything is okay
-      #else
-      #  error miniUPnPc API version is too old
-      #endif
-    ]])],[
-      AC_MSG_RESULT(yes)
-    ],[
-    AC_MSG_RESULT(no)
-    AC_MSG_WARN([miniUPnPc API version < 10 is unsupported, disabling UPnP support.])
-    have_miniupnpc=no
-  ])
-fi
 fi
 
-dnl Check for libnatpmp (optional).
-if test "x$use_natpmp" != xno; then
-  AC_CHECK_HEADERS([natpmp.h],
-                   [AC_CHECK_LIB([natpmp], [initnatpmp], [NATPMP_LIBS=-lnatpmp], [have_natpmp=no])],
-                   [have_natpmp=no])
-fi
-
-if test x$build_bitcoin_wallet$build_bitcoin_cli$build_bitcoin_tx$build_bitcoind$bitcoin_enable_qt$use_tests$use_bench = xnonononononono; then
-    use_boost=no
+dnl enable upnp support
+AC_MSG_CHECKING([whether to build with support for UPnP])
+if test x$have_miniupnpc = xno; then
+  if test x$use_upnp = xyes; then
+     AC_MSG_ERROR("UPnP requested but cannot be built. use --without-miniupnpc")
+  fi
+  AC_MSG_RESULT(no)
 else
-    use_boost=yes
+  if test x$use_upnp != xno; then
+    AC_MSG_RESULT(yes)
+    AC_MSG_CHECKING([whether to build with UPnP enabled by default])
+    use_upnp=yes
+    upnp_setting=0
+    if test x$use_upnp_default != xno; then
+      use_upnp_default=yes
+      upnp_setting=1
+    fi
+    AC_MSG_RESULT($use_upnp_default)
+    AC_DEFINE_UNQUOTED([USE_UPNP],[$upnp_setting],[UPnP support not compiled if undefined, otherwise value (0 or 1) determines default state])
+    if test x$TARGET_OS = xwindows; then
+      MINIUPNPC_CPPFLAGS="-DSTATICLIB -DMINIUPNP_STATICLIB"
+    fi
+  else
+    AC_MSG_RESULT(no)
+  fi
 fi
 
 if test x$use_boost = xyes; then

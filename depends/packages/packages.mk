@@ -16,7 +16,6 @@ bdb_packages=bdb
 zmq_packages=zeromq
 
 upnp_packages=miniupnpc
-natpmp_packages=libnatpmp
 
 darwin_native_packages = native_ds_store native_mac_alias
 
