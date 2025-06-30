@@ -1426,27 +1426,6 @@ else
   fi
 fi
 
-dnl Enable NAT-PMP support.
-AC_MSG_CHECKING([whether to build with support for NAT-PMP])
-if test "$have_natpmp" = "no"; then
-  if test "$use_natpmp" = "yes"; then
-     AC_MSG_ERROR([NAT-PMP requested but cannot be built. Use --without-natpmp])
-  fi
-  AC_MSG_RESULT([no])
-  use_natpmp=no
-else
-  if test "$use_natpmp" != "no"; then
-    AC_MSG_RESULT([yes])
-    use_natpmp=yes
-    AC_DEFINE([USE_NATPMP], [1], [Define to 1 if UPnP support should be compiled in.])
-    if test "$TARGET_OS" = "windows"; then
-      NATPMP_CPPFLAGS="$NATPMP_CPPFLAGS -DSTATICLIB -DNATPMP_STATICLIB"
-    fi
-  else
-    AC_MSG_RESULT([no])
-  fi
-fi
-
 dnl these are only used when qt is enabled
 BUILD_TEST_QT=""
 if test x$bitcoin_enable_qt != xno; then
@@ -1674,7 +1653,6 @@ echo "  with zmq            = $use_zmq"
 echo "  with test           = $use_tests"
 echo "  with bench          = $use_bench"
 echo "  with upnp           = $use_upnp"
-echo "  with natpmp         = $use_natpmp"
 echo "  use asm             = $use_asm"
 echo "  debug enabled       = $enable_debug"
 echo "  stacktraces enabled = $enable_stacktraces"
