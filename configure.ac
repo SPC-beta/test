@@ -1153,13 +1153,18 @@ else
   fi
 fi
 
-if test x$use_boost = xyes; then
-AC_DEFINE([HAVE_WORKING_BOOST_SLEEP_FOR], [1], [Define this symbol if boost sleep works])
-dnl Minimum required Boost version
-define(MINIMUM_REQUIRED_BOOST, 1.64.0)
+if test x$build_bitcoin_wallet$build_bitcoin_cli$build_bitcoin_tx$build_bitcoind$bitcoin_enable_qt$use_tests$use_bench = xnonononononono; then
+    use_boost=no
+else
+    use_boost=yes
+fi
 
-dnl Check for Boost libs
-AX_BOOST_BASE([MINIMUM_REQUIRED_BOOST])
+if test x$use_boost = xyes; then
+
+AC_DEFINE([HAVE_WORKING_BOOST_SLEEP_FOR], [1], [Define this symbol if boost sleep works])
+
+dnl Check for Boost headers
+AX_BOOST_BASE([1.73.0],[],[AC_MSG_ERROR([Boost is not available!])])
 if test x$want_boost = xno; then
     AC_MSG_ERROR([[only libbitcoinconsensus can be built without boost]])
 fi
@@ -1169,17 +1174,23 @@ AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_THREAD
 AX_BOOST_CHRONO
 
-if test x$suppress_external_warnings != xno; then
-    dnl Prevent use of std::unary_function, which was removed in C++17,
-    dnl and will generate warnings with newer compilers.
-    dnl See: https://github.com/boostorg/container_hash/issues/22.
-    BOOST_CPPFLAGS="$BOOST_CPPFLAGS -DBOOST_NO_CXX98_FUNCTION_BASE"
+  dnl we don't use multi_index serialization
+  BOOST_CPPFLAGS="$BOOST_CPPFLAGS -DBOOST_MULTI_INDEX_DISABLE_SERIALIZATION"
 
+dnl Prevent use of std::unary_function, which was removed in C++17,
+dnl and will generate warnings with newer compilers for Boost
+dnl older than 1.80.
+dnl See: https://github.com/boostorg/config/pull/430.
+AX_CHECK_PREPROC_FLAG([-DBOOST_NO_CXX98_FUNCTION_BASE], [BOOST_CPPFLAGS="$BOOST_CPPFLAGS -DBOOST_NO_CXX98_FUNCTION_BASE"], [], [$CXXFLAG_WERROR],
+                      [AC_LANG_PROGRAM([[#include <boost/config.hpp>]])])
+
+if test x$suppress_external_warnings != xno; then
     BOOST_CPPFLAGS=SUPPRESS_WARNINGS($BOOST_CPPFLAGS)
 fi
 
 BOOST_LIBS="$BOOST_LDFLAGS $BOOST_SYSTEM_LIB $BOOST_FILESYSTEM_LIB $BOOST_PROGRAM_OPTIONS_LIB $BOOST_THREAD_LIB $BOOST_CHRONO_LIB"
 fi
+
 
 if test x$use_reduce_exports = xyes; then
     CXXFLAGS="$CXXFLAGS $RE_CXXFLAGS"
