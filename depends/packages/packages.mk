@@ -16,5 +16,3 @@ bdb_packages=bdb
 zmq_packages=zeromq
 
 upnp_packages=miniupnpc
-
-endif
