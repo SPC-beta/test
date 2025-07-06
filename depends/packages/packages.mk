@@ -16,3 +16,5 @@ bdb_packages=bdb
 zmq_packages=zeromq
 
 upnp_packages=miniupnpc
+
+$(host_arch)_$(host_os)_native_packages += native_b2
