@@ -42,8 +42,7 @@ NO_UPNP ?=
 NO_NATPMP ?=
 MULTIPROCESS ?=
 FALLBACK_DOWNLOAD_PATH ?= https://bitcoincore.org/depends-sources
-FALLBACK_DOWNLOAD_PATH_1 ?= https://firo.org/depends-sources
-FALLBACK_DOWNLOAD_PATH_2 ?= http://dash-depends-sources.s3-website-us-west-2.amazonaws.com
+FALLBACK_DOWNLOAD_PATH_ALTERNATIVE ?= https://firo.org/depends-sources
 
 BUILD = $(shell ./config.guess)
 HOST ?= $(BUILD)
@@ -51,6 +50,7 @@ PATCHES_PATH = $(BASEDIR)/patches
 BASEDIR = $(CURDIR)
 HASH_LENGTH:=11
 DOWNLOAD_CONNECT_TIMEOUT:=30
+DOWNLOAD_RETRIES:=3
 HOST_ID_SALT ?= salt
 BUILD_ID_SALT ?= salt
 
@@ -76,9 +76,6 @@ build_vendor=$(word 2,$(subst -, ,$(build)))
 full_build_os:=$(subst $(build_arch)-$(build_vendor)-,,$(build))
 build_os:=$(findstring linux,$(full_build_os))
 build_os+=$(findstring darwin,$(full_build_os))
-build_os+=$(findstring freebsd,$(full_build_os))
-build_os+=$(findstring netbsd,$(full_build_os))
-build_os+=$(findstring openbsd,$(full_build_os))
 build_os:=$(strip $(build_os))
 ifeq ($(build_os),)
 build_os=$(full_build_os)
@@ -89,9 +86,6 @@ host_vendor=$(word 2,$(subst -, ,$(canonical_host)))
 full_host_os:=$(subst $(host_arch)-$(host_vendor)-,,$(canonical_host))
 host_os:=$(findstring linux,$(full_host_os))
 host_os+=$(findstring darwin,$(full_host_os))
-host_os+=$(findstring freebsd,$(full_host_os))
-host_os+=$(findstring netbsd,$(full_host_os))
-host_os+=$(findstring openbsd,$(full_host_os))
 host_os+=$(findstring mingw32,$(full_host_os))
 
 ifeq (android,$(findstring android,$(full_host_os)))
@@ -109,6 +103,10 @@ host_prefix=$($(host_arch)_$(host_os)_prefix)
 build_prefix=$(host_prefix)/native
 build_host=$(build)
 
+AT_$(V):=
+AT_:=@
+AT:=$(AT_$(V))
+
 all: install
 
 include hosts/$(host_os).mk
@@ -118,7 +116,7 @@ include builders/default.mk
 include packages/packages.mk
 
 # Previously, we directly invoked the well-known programs using $(shell ...)
-# to contruct build_id_string. However, that was problematic because:
+# to construct build_id_string. However, that was problematic because:
 #
 # 1. When invoking a shell, GNU Make special-cases exit code 127 (command not
 #    found) by not capturing the output but instead passing it through. This is
@@ -143,7 +141,7 @@ include packages/packages.mk
 build_id:=$(shell env CC='$(build_CC)' CXX='$(build_CXX)' AR='$(build_AR)' RANLIB='$(build_RANLIB)' STRIP='$(build_STRIP)' SHA256SUM='$(build_SHA256SUM)' DEBUG='$(DEBUG)' ./gen_id '$(BUILD_ID_SALT)' 'GUIX_ENVIRONMENT=$(realpath $(GUIX_ENVIRONMENT))')
 $(host_arch)_$(host_os)_id:=$(shell env CC='$(host_CC)' CXX='$(host_CXX)' AR='$(host_AR)' RANLIB='$(host_RANLIB)' STRIP='$(host_STRIP)' SHA256SUM='$(build_SHA256SUM)' DEBUG='$(DEBUG)' ./gen_id '$(HOST_ID_SALT)' 'GUIX_ENVIRONMENT=$(realpath $(GUIX_ENVIRONMENT))')
 
-qrencode_packages_$(NO_QR) = $(qrencode_$(host_os)_packages)
+qrencode_packages_$(NO_QR) = $(qrencode_packages)
 
 qt_packages_$(NO_QT) = $(qt_packages) $(qt_$(host_os)_packages) $(qt_$(host_arch)_$(host_os)_packages) $(qrencode_packages_)
 
@@ -159,6 +157,10 @@ multiprocess_packages_$(MULTIPROCESS) = $(multiprocess_packages)
 
 packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(qt_packages_) $(wallet_packages_) $(upnp_packages_) $(natpmp_packages_)
 native_packages += $($(host_arch)_$(host_os)_native_packages) $($(host_os)_native_packages)
+
+ifneq ($(qt_packages_),)
+native_packages += $(qt_native_packages)
+endif
 
 ifneq ($(zmq_packages_),)
 packages += $(zmq_packages)
@@ -178,15 +180,16 @@ $(host_arch)_$(host_os)_native_toolchain?=$($(host_os)_native_toolchain)
 
 include funcs.mk
 
-final_build_id_long+=$(shell $(build_SHA256SUM) config.site.in)
+final_build_id_long+=$(shell $(build_SHA256SUM) config.site.in toolchain.cmake.in)
 final_build_id+=$(shell echo -n "$(final_build_id_long)" | $(build_SHA256SUM) | cut -c-$(HASH_LENGTH))
 $(host_prefix)/.stamp_$(final_build_id): $(native_packages) $(packages)
-	rm -rf $(@D)
-	mkdir -p $(@D)
-	echo copying packages: $^
-	echo to: $(@D)
-	cd $(@D); $(foreach package,$^, $(build_TAR) xf $($(package)_cached); )
-	touch $@
+	$(AT)rm -rf $(@D)
+	$(AT)mkdir -p $(@D)
+	$(AT)echo copying packages: $^
+	$(AT)echo to: $(@D)
+	$(AT)cd $(@D); $(foreach package,$^, tar xf $($(package)_cached); )
+	$(AT)echo To build Firo with these packages, pass \'--toolchain $(@D)/toolchain.cmake\' to the first CMake invocation.
+	$(AT)touch $@
 
 # $PATH is not preserved between ./configure and make by convention. Its
 # modification and overriding at ./configure time is (as I understand it)
@@ -213,8 +216,8 @@ $(host_prefix)/.stamp_$(final_build_id): $(native_packages) $(packages)
 # we expect them to be available in $PATH at all times, more specificity does
 # not hurt.
 $(host_prefix)/share/config.site : config.site.in $(host_prefix)/.stamp_$(final_build_id)
-	@mkdir -p $(@D)
-	sed -e 's|@HOST@|$(host)|' \
+	$(AT)@mkdir -p $(@D)
+	$(AT)sed -e 's|@HOST@|$(host)|' \
             -e 's|@CC@|$(host_CC)|' \
             -e 's|@CXX@|$(host_CXX)|' \
             -e 's|@AR@|$(host_AR)|' \
@@ -239,8 +242,52 @@ $(host_prefix)/share/config.site : config.site.in $(host_prefix)/.stamp_$(final_
             -e 's|@multiprocess@|$(MULTIPROCESS)|' \
             -e 's|@debug@|$(DEBUG)|' \
             $< > $@
-	touch $@
+	$(AT)touch $@
 
+ifeq ($(host),$(build))
+  crosscompiling=FALSE
+else
+  crosscompiling=TRUE
+endif
+
+$(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(final_build_id)
+	@mkdir -p $(@D)
+	sed -e 's|@depends_crosscompiling@|$(crosscompiling)|' \
+            -e 's|@host_system_name@|$($(host_os)_cmake_system_name)|' \
+            -e 's|@host_system_version@|$($(host_os)_cmake_system_version)|' \
+            -e 's|@host_arch@|$(host_arch)|' \
+            -e 's|@CC@|$(host_CC)|' \
+            -e 's|@CXX@|$(host_CXX)|' \
+            -e 's|@OSX_SDK@|$(OSX_SDK)|' \
+            -e 's|@AR@|$(host_AR)|' \
+            -e 's|@RANLIB@|$(host_RANLIB)|' \
+            -e 's|@STRIP@|$(host_STRIP)|' \
+            -e 's|@OBJCOPY@|$(host_OBJCOPY)|' \
+            -e 's|@OBJDUMP@|$(host_OBJDUMP)|' \
+            -e 's|@depends_prefix@|$(host_prefix)|' \
+            -e 's|@CFLAGS@|$(strip $(host_CFLAGS))|' \
+            -e 's|@CFLAGS_RELEASE@|$(strip $(host_release_CFLAGS))|' \
+            -e 's|@CFLAGS_DEBUG@|$(strip $(host_debug_CFLAGS))|' \
+            -e 's|@CXXFLAGS@|$(strip $(host_CXXFLAGS))|' \
+            -e 's|@CXXFLAGS_RELEASE@|$(strip $(host_release_CXXFLAGS))|' \
+            -e 's|@CXXFLAGS_DEBUG@|$(strip $(host_debug_CXXFLAGS))|' \
+            -e 's|@CPPFLAGS@|$(strip $(host_CPPFLAGS))|' \
+            -e 's|@CPPFLAGS_RELEASE@|$(strip $(host_release_CPPFLAGS))|' \
+            -e 's|@CPPFLAGS_DEBUG@|$(strip $(host_debug_CPPFLAGS))|' \
+            -e 's|@LDFLAGS@|$(strip $(host_LDFLAGS))|' \
+            -e 's|@LDFLAGS_RELEASE@|$(strip $(host_release_LDFLAGS))|' \
+            -e 's|@LDFLAGS_DEBUG@|$(strip $(host_debug_LDFLAGS))|' \
+            -e 's|@qt_packages@|$(qt_packages_)|' \
+            -e 's|@qrencode_packages@|$(qrencode_packages_)|' \
+            -e 's|@zmq_packages@|$(zmq_packages_)|' \
+            -e 's|@wallet_packages@|$(wallet_packages_)|' \
+            -e 's|@bdb_packages@|$(bdb_packages_)|' \
+            -e 's|@sqlite_packages@|$(sqlite_packages_)|' \
+            -e 's|@usdt_packages@|$(usdt_packages_)|' \
+            -e 's|@no_harden@|$(NO_HARDEN)|' \
+            -e 's|@multiprocess@|$(MULTIPROCESS)|' \
+            $< > $@
+	touch $@
 
 define check_or_remove_cached
   mkdir -p $(BASE_CACHE)/$(host)/$(package) && cd $(BASE_CACHE)/$(host)/$(package); \
@@ -264,6 +311,7 @@ check-sources:
 $(host_prefix)/share/config.site: check-packages
 
 check-packages: check-sources
+$(host_prefix)/toolchain.cmake: check-packages
 
 clean-all: clean
 	@rm -rf $(SOURCES_PATH) x86_64* i686* mips* arm* aarch64* powerpc* riscv32* riscv64* s390x*
@@ -271,7 +319,7 @@ clean-all: clean
 clean:
 	@rm -rf $(WORK_PATH) $(BASE_CACHE) $(BUILD)
 
-install: check-packages $(host_prefix)/share/config.site
+install: check-packages $(host_prefix)/share/config.site $(host_prefix)/toolchain.cmake
 
 
 download-one: check-sources $(all_sources)
@@ -288,4 +336,3 @@ $(foreach package,$(all_packages),$(eval $(call ext_add_stages,$(package))))
 
 .PHONY: install cached clean clean-all download-one download-osx download-linux download-win download check-packages check-sources
 .PHONY: FORCE
-$(V).SILENT:
