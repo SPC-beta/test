@@ -26,12 +26,13 @@ public Q_SLOTS:
     void newBlock();
     void pushTransaction(uint256 const &);
     void check();
-    void importTransactions();
 
 Q_SIGNALS:
     void matureFund(CAmount);
 
 private:
+    void importTransactions();
+
     void subscribeToCoreSignals();
     void unsubscribeFromCoreSignals();
 

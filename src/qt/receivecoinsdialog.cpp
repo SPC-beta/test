@@ -138,7 +138,7 @@ void ReceiveCoinsDialog::clear()
     ui->reqLabel->setText("");
     ui->reqMessage->setText("");
     ui->reuseAddress->setChecked(false);
-    displayCheckBox(ui->addressTypeCombobox->currentIndex());
+    ui->createSparkNameButton->setVisible(false);
     updateDisplayUnit();
 }
 

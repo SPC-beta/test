@@ -317,6 +317,7 @@ private:
 
     void subscribeToCoreSignals();
     void unsubscribeFromCoreSignals();
+    void checkBalanceChanged();
 
 
 
@@ -350,7 +351,6 @@ Q_SIGNALS:
     void notifyWatchonlyChanged(bool fHaveWatchonly);
 
 public Q_SLOTS:
-    void checkBalanceChanged();
     /* Wallet status might have changed */
     void updateStatus();
     /* New transaction, or transaction changed status */

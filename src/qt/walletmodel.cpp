@@ -140,7 +140,12 @@ void WalletModel::pollBalanceChanged()
     // Get required locks upfront. This avoids the GUI from getting stuck on
     // periodical polls if the core is holding the locks for a longer time -
     // for example, during a wallet rescan.
-    LOCK2(cs_main, wallet->cs_wallet);
+    TRY_LOCK(cs_main, lockMain);
+    if(!lockMain)
+        return;
+    TRY_LOCK(wallet->cs_wallet, lockWallet);
+    if(!lockWallet)
+        return;
 
     if(fForceCheckBalanceChanged || chainActive.Height() != cachedNumBlocks)
     {
@@ -149,9 +154,9 @@ void WalletModel::pollBalanceChanged()
         // Balance and number of transactions might have changed
         cachedNumBlocks = chainActive.Height();
 
-        QMetaObject::invokeMethod(this, "checkBalanceChanged", Qt::QueuedConnection);
+        checkBalanceChanged();
         if(transactionTableModel)
-            QMetaObject::invokeMethod(transactionTableModel, "updateConfirmations", Qt::QueuedConnection);
+            transactionTableModel->updateConfirmations();
     }
 }
 

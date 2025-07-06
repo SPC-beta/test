@@ -289,11 +289,6 @@ void TransactionTableModel::updateAmountColumnTitle()
     Q_EMIT headerDataChanged(Qt::Horizontal,Amount,Amount);
 }
 
-void TransactionTableModel::refreshWallet() const
-{
-    priv->refreshWallet();
-}
-
 void TransactionTableModel::updateTransaction(const QString &hash, int status, bool showTransaction)
 {
     uint256 updated;
@@ -318,7 +313,7 @@ void TransactionTableModel::updateConfirmations()
     // Invalidate status (number of confirmations) and (possibly) description
     //  for all rows. Qt is smart enough to only actually request the data for the
     //  visible rows.
-    int numRows = std::min(100, priv->size()-1);
+    int numRows = std::min(300, priv->size()-1);
     Q_EMIT dataChanged(index(0, Status), index(numRows, Status));
     Q_EMIT dataChanged(index(0, ToAddress), index(numRows, ToAddress));
 }
@@ -919,10 +914,8 @@ static void NotifyTransactionChanged(TransactionTableModel *ttm, CWallet *wallet
 
 static void ShowProgress(TransactionTableModel *ttm, const std::string &title, int nProgress)
 {
-    if (nProgress == 0) {
+    if (nProgress == 0)
         fQueueNotifications = true;
-    }
-
 
     if (nProgress == 100)
     {
@@ -937,7 +930,6 @@ static void ShowProgress(TransactionTableModel *ttm, const std::string &title, i
             vQueueNotifications[i].invoke(ttm);
         }
         std::vector<TransactionNotification >().swap(vQueueNotifications); // clear
-        ttm->refreshWallet();
     }
 }
 
