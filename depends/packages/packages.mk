@@ -9,7 +9,6 @@ qt_darwin_packages=qt
 qt_mingw32_packages=qt
 
 bdb_packages=bdb
-sqlite_packages=sqlite
 qrencode_packages=qrencode
 
 zmq_packages=zeromq
