@@ -1,4 +1,4 @@
-packages:=boost libevent gmp backtrace cmake
+packages:=boost libevent gmp zlib backtrace cmake
 
 qt_linux_packages:=qt expat libxcb xcb_proto libXau xproto freetype fontconfig libxkbcommon libxcb_util libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm
 
