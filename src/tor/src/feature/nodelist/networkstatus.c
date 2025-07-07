@@ -51,6 +51,7 @@
 #include "core/or/circuitmux.h"
 #include "core/or/circuitmux_ewma.h"
 #include "core/or/circuitstats.h"
+#include "core/or/conflux_params.h"
 #include "core/or/connection_edge.h"
 #include "core/or/connection_or.h"
 #include "core/or/dos.h"
@@ -1711,6 +1712,7 @@ notify_after_networkstatus_changes(void)
   flow_control_new_consensus_params(c);
   hs_service_new_consensus_params(c);
   dns_new_consensus_params(c);
+  conflux_params_new_consensus(c);
 
   /* Maintenance of our L2 guard list */
   maintain_layer2_guards();
@@ -2449,7 +2451,9 @@ networkstatus_getinfo_by_purpose(const char *purpose_string, time_t now)
     if (ri->purpose != purpose)
       continue;
     set_routerstatus_from_routerinfo(&rs, node, ri);
-    smartlist_add(statuses, networkstatus_getinfo_helper_single(&rs));
+    char *text = routerstatus_format_entry(
+      &rs, NULL, NULL, NS_CONTROL_PORT, NULL, ri->cache_info.published_on);
+    smartlist_add(statuses, text);
   } SMARTLIST_FOREACH_END(ri);
 
   answer = smartlist_join_strings(statuses, "", 0, NULL);
