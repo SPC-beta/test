@@ -497,7 +497,7 @@ connection_watch_events(connection_t *conn, watchable_events_t events)
 
 /** Return true iff <b>conn</b> is listening for read events. */
 int
-connection_is_reading(const connection_t *conn)
+connection_is_reading(connection_t *conn)
 {
   tor_assert(conn);
 
@@ -645,16 +645,6 @@ connection_start_reading,(connection_t *conn))
                "to watched: %s",
                (int)conn->s,
                tor_socket_strerror(tor_socket_errno(conn->s)));
-
-    /* Process the inbuf if it is not empty because the only way to empty it is
-     * through a read event or a SENDME which might not come if the package
-     * window is proper or if the application has nothing more for us to read.
-     *
-     * If this is not done here, we risk having data lingering in the inbuf
-     * forever. */
-    if (conn->inbuf && buf_datalen(conn->inbuf) > 0) {
-      connection_process_inbuf(conn, 1);
-    }
   }
 }
 
@@ -1271,8 +1261,8 @@ run_connection_housekeeping(int i, time_t now)
     log_fn(LOG_PROTOCOL_WARN,LD_PROTOCOL,
            "Expiring stuck OR connection to fd %d (%s:%d). (%d bytes to "
            "flush; %d seconds since last write)",
-           (int)conn->s, safe_str(fmt_and_decorate_addr(&conn->addr)),
-           conn->port, (int)connection_get_outbuf_len(conn),
+           (int)conn->s, fmt_and_decorate_addr(&conn->addr), conn->port,
+           (int)connection_get_outbuf_len(conn),
            (int)(now-conn->timestamp_last_write_allowed));
     connection_or_close_normally(TO_OR_CONN(conn), 0);
   } else if (past_keepalive && !connection_get_outbuf_len(conn)) {

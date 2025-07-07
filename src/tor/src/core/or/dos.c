@@ -21,7 +21,6 @@
 #include "feature/relay/routermode.h"
 #include "feature/stats/geoip_stats.h"
 #include "lib/crypt_ops/crypto_rand.h"
-#include "lib/time/compat_time.h"
 
 #include "core/or/dos.h"
 #include "core/or/dos_sys.h"
@@ -529,8 +528,7 @@ conn_update_on_connect(conn_client_stats_t *stats, const tor_addr_t *addr)
   stats->concurrent_count++;
 
   /* Refill connect connection count. */
-  token_bucket_ctr_refill(&stats->connect_count,
-                          (uint32_t) monotime_coarse_absolute_sec());
+  token_bucket_ctr_refill(&stats->connect_count, (uint32_t) approx_time());
 
   /* Decrement counter for this new connection. */
   if (token_bucket_ctr_get(&stats->connect_count) > 0) {
@@ -810,7 +808,7 @@ dos_geoip_entry_init(clientmap_entry_t *geoip_ent)
    * can be enabled at runtime and these counters need to be valid. */
   token_bucket_ctr_init(&geoip_ent->dos_stats.conn_stats.connect_count,
                         dos_conn_connect_rate, dos_conn_connect_burst,
-                        (uint32_t) monotime_coarse_absolute_sec());
+                        (uint32_t) approx_time());
 }
 
 /** Note that the given channel has sent outbound the maximum amount of cell
@@ -968,11 +966,18 @@ dos_new_client_conn(or_connection_t *or_conn, const char *transport_name)
   clientmap_entry_t *entry;
 
   tor_assert(or_conn);
-  tor_assert_nonfatal(!or_conn->tracked_for_dos_mitigation);
 
   /* Past that point, we know we have at least one DoS detection subsystem
    * enabled so we'll start allocating stuff. */
   if (!dos_is_enabled()) {
+    goto end;
+  }
+
+  /* We ignore any known address meaning an address of a known relay. The
+   * reason to do so is because network reentry is possible where a client
+   * connection comes from an Exit node. Even when we'll fix reentry, this is
+   * a robust defense to keep in place. */
+  if (nodelist_probably_contains_address(&TO_CONN(or_conn)->addr)) {
     goto end;
   }
 

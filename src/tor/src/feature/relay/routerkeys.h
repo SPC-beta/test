@@ -53,6 +53,7 @@ void routerkeys_free_all(void);
 static inline void *
 relay_key_is_unavailable_(void)
 {
+  tor_assert_nonfatal_unreached();
   return NULL;
 }
 #define relay_key_is_unavailable(type) \

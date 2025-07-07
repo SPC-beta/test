@@ -13,7 +13,6 @@
 #include "app/config/config.h"
 #include "core/mainloop/connection.h"
 #include "feature/nodelist/networkstatus.h"
-#include "feature/relay/routermode.h"
 #define CHANNEL_OBJECT_PRIVATE
 #include "core/or/channel.h"
 #include "core/or/channeltls.h"
@@ -811,19 +810,12 @@ kist_scheduler_run_interval(void)
 
   log_debug(LD_SCHED, "KISTSchedRunInterval=0, turning to the consensus.");
 
-  /* Clients and relays have a separate consensus parameter. Clients
-   * need a lower KIST interval, since they have only a couple connections */
-  if (server_mode(get_options())) {
-    return networkstatus_get_param(NULL, "KISTSchedRunInterval",
+  /* Will either be the consensus value or the default. Note that 0 can be
+   * returned which means the consensus wants us to NOT use KIST. */
+  return networkstatus_get_param(NULL, "KISTSchedRunInterval",
                                  KIST_SCHED_RUN_INTERVAL_DEFAULT,
                                  KIST_SCHED_RUN_INTERVAL_MIN,
                                  KIST_SCHED_RUN_INTERVAL_MAX);
-  } else {
-    return networkstatus_get_param(NULL, "KISTSchedRunIntervalClient",
-                                 KIST_SCHED_RUN_INTERVAL_DEFAULT,
-                                 KIST_SCHED_RUN_INTERVAL_MIN,
-                                 KIST_SCHED_RUN_INTERVAL_MAX);
-  }
 }
 
 /* Set KISTLite mode that is KIST without kernel support. */

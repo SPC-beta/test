@@ -71,7 +71,6 @@
 
 #include "core/or/edge_connection_st.h"
 #include "core/or/or_circuit_st.h"
-#include "core/or/conflux_util.h"
 
 #include "ht.h"
 
@@ -651,7 +650,6 @@ dns_resolve(edge_connection_t *exitconn)
          * connected cell. */
         exitconn->next_stream = oncirc->n_streams;
         oncirc->n_streams = exitconn;
-        conflux_update_n_streams(oncirc, exitconn);
       }
       break;
     case 0:
@@ -660,7 +658,6 @@ dns_resolve(edge_connection_t *exitconn)
       exitconn->base_.state = EXIT_CONN_STATE_RESOLVING;
       exitconn->next_stream = oncirc->resolving_streams;
       oncirc->resolving_streams = exitconn;
-      conflux_update_resolving_streams(oncirc, exitconn);
       break;
     case -2:
     case -1:
@@ -1237,7 +1234,6 @@ inform_pending_connections(cached_resolve_t *resolve)
         pend->conn->next_stream = TO_OR_CIRCUIT(circ)->n_streams;
         pend->conn->on_circuit = circ;
         TO_OR_CIRCUIT(circ)->n_streams = pend->conn;
-        conflux_update_n_streams(TO_OR_CIRCUIT(circ), pend->conn);
 
         connection_exit_connect(pend->conn);
       } else {
