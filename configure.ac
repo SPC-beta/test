@@ -1638,7 +1638,7 @@ if test x$need_bundled_univalue = xyes; then
 fi
 
 AX_SUBDIRS_CONFIGURE([src/secp256k1], [[--disable-shared], [--with-pic], [--with-bignum=no], [--enable-module-recovery], [--enable-experimental], [--enable-module-ecdh], [--enable-endomorphism]])
-AX_SUBDIRS_CONFIGURE([src/tor], [[--disable-system-torrc], [--disable-systemd], [--disable-lzma], [--disable-asciidoc], [--disable-libscrypt], [--disable-gcc-hardening], [--enable-pic], [--disable-unittests], [--disable-tool-name-check]])
+
 AC_OUTPUT
 
 dnl Replace the BUILDDIR path with the correct Windows path if compiling on Native Windows
