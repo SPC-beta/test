@@ -17,6 +17,7 @@ define $(package)_set_vars
   $(package)_config_opts_openbsd=--with-pic
   $(package)_config_opts_android=--with-pic
   $(package)_cppflags_mingw32=-D_WIN32_WINNT=0x0601
+  $(package)_config_opts_mingw32=LIBS=-liphlpapi
 endef
 
 define $(package)_preprocess_cmds
@@ -37,6 +38,5 @@ endef
 
 define $(package)_postprocess_cmds
   rm lib/*.la && \
-  rm include/ev*.h && \
-  rm include/event2/*_compat.h
+  rm include/ev*.h
 endef
