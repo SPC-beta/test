@@ -18,4 +18,13 @@ zmq_packages=zeromq
 
 upnp_packages=miniupnpc
 
-$(host_arch)_$(host_os)_native_packages += native_b2
+darwin_native_packages = native_ds_store native_mac_alias
+
+ifneq ($(build_os),darwin)
+darwin_native_packages += native_cctools
+
+ifeq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
+darwin_native_packages+= native_clang
+endif
+
+endif
