@@ -49,81 +49,81 @@ qt5_add_translation(qm_files ${ts_files})
 
 configure_file(bitcoin_locale.qrc bitcoin_locale.qrc USE_SOURCE_PERMISSIONS COPYONLY)
 
-# The BZX-qt sources have to include headers in
+# The BZXqt sources have to include headers in
 # order to parse them to collect translatable strings.
-add_library(BZX-qt STATIC EXCLUDE_FROM_ALL
-  bitcoin.qrc
+add_library(BZXqt STATIC EXCLUDE_FROM_ALL
+  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin.qrc
   ${CMAKE_CURRENT_BINARY_DIR}/bitcoin_locale.qrc
-  addressbookpage.cpp
-  addresstablemodel.cpp
-  askpassphrasedialog.cpp
-  automintdialog.cpp
-  automintmodel.cpp
-  automintnotification.cpp
-  bantablemodel.cpp
-  bitcoinaddressvalidator.cpp
-  bitcoinamountfield.cpp
-  bitcoingui.cpp
-  bitcoinstrings.cpp
-  bitcoinunits.cpp
-  cancelpassworddialog.cpp
-  clientmodel.cpp
-  coincontroldialog.cpp
-  coincontroltreewidget.cpp
-  csvmodelwriter.cpp
-  editaddressdialog.cpp
-  guiutil.cpp
-  intro.cpp
-  manualmintdialog.cpp
-  masternodelist.cpp
-  modaloverlay.cpp
-  networkstyle.cpp
-  notificator.cpp
-  notifymnemonic.cpp
-  openuridialog.cpp
-  optionsdialog.cpp
-  optionsmodel.cpp
-  overviewpage.cpp
-  paymentserver.cpp
-  peertablemodel.cpp
-  platformstyle.cpp
-  qvalidatedlineedit.cpp
-  qvaluecombobox.cpp
-  receivecoinsdialog.cpp
-  receiverequestdialog.cpp
-  recentrequeststablemodel.cpp
-  recover.cpp
-  rpcconsole.cpp
-  sendcoinsdialog.cpp
-  sendcoinsentry.cpp
-  signverifymessagedialog.cpp
-  sparkmodel.cpp
-  splashscreen.cpp
-  trafficgraphwidget.cpp
-  transactiondesc.cpp
-  transactiondescdialog.cpp
-  transactionfilterproxy.cpp
-  transactionrecord.cpp
-  transactiontablemodel.cpp
-  transactionview.cpp
-  utilitydialog.cpp
-  walletframe.cpp
-  walletmodel.cpp
-  walletmodeltransaction.cpp
-  walletview.cpp
-  $<$<PLATFORM_ID:Darwin>:macdockiconhandler.h>
-  $<$<PLATFORM_ID:Darwin>:macdockiconhandler.mm>
-  $<$<PLATFORM_ID:Darwin>:macnotificationhandler.h>
-  $<$<PLATFORM_ID:Darwin>:macnotificationhandler.mm>
-  $<$<BOOL:${WIN32}>:winshutdownmonitor.cpp>
-  $<$<BOOL:${WIN32}>:winshutdownmonitor.h>
+  ${CMAKE_CURRENT_SOURCE_DIR}/addressbookpage.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/addresstablemodel.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/askpassphrasedialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/automintdialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/automintmodel.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/automintnotification.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bantablemodel.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoinaddressvalidator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoinamountfield.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoingui.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoinstrings.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoinunits.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/cancelpassworddialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/clientmodel.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/coincontroldialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/coincontroltreewidget.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/csvmodelwriter.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/editaddressdialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/guiutil.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/intro.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/manualmintdialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/masternodelist.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/modaloverlay.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/networkstyle.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/notificator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/notifymnemonic.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/openuridialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/optionsdialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/optionsmodel.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/overviewpage.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/paymentserver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/peertablemodel.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/platformstyle.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/qvalidatedlineedit.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/qvaluecombobox.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/receivecoinsdialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/receiverequestdialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/recentrequeststablemodel.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/recover.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/rpcconsole.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/sendcoinsdialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/sendcoinsentry.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/signverifymessagedialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/sparkmodel.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/splashscreen.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/trafficgraphwidget.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/transactiondesc.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/transactiondescdialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/transactionfilterproxy.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/transactionrecord.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/transactiontablemodel.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/transactionview.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/utilitydialog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/walletframe.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/walletmodel.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/walletmodeltransaction.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/walletview.cpp
+  $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/macdockiconhandler.h>
+  $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/macdockiconhandler.mm>
+  $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/macnotificationhandler.h>
+  $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/macnotificationhandler.mm>
+  $<$<BOOL:${WIN32}>:${CMAKE_CURRENT_SOURCE_DIR}/winshutdownmonitor.cpp>
+  $<$<BOOL:${WIN32}>:${CMAKE_CURRENT_SOURCE_DIR}/winshutdownmonitor.h>
 )
-target_compile_definitions(BZX-qt
+target_compile_definitions(BZXqt
   PUBLIC
     QT_NO_KEYWORDS
     QT_USE_QSTRINGBUILDER
 )
-target_include_directories(BZX-qt
+target_include_directories(BZXqt
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/qt> 
@@ -134,11 +134,11 @@ set_property(SOURCE macnotificationhandler.mm
 )
 # Add this to skip specific files from UIC processing
 set_source_files_properties(
-    clientmodel.cpp
-    clientmodel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/clientmodel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clientmodel.h
     PROPERTIES SKIP_AUTOUIC ON 
 )
-target_link_libraries(BZX-qt
+target_link_libraries(BZXqt
   PUBLIC
     leveldb
     secp256k1
@@ -163,43 +163,43 @@ target_link_libraries(BZX-qt
 )
 
 if(ENABLE_WALLET)
-  target_sources(BZX-qt
+  target_sources(BZXqt
     PRIVATE
-        addressbookpage.cpp
-        automintdialog.cpp
-        automintnotification.cpp
-        addresstablemodel.cpp
-        askpassphrasedialog.cpp
-        coincontroldialog.cpp
-        coincontroltreewidget.cpp
-        editaddressdialog.cpp
-        exportviewkeydialog.cpp
-        manualmintdialog.cpp
-        openuridialog.cpp
-        overviewpage.cpp
-        paymentserver.cpp
-        receivecoinsdialog.cpp
-        receiverequestdialog.cpp
-        recentrequeststablemodel.cpp
-        sendcoinsdialog.cpp
-        sendcoinsentry.cpp
-        signverifymessagedialog.cpp
-        transactiondesc.cpp
-        transactiondescdialog.cpp
-        transactionfilterproxy.cpp
-        transactionrecord.cpp
-        transactiontablemodel.cpp
-        transactionview.cpp
-        walletframe.cpp
-        walletmodel.cpp
-        walletmodeltransaction.cpp
-        masternodelist.cpp
-        walletview.cpp
-        automintmodel.cpp
-        sparkmodel.cpp
-        createsparknamepage.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/addressbookpage.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/automintdialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/automintnotification.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/addresstablemodel.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/askpassphrasedialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/coincontroldialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/coincontroltreewidget.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/editaddressdialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/exportviewkeydialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/manualmintdialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/openuridialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/overviewpage.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/paymentserver.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/receivecoinsdialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/receiverequestdialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/recentrequeststablemodel.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/sendcoinsdialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/sendcoinsentry.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/signverifymessagedialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transactiondesc.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transactiondescdialog.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transactionfilterproxy.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transactionrecord.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transactiontablemodel.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transactionview.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/walletframe.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/walletmodel.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/walletmodeltransaction.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/masternodelist.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/walletview.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/automintmodel.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/sparkmodel.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/createsparknamepage.cpp
   )
-  target_link_libraries(BZX-qt
+  target_link_libraries(BZXqt
     PRIVATE
       BZX_wallet
       Qt5::Network
@@ -207,26 +207,26 @@ if(ENABLE_WALLET)
 endif()
 
 if(WITH_DBUS AND NOT MINGW)
-  target_link_libraries(BZX-qt PRIVATE Qt5::DBus)
+  target_link_libraries(BZXqt PRIVATE Qt5::DBus)
 endif()
 
 if(qt_lib_type STREQUAL "STATIC_LIBRARY")
   # We want to define static plugins to link ourselves, thus preventing
   # automatic linking against a "sane" set of default static plugins.
-  qt5_import_plugins(BZX-qt
+  qt5_import_plugins(BZXqt
       EXCLUDE_BY_TYPE bearer iconengines imageformats platforms styles
   )
 endif()
 
 add_executable(BZX-qt
-  bitcoin.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin.cpp
 )
 
 add_windows_resources(BZX-qt res/bitcoin-qt-res.rc)
 target_link_libraries(BZX-qt
   PUBLIC
     core_interface
-    BZX-qt
+    BZXqt
     Qt5::Widgets
     Qt5::Dependencies
     BZX_node
@@ -263,7 +263,7 @@ endif()
 
 apply_wrapped_exception_flags(BZX-qt)
 import_plugins(BZX-qt)
-set_platform_output_name(BZX-qt BZX_GUI_NAME)
+set_platform_output_name(BZX-qt BITCOIN_GUI_NAME)
 list(APPEND installable_targets BZX-qt)
 set(installable_targets ${installable_targets} PARENT_SCOPE)
 if(NOT WIN32)
@@ -278,11 +278,11 @@ endif()
 
 if(WITH_MULTIPROCESS)
   add_executable(bitcoin-gui
-    main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   )
   target_link_libraries(bitcoin-gui
     core_interface
-    BZX-qt
+    BZXqt
     BZX_node
     bitcoin_ipc
   )
