@@ -49,7 +49,7 @@ project(BZXCore
 )
 
 set(BITCOIN_DAEMON_NAME BZXd)
-set(GUI_NAME BZX-qt)
+set(BITCOIN_GUI_NAME BZX-qt)
 set(BITCOIN_CLI_NAME BZX-cli)
 set(BITCOIN_TX_NAME BZX-tx)
 
@@ -107,7 +107,7 @@ include(CMakeDependentOption)
 # When adding a new option, end the <help_text> with a full stop for consistency.
 option(BUILD_DAEMON "Build ${BITCOIN_DAEMON_NAME} executable." ON)
 option(BUILD_GUI "Build ${BITCOIN_GUI_NAME} executable." ON)
-option(BUILD_CLI "Build ${BITCOIN_BZX_CLI_NAME} executable." ON)
+option(BUILD_CLI "Build ${BITCOIN_CLI_NAME} executable." ON)
 
 
 option(BUILD_UTIL_CHAINSTATE "Build experimental BZX-chainstate executable." OFF)
@@ -586,6 +586,38 @@ foreach(func ${BUILTIN_FUNCTIONS})
     endif()
 endforeach()
 
+check_cxx_source_compiles(
+  "#if __cplusplus >= 201703L
+  int main() {
+      [[maybe_unused]] int x = 42;
+      return 0;
+  }
+  #else
+  #error \"Requires C++17\"
+  #endif"
+  HAVE_MAYBE_UNUSED
+)
+if(${HAVE_MAYBE_UNUSED})
+    message(STATUS "Compiler supports maybe_unused" )
+    add_compile_definitions(HAVE_MAYBE_UNUSED=1)
+else()
+    message(WARNING "Compiler does not support maybe_unused")
+    check_cxx_source_compiles(
+      "int main() {
+          __attribute__((unused)) int x = 42;
+          return 0;
+      }"
+      HAVE_ATTRIBUTE_UNUSED
+    )
+    if(${HAVE_ATTRIBUTE_UNUSED})
+        message(STATUS "Compiler supports __attribute__((unused))" )
+        add_compile_definitions(HAVE_ATTRIBUTE_UNUSED=1)
+    else()
+        message(WARNING "Compiler does not support __attribute__((unused))")
+        message(WARNING "Please use a compiler that supports C++17 or __attribute__((unused))")
+    endif()
+endif()
+
 include(cmake/ccache.cmake)
 
 add_library(warn_interface INTERFACE)
@@ -761,6 +793,12 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.29)
   set(CMAKE_SKIP_TEST_ALL_DEPENDENCY FALSE)
 endif()
 
+# TODO: The `CMAKE_SKIP_BUILD_RPATH` variable setting can be deleted
+#       in the future after reordering Guix script commands to
+#       perform binary checks after the installation step.
+# Relevant discussions:
+# - https://github.com/hebasto/BZX/pull/236#issuecomment-2183120953
+# - https://github.com/BZX/BZX/pull/30312#issuecomment-2191235833
 set(CMAKE_SKIP_BUILD_RPATH TRUE)
 set(CMAKE_SKIP_INSTALL_RPATH TRUE)
 
@@ -830,6 +868,8 @@ setup_split_debug_script()
 add_maintenance_targets()
 add_windows_deploy_target()
 add_macos_deploy_target()
+
+include_directories(${CMAKE_SOURCE_DIR}/src)
 
 message("\n")
 message("Configure summary")
