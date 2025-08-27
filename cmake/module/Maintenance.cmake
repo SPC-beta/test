@@ -42,7 +42,7 @@ function(add_maintenance_targets)
     VERBATIM
   )
 
-  foreach(target IN ITEMS BZXd BZX-qt BZX-cli BZX-tx BZX-util BZX-wallet test_BZX bench_BZX)
+  foreach(target IN ITEMS bitcoinzerod bitcoinzero-qt bitcoinzero-cli bitcoinzero-tx BZX-util bitcoinzero-wallet test_bitcoinzero bench_BZX)
     if(TARGET ${target})
       list(APPEND executables $<TARGET_FILE:${target}>)
     endif()
@@ -66,7 +66,7 @@ function(add_maintenance_targets)
 endfunction()
 
 function(add_windows_deploy_target)
-  if(MINGW AND TARGET BZX-qt AND TARGET BZXd AND TARGET BZX-cli AND TARGET BZX-tx AND TARGET BZX-wallet AND TARGET BZX-util AND TARGET test_BZX)
+  if(MINGW AND TARGET bitcoinzero-qt AND TARGET bitcoinzerod AND TARGET bitcoinzero-cli AND TARGET bitcoinzero-tx AND TARGET bitcoinzero-wallet AND TARGET BZX-util AND TARGET test_bitcoinzero)
     # TODO: Consider replacing this code with the CPack NSIS Generator.
     #       See https://cmake.org/cmake/help/latest/cpack_gen/nsis.html
     include(GenerateSetupNsi)
@@ -74,13 +74,13 @@ function(add_windows_deploy_target)
     add_custom_command(
       OUTPUT ${PROJECT_BINARY_DIR}/BZX-win64-setup.exe
       COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/release
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:BZX-qt> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:BZX-qt>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:BZXd> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:BZXd>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:BZX-cli> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:BZX-cli>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:BZX-tx> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:BZX-tx>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:BZX-wallet> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:BZX-wallet>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-qt> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-qt>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzerod> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzerod>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-cli> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-cli>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-tx> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-tx>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-wallet> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-wallet>
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:BZX-util> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:BZX-util>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:test_BZX> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:test_BZX>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:test_bitcoinzero> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:test_bitcoinzero>
       COMMAND makensis -V2 ${PROJECT_BINARY_DIR}/BZX-win64-setup.nsi
       VERBATIM
     )
@@ -89,8 +89,8 @@ function(add_windows_deploy_target)
 endfunction()
 
 function(add_macos_deploy_target)
-  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND TARGET BZX-qt)
-    set(macos_app "BZX-Qt.app")
+  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND TARGET bitcoinzero-qt)
+    set(macos_app "bitcoinzero-qt.app")
     # Populate Contents subdirectory.
     configure_file(${PROJECT_SOURCE_DIR}/share/qt/Info.plist.in ${macos_app}/Contents/Info.plist NO_SOURCE_PERMISSIONS)
     file(CONFIGURE OUTPUT ${macos_app}/Contents/PkgInfo CONTENT "APPL????")
@@ -102,9 +102,9 @@ function(add_macos_deploy_target)
     )
 
     add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/BZX-Qt
+      OUTPUT ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/bitcoinzero-qt
       COMMAND ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR} --config $<CONFIG> --component GUI --prefix ${macos_app}/Contents/MacOS --strip
-      COMMAND ${CMAKE_COMMAND} -E rename ${macos_app}/Contents/MacOS/bin/$<TARGET_FILE_NAME:BZX-qt> ${macos_app}/Contents/MacOS/BZX-Qt
+      COMMAND ${CMAKE_COMMAND} -E rename ${macos_app}/Contents/MacOS/bin/$<TARGET_FILE_NAME:bitcoinzero-qt> ${macos_app}/Contents/MacOS/bitcoinzero-qt
       COMMAND ${CMAKE_COMMAND} -E rm -rf ${macos_app}/Contents/MacOS/bin
       VERBATIM
     )
@@ -114,7 +114,7 @@ function(add_macos_deploy_target)
       add_custom_command(
         OUTPUT ${PROJECT_BINARY_DIR}/${osx_volname}.zip
         COMMAND ${PYTHON_COMMAND} ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus ${macos_app} ${osx_volname} -translations-dir=${QT_TRANSLATIONS_DIR} -zip
-        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/BZX-Qt
+        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/bitcoinzero-qt
         VERBATIM
       )
       add_custom_target(deploydir
@@ -125,13 +125,13 @@ function(add_macos_deploy_target)
       )
     else()
       add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/BZX-Qt
+        OUTPUT ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/bitcoinzero-qt
         COMMAND OBJDUMP=${CMAKE_OBJDUMP} ${PYTHON_COMMAND} ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus ${macos_app} ${osx_volname} -translations-dir=${QT_TRANSLATIONS_DIR}
-        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/BZX-Qt
+        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/bitcoinzero-qt
         VERBATIM
       )
       add_custom_target(deploydir
-        DEPENDS ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/BZX-Qt
+        DEPENDS ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/bitcoinzero-qt
       )
 
       find_program(ZIP_COMMAND zip REQUIRED)
@@ -145,7 +145,7 @@ function(add_macos_deploy_target)
         DEPENDS ${PROJECT_BINARY_DIR}/dist/${osx_volname}.zip
       )
     endif()
-    add_dependencies(deploydir BZX-qt)
+    add_dependencies(deploydir bitcoinzero-qt)
     add_dependencies(deploy deploydir)
   endif()
 endfunction()
