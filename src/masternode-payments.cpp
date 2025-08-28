@@ -125,7 +125,8 @@ bool CMasternodePayments::GetMasternodeTxOuts(int nBlockHeight, CAmount blockRew
     // make sure it's not filled yet
     voutMasternodePaymentsRet.clear();
 
-    if(!GetBlockTxOuts(nBlockHeight, blockReward, voutMasternodePaymentsRet)) {
+    if(!GetBlockTxOuts(nBlockHeight, blockReward, voutMasternodePaymentsRet) && deterministicMNManager->IsDIP3Enforced(nBlockHeight))
+    {
         LogPrintf("CMasternodePayments::%s -- no payee (deterministic masternode list empty)\n", __func__);
         return false;
     }
