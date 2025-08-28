@@ -1,18 +1,15 @@
-packages:=boost libevent gmp zlib backtrace bls-dash openssl tor
-native_packages := native_cmake
+packages:=boost openssl libevent gmp zlib backtrace tor bls-dash
+darwin_packages:=zeromq
+linux_packages:=zeromq
+native_packages := native_ccache native_cmake
 
 qt_linux_packages:=qt expat libxcb xcb_proto libXau xproto freetype fontconfig libxkbcommon libxcb_util libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm
 
-qrencode_linux_packages = qrencode
-qrencode_android_packages = qrencode
-qrencode_darwin_packages = qrencode
-qrencode_mingw32_packages = qrencode
-
-qt_android_packages=qt
 qt_darwin_packages=qt
 qt_mingw32_packages=qt
 
 bdb_packages=bdb
+qrencode_packages=qrencode
 
 zmq_packages=zeromq
 
@@ -30,3 +27,4 @@ darwin_native_packages+= native_clang
 endif
 
 endif
+
