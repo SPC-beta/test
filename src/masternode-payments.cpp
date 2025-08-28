@@ -23,7 +23,7 @@ CMasternodePayments mnpayments;
 
 bool IsBlockValueValid(const CBlock& block, int nBlockHeight, CAmount blockReward, std::string& strErrorRet)
 {
-    const Consensus::Params& consensusParams = Params().GetConsensus();
+    BZX_UNUSED const Consensus::Params& consensusParams = Params().GetConsensus();
     bool isBlockRewardValueMet = (block.vtx[0]->GetValueOut() <= blockReward);
    
     return isBlockRewardValueMet;
@@ -38,7 +38,7 @@ bool IsBlockPayeeValid(const CTransaction& txNew, int nBlockHeight, CAmount bloc
     }
 
     // Check for correct masternode payment
-    if (mnpayments.IsTransactionValid(txNew, nBlockHeight, blockReward)) {
+    if(mnpayments.IsTransactionValid(txNew, nBlockHeight, blockReward)) {
         LogPrint("mnpayments", "%s -- Valid masternode payment at height %d: %s", __func__, nBlockHeight, txNew.ToString());
         return true;
     }
@@ -125,8 +125,7 @@ bool CMasternodePayments::GetMasternodeTxOuts(int nBlockHeight, CAmount blockRew
     // make sure it's not filled yet
     voutMasternodePaymentsRet.clear();
 
-    if(!GetBlockTxOuts(nBlockHeight, blockReward, voutMasternodePaymentsRet) && deterministicMNManager->IsDIP3Enforced(nBlockHeight))
-    {
+    if(!GetBlockTxOuts(nBlockHeight, blockReward, voutMasternodePaymentsRet)) {
         LogPrintf("CMasternodePayments::%s -- no payee (deterministic masternode list empty)\n", __func__);
         return false;
     }
