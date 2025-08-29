@@ -32,6 +32,7 @@
 #include "bip47/paymentchannel.h"
 #include "bip47/account.h"
 #include "wallet/coincontrol.h"
+#include "rpcdump.h"
 
 #include <stdint.h>
 
@@ -457,7 +458,7 @@ UniValue getaddressesbyaccount(const JSONRPCRequest& request)
 
     // Find all addresses that have the given account
     UniValue ret(UniValue::VARR);
-    for (const std::pair<CBitcoinAddress, CAddressBookData>& item : pwallet->mapAddressBook) {
+    for (const auto& item : pwallet->mapAddressBook) {
         const CBitcoinAddress& address = item.first;
         const std::string& strName = item.second.name;
         if (strName == strAccount)
@@ -811,7 +812,7 @@ UniValue getreceivedbyaddress(const JSONRPCRequest& request)
 
     // Tally
     CAmount nAmount = 0;
-    for (const std::pair<uint256, CWalletTx>& pairWtx : pwallet->mapWallet) {
+    for (const std::pair<const uint256, CWalletTx>& pairWtx : pwallet->mapWallet) {
         const CWalletTx& wtx = pairWtx.second;
         if (wtx.IsCoinBase() || !CheckFinalTx(*wtx.tx))
             continue;
@@ -868,7 +869,7 @@ UniValue getreceivedbyaccount(const JSONRPCRequest& request)
 
     // Tally
     CAmount nAmount = 0;
-    for (const std::pair<uint256, CWalletTx>& pairWtx : pwallet->mapWallet) {
+    for (const std::pair<const uint256, CWalletTx>& pairWtx : pwallet->mapWallet) {
         const CWalletTx& wtx = pairWtx.second;
         if (wtx.IsCoinBase() || !CheckFinalTx(*wtx.tx))
             continue;
@@ -1389,7 +1390,7 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool fByA
 
     // Tally
     std::map<CBitcoinAddress, tallyitem> mapTally;
-    for (const std::pair<uint256, CWalletTx>& pairWtx : pwallet->mapWallet) {
+    for (const std::pair<const uint256, CWalletTx>& pairWtx : pwallet->mapWallet) {
         const CWalletTx& wtx = pairWtx.second;
 
         if (wtx.IsCoinBase() || !CheckFinalTx(*wtx.tx))
@@ -1421,7 +1422,7 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool fByA
     // Reply
     UniValue ret(UniValue::VARR);
     std::map<std::string, tallyitem> mapAccountTally;
-    for (const std::pair<CBitcoinAddress, CAddressBookData>& item : pwallet->mapAddressBook) {
+    for (const auto& item : pwallet->mapAddressBook) {
         const CBitcoinAddress& address = item.first;
         const std::string& strAccount = item.second.name;
         std::map<CBitcoinAddress, tallyitem>::iterator it = mapTally.find(address);
@@ -1668,9 +1669,9 @@ void ListTransactions(CWallet * const pwallet, const CWalletTx& wtx, const std::
                     int txHeight = chainActive.Height() - wtx.GetDepthInMainChain();
 
                     bool its_masternode_payment = false;
-                    {
+                    if (!fSkipMnpayoutCheck) {
                         std::vector<CTxOut> voutMasternodePaymentsRet;
-                        mnpayments.GetBlockTxOuts(txHeight, CAmount(), voutMasternodePaymentsRet);
+                        mnpayments.GetBlockTxOuts(txHeight, GetTime(), CAmount(), voutMasternodePaymentsRet);
                         //compare address of payee to addr.
                         for(CTxOut const & out : voutMasternodePaymentsRet) {
                             CTxDestination payeeDest;
@@ -1899,13 +1900,13 @@ UniValue listaccounts(const JSONRPCRequest& request)
             includeWatchonly = includeWatchonly | ISMINE_WATCH_ONLY;
     bool fAddLocked = (request.params.size() > 2 && request.params[2].get_bool());
     std::map<std::string, CAmount> mapAccountBalances;
-    for (const std::pair<CTxDestination, CAddressBookData>& entry : pwallet->mapAddressBook) {
+    for (const auto& entry : pwallet->mapAddressBook) {
         if (IsMine(*pwallet, entry.first) & includeWatchonly) {  // This address belongs to me
             mapAccountBalances[entry.second.name] = 0;
         }
     }
 
-    for (const std::pair<uint256, CWalletTx>& pairWtx : pwallet->mapWallet) {
+    for (const std::pair<const uint256, CWalletTx>& pairWtx : pwallet->mapWallet) {
         const CWalletTx& wtx = pairWtx.second;
         CAmount nFee;
         std::string strSentAccount;
@@ -2034,7 +2035,7 @@ UniValue listsinceblock(const JSONRPCRequest& request)
 
     UniValue transactions(UniValue::VARR);
 
-    for (const std::pair<uint256, CWalletTx>& pairWtx : pwallet->mapWallet) {
+    for (const std::pair<const uint256, CWalletTx>& pairWtx : pwallet->mapWallet) {
         CWalletTx tx = pairWtx.second;
 
         if (depth == -1 || tx.GetDepthInMainChain() < depth)
@@ -3711,7 +3712,7 @@ UniValue spendspark(const JSONRPCRequest& request)
     BOOST_FOREACH(const std::string& name_, keys)
     {
         spark::Address sAddress(params);
-        unsigned char coinNetwork;
+        BZX_UNUSED unsigned char coinNetwork;
         bool isSparkAddress;
         std::string sparkAddressStr;
 
@@ -3792,7 +3793,7 @@ UniValue spendspark(const JSONRPCRequest& request)
             else
                 throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameters, no subtractFee: ") + name_);
 
-            CRecipient recipient = {scriptPubKey, nAmount, fSubtractFeeFromAmount};
+            CRecipient recipient = {scriptPubKey, nAmount, fSubtractFeeFromAmount, {}, {}};
             recipients.push_back(recipient);
 
             continue;
@@ -4227,7 +4228,7 @@ UniValue joinsplit(const JSONRPCRequest& request) {
     std::vector<CRecipient> vecSend;
     std::vector<CAmount> vMints;
 
-    CAmount totalAmount = 0;
+    BZX_UNUSED CAmount totalAmount = 0;
 
     auto keys = sendTo.getKeys();
     std::vector<UniValue> mints = mintAmounts.empty() ? std::vector<UniValue>() : mintAmounts.getValues();
@@ -4253,7 +4254,7 @@ UniValue joinsplit(const JSONRPCRequest& request) {
         bool fSubtractFeeFromAmount =
                 subtractFeeFromAmountSet.find(strAddr) != subtractFeeFromAmountSet.end();
 
-        vecSend.push_back({scriptPubKey, nAmount, fSubtractFeeFromAmount});
+        vecSend.push_back({scriptPubKey, nAmount, fSubtractFeeFromAmount, {}, {}});
     }
 
     for(const auto& mint : mints) {
@@ -4576,16 +4577,6 @@ UniValue removetxwallet(const JSONRPCRequest& request) {
     return NullUniValue;
 }
 
-
-
-extern UniValue dumpprivkey_bzx(const JSONRPCRequest& request); // in rpcdump.cpp
-extern UniValue importprivkey(const JSONRPCRequest& request);
-extern UniValue importaddress(const JSONRPCRequest& request);
-extern UniValue importpubkey(const JSONRPCRequest& request);
-extern UniValue dumpwallet_bzx(const JSONRPCRequest& request);
-extern UniValue importwallet(const JSONRPCRequest& request);
-extern UniValue importprunedfunds(const JSONRPCRequest& request);
-extern UniValue removeprunedfunds(const JSONRPCRequest& request);
 
 // Calculate the size of the transaction assuming all signatures are max size
 // Use DummySignatureCreator, which inserts 72 byte signatures everywhere.
@@ -5201,17 +5192,6 @@ UniValue setusednumber(const JSONRPCRequest& request)
 
 /******************************************************************************/
 
-extern UniValue dumpprivkey(const JSONRPCRequest& request); // in rpcdump.cpp
-extern UniValue dumpsparkviewkey(const JSONRPCRequest& request); // in rpcdump.cpp
-extern UniValue importprivkey(const JSONRPCRequest& request);
-extern UniValue importaddress(const JSONRPCRequest& request);
-extern UniValue importpubkey(const JSONRPCRequest& request);
-extern UniValue dumpwallet(const JSONRPCRequest& request);
-extern UniValue importwallet(const JSONRPCRequest& request);
-extern UniValue importprunedfunds(const JSONRPCRequest& request);
-extern UniValue removeprunedfunds(const JSONRPCRequest& request);
-extern UniValue importmulti(const JSONRPCRequest& request);
-
 static const CRPCCommand commands[] =
 { //  category              name                        actor (function)           okSafeMode
     //  --------------------- ------------------------    -----------------------    ----------
@@ -5221,9 +5201,9 @@ static const CRPCCommand commands[] =
     { "wallet",             "addmultisigaddress",       &addmultisigaddress,       true,   {"nrequired","keys","account"} },
     { "wallet",             "backupwallet",             &backupwallet,             true,   {"destination"} },
     { "wallet",             "bumpfee",                  &bumpfee,                  true,   {"txid", "options"} },
-    { "wallet",             "dumpprivkey",              &dumpprivkey_bzx,        true,   {"address"}  },
-    { "wallet",             "dumpsparkviewkey",         &dumpsparkviewkey,        true,   {}  },
-    { "wallet",             "dumpwallet",               &dumpwallet_bzx,         true,   {"filename"} },
+    { "wallet",             "dumpprivkey",              &dumpprivkey_bzx,          true,   {"address"}  },
+    { "wallet",             "dumpsparkviewkey",         &dumpsparkviewkey,         true,   {}  },
+    { "wallet",             "dumpwallet",               &dumpwallet_bzx,           true,   {"filename"} },
     { "wallet",             "encryptwallet",            &encryptwallet,            true,   {"passphrase"} },
     { "wallet",             "getaccountaddress",        &getaccountaddress,        true,   {"account"} },
     { "wallet",             "getaccount",               &getaccount,               true,   {"address"} },
@@ -5269,46 +5249,54 @@ static const CRPCCommand commands[] =
     { "wallet",             "walletpassphrase",         &walletpassphrase,         true,   {"passphrase","timeout"} },
     { "wallet",             "removeprunedfunds",        &removeprunedfunds,        true,   {"txid"} },
 
-    { "wallet",             "listunspentlelantusmints", &listunspentlelantusmints, false },
-    { "wallet",             "mintlelantus",             &mintlelantus,             false },
-    { "wallet",             "autoMintlelantus",         &autoMintlelantus,         false },
-    { "wallet",             "joinsplit",                &joinsplit,                false },
-    { "wallet",             "resetlelantusmint",        &resetlelantusmint,        false },
-    { "wallet",             "setlelantusmintstatus",    &setlelantusmintstatus,    false },
-    { "wallet",             "listlelantusmints",        &listlelantusmints,        false },
+    { "wallet",             "listunspentsigmamints",    &listunspentsigmamints,    false,  {} },
+    { "wallet",             "listunspentlelantusmints", &listunspentlelantusmints, false,  {} },
+    { "wallet",             "mint",                     &mint,                     false,  {} },
+    { "wallet",             "mintlelantus",             &mintlelantus,             false,  {} },
+    { "wallet",             "autoMintlelantus",         &autoMintlelantus,         false,  {} },
+    { "wallet",             "spendmany",                &spendmany,                false,  {} },
+    { "wallet",             "joinsplit",                &joinsplit,                false,  {} },
+    { "wallet",             "resetsigmamint",           &resetsigmamint,           false,  {} },
+    { "wallet",             "resetlelantusmint",        &resetlelantusmint,        false,  {} },
+    { "wallet",             "setsigmamintstatus",       &setsigmamintstatus,       false,  {} },
+    { "wallet",             "setlelantusmintstatus",    &setlelantusmintstatus,    false,  {} },
+    { "wallet",             "listsigmamints",           &listsigmamints,           false,  {} },
+    { "wallet",             "listsigmapubcoins",        &listsigmapubcoins,        false,  {} },
+    { "wallet",             "listlelantusmints",        &listlelantusmints,        false,  {} },
 
-    { "wallet",             "setmininput",              &setmininput,              false },
-    { "wallet",             "regeneratemintpool",       &regeneratemintpool,       false },
-    { "wallet",             "removetxmempool",          &removetxmempool,          false },
-    { "wallet",             "removetxwallet",           &removetxwallet,           false },
-    { "wallet",             "listlelantusjoinsplits",   &listlelantusjoinsplits,   false },
+    { "wallet",             "setmininput",              &setmininput,              false,  {} },
+    { "wallet",             "regeneratemintpool",       &regeneratemintpool,       false,  {} },
+    { "wallet",             "removetxmempool",          &removetxmempool,          false,  {} },
+    { "wallet",             "removetxwallet",           &removetxwallet,           false,  {} },
+    { "wallet",             "listsigmaspends",          &listsigmaspends,          false,  {} },
+    { "wallet",             "listlelantusjoinsplits",   &listlelantusjoinsplits,   false,  {} },
 
     //spark
-    { "wallet",             "listunspentsparkmints",  &listunspentsparkmints,  false },
-    { "wallet",             "listsparkmints",         &listsparkmints,         false },
-    { "wallet",             "listsparkspends",        &listsparkspends,        false },
-    { "wallet",             "getsparkdefaultaddress", &getsparkdefaultaddress, false },
-    { "wallet",             "getallsparkaddresses",   &getallsparkaddresses,   false },
-    { "wallet",             "getnewsparkaddress",     &getnewsparkaddress,     false },
-    { "wallet",             "getsparkbalance",        &getsparkbalance,        false },
-    { "wallet",             "getsparkaddressbalance", &getsparkaddressbalance, false },
-    { "wallet",             "resetsparkmints",        &resetsparkmints,        false },
-    { "wallet",             "setsparkmintstatus",     &setsparkmintstatus,     false },
-    { "wallet",             "mintspark",              &mintspark,              true },
-    { "wallet",             "automintspark",          &automintspark,          false },
-    { "wallet",             "spendspark",             &spendspark,             false },
-    { "wallet",             "lelantustospark",        &lelantustospark,        false },
-    { "wallet",             "identifysparkcoins",     &identifysparkcoins,     false },
-    { "wallet",             "getsparkcoinaddr",       &getsparkcoinaddr,       false },
-    { "wallet",             "registersparkname",      &registersparkname,      false },
-    { "wallet",             "getsparknames",          &getsparknames,          true, {} },
+    { "wallet",             "listunspentsparkmints",    &listunspentsparkmints,    false,  {} },
+    { "wallet",             "listsparkmints",           &listsparkmints,           false,  {} },
+    { "wallet",             "listsparkspends",          &listsparkspends,          false,  {} },
+    { "wallet",             "getsparkdefaultaddress",   &getsparkdefaultaddress,   false,  {} },
+    { "wallet",             "getallsparkaddresses",     &getallsparkaddresses,     false,  {} },
+    { "wallet",             "getnewsparkaddress",       &getnewsparkaddress,       false,  {} },
+    { "wallet",             "getsparkbalance",          &getsparkbalance,          false,  {} },
+    { "wallet",             "getsparkaddressbalance",   &getsparkaddressbalance,   false,  {} },
+    { "wallet",             "resetsparkmints",          &resetsparkmints,          false,  {} },
+    { "wallet",             "setsparkmintstatus",       &setsparkmintstatus,       false,  {} },
+    { "wallet",             "mintspark",                &mintspark,                true,   {} },
+    { "wallet",             "automintspark",            &automintspark,            false,  {} },
+    { "wallet",             "spendspark",               &spendspark,               false,  {} },
+    { "wallet",             "lelantustospark",          &lelantustospark,          false,  {} },
+    { "wallet",             "identifysparkcoins",       &identifysparkcoins,       false,  {} },
+    { "wallet",             "getsparkcoinaddr",         &getsparkcoinaddr,         false,  {} },
+    { "wallet",             "registersparkname",        &registersparkname,        false,  {} },
+    { "wallet",             "getsparknames",            &getsparknames,            true,   {} },
 
     //bip47
-    { "bip47",              "createrapaddress",         &createrapaddress,         true },
-    { "bip47",              "setupchannel",             &setupchannel,             true },
-    { "bip47",              "sendtorapaddress",         &sendtorapaddress,         true },
-    { "bip47",              "listrapaddresses",         &listrapaddresses,         true },
-    { "bip47",              "setusednumber",            &setusednumber,            true }
+    { "bip47",              "createrapaddress",         &createrapaddress,         true,   {} },
+    { "bip47",              "setupchannel",             &setupchannel,             true,   {} },
+    { "bip47",              "sendtorapaddress",         &sendtorapaddress,         true,   {} },
+    { "bip47",              "listrapaddresses",         &listrapaddresses,         true,   {} },
+    { "bip47",              "setusednumber",            &setusednumber,            true,   {} }
 };
 
 void RegisterWalletRPCCommands(CRPCTable &t)
