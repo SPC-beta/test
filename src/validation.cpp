@@ -779,7 +779,7 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
 bool ContextualCheckTransaction(const CTransaction& tx, CValidationState &state, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
 {
     int nHeight = pindexPrev == NULL ? 0 : pindexPrev->nHeight + 1;
-    bool fDIP0003Active_context = nHeight >= consensusParams.DIP0003Height;
+    bool fDIP0003Active_context = cmp::greater_equal(nHeight, consensusParams.DIP0003Height);
 
     if (fDIP0003Active_context) {
         // check version 3 transaction types
@@ -4553,7 +4553,7 @@ bool IsTransactionInChain(const uint256& txId, int& nHeightTx)
 
 bool ContextualCheckBlock(const CBlock& block, CValidationState& state, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
 {
-    const int nHeight = pindexPrev == NULL ? 0 : pindexPrev->nHeight + 1;
+    const uint32_t nHeight = pindexPrev == NULL ? 0 : pindexPrev->nHeight + 1
 
     // Start enforcing BIP113 (Median Time Past) using versionbits logic.
     const CChainParams& chainparams = Params();
