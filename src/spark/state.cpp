@@ -314,7 +314,6 @@ bool ConnectBlockSpark(
         }
 
         if (!pblock->sparkTxInfo->sparkNames.empty()) {
-            BZX_UNUSED CSparkNameManager *sparkNameManager = CSparkNameManager::GetInstance();
             for (const auto &sparkName : pblock->sparkTxInfo->sparkNames) {
                 pindexNew->addedSparkNames[sparkName.first] =
                         CSparkNameBlockIndexData(sparkName.second.name,
@@ -913,28 +912,6 @@ std::vector<unsigned char> getSerialContext(const CTransaction &tx) {
     return serial_context;
 }
 
-BZX_UNUSED static bool CheckSparkSpendTAg(
-        CValidationState& state,
-        CSparkTxInfo* sparkTxInfo,
-        const GroupElement& tag,
-        int nHeight,
-        bool fConnectTip) {
-    // check for spark transaction in this block as well
-    if (sparkTxInfo &&
-        !sparkTxInfo->fInfoIsComplete &&
-        sparkTxInfo->spentLTags.find(tag) != sparkTxInfo->spentLTags.end())
-        return state.DoS(0, error("CTransaction::CheckTransaction() : two or more spark spends with same tag in the same block"));
-
-    // check for used tags in sparkState
-    if (sparkState.IsUsedLTag(tag)) {
-        // Proceed with checks ONLY if we're accepting tx into the memory pool or connecting block to the existing blockchain
-        if (nHeight == INT_MAX || fConnectTip) {
-            return state.DoS(0, error("CTransaction::CheckTransaction() : The Spark spend tag has been used"));
-        }
-    }
-    return true;
-}
-
 /******************************************************************************/
 // CSparkState
 /******************************************************************************/
@@ -1257,7 +1234,6 @@ void CSparkState::GetCoinSet(
     uint256 blockHash;
     std::vector<unsigned char> setHash;
     {
-        BZX_UNUSED const auto &params = ::Params().GetConsensus();
         LOCK(cs_main);
         maxHeight = chainActive.Height() - (ZC_MINT_CONFIRMATIONS - 1);
     }

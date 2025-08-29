@@ -587,7 +587,6 @@ void CInstantSendManager::HandleNewRecoveredSig(const CRecoveredSig& recoveredSi
     if (llmqType == Consensus::LLMQ_NONE) {
         return;
     }
-    BZX_UNUSED auto& params = Params().GetConsensus().llmqs.at(llmqType);
 
     uint256 txid;
     bool isInstantSendLock = false;
@@ -609,8 +608,6 @@ void CInstantSendManager::HandleNewRecoveredSig(const CRecoveredSig& recoveredSi
 
 void CInstantSendManager::HandleNewInputLockRecoveredSig(const CRecoveredSig& recoveredSig, const uint256& txid)
 {
-    BZX_UNUSED auto llmqType = Params().GetConsensus().llmqForInstantSend;
-
     CTransactionRef tx;
     uint256 hashBlock;
     if (!GetTransaction(txid, tx, Params().GetConsensus(), hashBlock, true)) {

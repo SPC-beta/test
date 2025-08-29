@@ -411,7 +411,6 @@ bool CheckSigmaTransaction(
     // Check Sigma Spend Transaction
     if(tx.IsSigmaSpend()) {
         std::vector<sigma::CoinDenomination> denominations;
-        BZX_UNUSED uint64_t totalValue = 0;
         BOOST_FOREACH(const CTxIn &txin, tx.vin){
             if(!txin.scriptSig.IsSigmaSpend()) {
                 return state.DoS(100, false,
@@ -430,7 +429,6 @@ bool CheckSigmaTransaction(
                                             SER_NETWORK, PROTOCOL_VERSION);
             sigma::CoinSpend newSpend(sigma::Params::get_default(), serializedCoinSpend);
             uint64_t denom = newSpend.getIntDenomination();
-            totalValue += denom;
             sigma::CoinDenomination denomination;
             if (!IntegerToDenomination(denom, denomination, state))
                 return false;

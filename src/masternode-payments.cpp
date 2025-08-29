@@ -23,7 +23,6 @@ CMasternodePayments mnpayments;
 
 bool IsBlockValueValid(const CBlock& block, int nBlockHeight, CAmount blockReward, std::string& strErrorRet)
 {
-    BZX_UNUSED const Consensus::Params& consensusParams = Params().GetConsensus();
     bool isBlockRewardValueMet = (block.vtx[0]->GetValueOut() <= blockReward);
    
     return isBlockRewardValueMet;

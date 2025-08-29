@@ -628,10 +628,6 @@ void SendCoinsDialog::on_sendButton_clicked()
 
     if (sendStatus.status == WalletModel::OK)
     {
-        for(int i = 0; i < ui->entries->count(); ++i)
-        {
-            BZX_UNUSED SendCoinsEntry *entry = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(i)->widget());
-        }
         accept();
         CoinControlDialog::coinControl->UnSelectAll();
         coinControlUpdateLabels();

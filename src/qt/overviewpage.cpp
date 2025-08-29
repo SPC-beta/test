@@ -516,7 +516,6 @@ void OverviewPage::resizeEvent(QResizeEvent* event)
     ui->labelUnconfirmed->setFixedHeight(labelHeight);
 
     int buttonWidth = static_cast<int>(newWidth * 0.15);
-    BZX_UNUSED int buttonHeight = static_cast<int>(newHeight * 0.05);
     int buttonMinHeight = static_cast<int>(20);
     int buttonMaxHeight = static_cast<int>(45);
 

@@ -3712,7 +3712,6 @@ UniValue spendspark(const JSONRPCRequest& request)
     BOOST_FOREACH(const std::string& name_, keys)
     {
         spark::Address sAddress(params);
-        BZX_UNUSED unsigned char coinNetwork;
         bool isSparkAddress;
         std::string sparkAddressStr;
 
@@ -4228,8 +4227,6 @@ UniValue joinsplit(const JSONRPCRequest& request) {
     std::vector<CRecipient> vecSend;
     std::vector<CAmount> vMints;
 
-    BZX_UNUSED CAmount totalAmount = 0;
-
     auto keys = sendTo.getKeys();
     std::vector<UniValue> mints = mintAmounts.empty() ? std::vector<UniValue>() : mintAmounts.getValues();
 
@@ -4249,7 +4246,6 @@ UniValue joinsplit(const JSONRPCRequest& request) {
         if (nAmount <= 0) {
             throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount for send");
         }
-        totalAmount += nAmount;
 
         bool fSubtractFeeFromAmount =
                 subtractFeeFromAmountSet.find(strAddr) != subtractFeeFromAmountSet.end();
