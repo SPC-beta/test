@@ -383,7 +383,6 @@ bool CheckLelantusJoinSplitTransaction(
                 return state.DoS(100, false, NSEQUENCE_INCORRECT,
                         "CheckLelantusJoinSplitTransaction: lelantus data should reside in transaction payload");
     }
-    BZX_UNUSED const CTxIn &txin = tx.vin[0];
     std::unique_ptr<lelantus::JoinSplit> joinsplit;
 
     try {

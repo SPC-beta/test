@@ -286,7 +286,6 @@ bool ConnectBlockSpark(
             return true;
         }
 
-        BZX_UNUSED const auto& params = ::Params().GetConsensus();
         CHash256 hash;
         bool updateHash = false;
 

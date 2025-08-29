@@ -143,8 +143,6 @@ bool CDKGSessionHandler::InitNewQuorum(const CBlockIndex* pindexQuorum)
 {
     //AssertLockHeld(cs_main);
 
-    BZX_UNUSED const auto& consensus = Params().GetConsensus();
-
     curSession = std::make_shared<CDKGSession>(params, blsWorker, dkgManager);
 
     if (!deterministicMNManager->IsDIP3Enforced(pindexQuorum->nHeight)) {
@@ -436,7 +434,6 @@ bool ProcessPendingMessageBatch(CDKGSession& session, CDKGPendingMessages& pendi
 void CDKGSessionHandler::HandleDKGRound()
 {
     uint256 curQuorumHash;
-    BZX_UNUSED int curQuorumHeight;
 
     WaitForNextPhase(QuorumPhase_None, QuorumPhase_Initialized, uint256(), []{return false;});
 
@@ -447,7 +444,6 @@ void CDKGSessionHandler::HandleDKGRound()
         pendingJustifications.Clear();
         pendingPrematureCommitments.Clear();
         curQuorumHash = quorumHash;
-        curQuorumHeight = quorumHeight;
     }
 
     const CBlockIndex* pindexQuorum;

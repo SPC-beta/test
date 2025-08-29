@@ -397,7 +397,6 @@ void OverviewPage::migrateClicked()
 {
     size_t confirmed, unconfirmed;
     auto privateBalance = walletModel->getWallet()->GetPrivateBalance(confirmed, unconfirmed);
-    BZX_UNUSED auto lGracefulPeriod = ::Params().GetConsensus().nLelantusGracefulPeriod;
     migrateAmount = "<b>" + BitcoinUnits::formatHtmlWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), privateBalance.first);
     migrateAmount.append("</b>");
     QString info = tr("Your wallet needs to be unlocked to migrate your funds to Spark.");

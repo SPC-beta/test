@@ -49,8 +49,6 @@ void CDKGSessionManager::StopMessageHandlerPool()
 
 void CDKGSessionManager::UpdatedBlockTip(const CBlockIndex* pindexNew, bool fInitialDownload)
 {
-    BZX_UNUSED const auto& consensus = Params().GetConsensus();
-
     CleanupCache();
 
     if (fInitialDownload)
