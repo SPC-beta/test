@@ -122,9 +122,7 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     if (chainActive.Contains(blockindex))
         confirmations = chainActive.Height() - blockindex->nHeight + 1;
     result.push_back(Pair("confirmations", confirmations));
-    result.push_back(Pair("strippedsize", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS)));
     result.push_back(Pair("size", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION)));
-    result.push_back(Pair("weight", (int)::GetBlockWeight(block)));
     result.push_back(Pair("height", blockindex->nHeight));
     result.push_back(Pair("version", block.nVersion));
     result.push_back(Pair("versionHex", strprintf("%08x", block.nVersion)));
@@ -874,19 +872,20 @@ UniValue getblock(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
-            "getblock \"blockhash\" ( verbose )\n"
-            "\nIf verbose is false, returns a string that is serialized, hex-encoded data for block 'hash'.\n"
-            "If verbose is true, returns an Object with information about block <hash>.\n"
+            "getblock \"blockhash\" ( verbosity ) \n"
+            "\nIf verbosity is 0, returns a string that is serialized, hex-encoded data for block 'hash'.\n"
+            "If verbosity is 1, returns an Object with information about block <hash>.\n"
+            "If verbosity is 2, returns an Object with information about block <hash> and information about each transaction. \n"
             "\nArguments:\n"
             "1. \"blockhash\"          (string, required) The block hash\n"
-            "2. verbose                (boolean, optional, default=true) true for a json object, false for the hex encoded data\n"
-            "\nResult (for verbose = true):\n"
+            "2. verbosity              (numeric, optional, default=1) 0 for hex-encoded data, 1 for a json object, and 2 for json object with transaction data\n"
+            "\nResult (for verbosity = 0):\n"
+            "\"data\"             (string) A string that is serialized, hex-encoded data for block 'hash'.\n"
+            "\nResult (for verbose = 1):\n"
             "{\n"
             "  \"hash\" : \"hash\",     (string) the block hash (same as provided)\n"
             "  \"confirmations\" : n,   (numeric) The number of confirmations, or -1 if the block is not on the main chain\n"
             "  \"size\" : n,            (numeric) The block size\n"
-            "  \"strippedsize\" : n,    (numeric) The block size excluding witness data\n"
-            "  \"weight\" : n           (numeric) The block weight as defined in BIP 141\n"
             "  \"height\" : n,          (numeric) The block height or index\n"
             "  \"version\" : n,         (numeric) The block version\n"
             "  \"versionHex\" : \"00000000\", (string) The block version formatted in hexadecimal\n"
@@ -909,11 +908,17 @@ UniValue getblock(const JSONRPCRequest& request)
             "  \"previousblockhash\" : \"hash\",  (string) The hash of the previous block\n"
             "  \"nextblockhash\" : \"hash\"       (string) The hash of the next block\n"
             "}\n"
-            "\nResult (for verbose=false):\n"
-            "\"data\"             (string) A string that is serialized, hex-encoded data for block 'hash'.\n"
+            "\nResult (for verbosity = 2):\n"
+            "{\n"
+            "  ...,                     Same output as verbosity = 1.\n"
+            "  \"tx\" : [               (array of Objects) The transactions in the format of the getrawtransaction RPC. Different from verbosity = 1 \"tx\" result.\n"
+            "         ,...\n"
+            "  ],\n"
+            "  ,...                     Same output as verbosity = 1.\n"
+            "}\n"
             "\nExamples:\n"
-            + HelpExampleCli("getblock", "\"00000000c937983704a73af28acdec37b049d214adbda81d7e2a3dd146f6ed09\"")
-            + HelpExampleRpc("getblock", "\"00000000c937983704a73af28acdec37b049d214adbda81d7e2a3dd146f6ed09\"")
+            + HelpExampleCli("getblock", "\"00000000000fd08c2fb661d2fcb0d49abb3a91e5f27082ce64feed3b4dede2e2\"")
+            + HelpExampleRpc("getblock", "\"00000000000fd08c2fb661d2fcb0d49abb3a91e5f27082ce64feed3b4dede2e2\"")
         );
 
     LOCK(cs_main);
@@ -921,9 +926,13 @@ UniValue getblock(const JSONRPCRequest& request)
     std::string strHash = request.params[0].get_str();
     uint256 hash(uint256S(strHash));
 
-    bool fVerbose = true;
-    if (request.params.size() > 1)
-        fVerbose = request.params[1].get_bool();
+    int verbosity = 1;
+    if (request.params.size() > 1) {
+        if(request.params[1].isNum())
+            verbosity = request.params[1].get_int();
+        else
+            verbosity = request.params[1].get_bool() ? 1 : 0;
+    }
 
     if (mapBlockIndex.count(hash) == 0)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
@@ -942,7 +951,7 @@ UniValue getblock(const JSONRPCRequest& request)
         // block).
         throw JSONRPCError(RPC_MISC_ERROR, "Block not found on disk");
 
-    if (!fVerbose)
+    if (verbosity <= 0)
     {
         CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
         ssBlock << block;
@@ -950,7 +959,7 @@ UniValue getblock(const JSONRPCRequest& request)
         return strHex;
     }
 
-    return blockToJSON(block, pblockindex);
+    return blockToJSON(block, pblockindex, verbosity >= 2);
 }
 
 struct CCoinsStats
@@ -1020,8 +1029,6 @@ static bool GetUTXOStats(CCoinsView *view, CCoinsStats &stats)
     // There are 3 type of private spend transactions
     std::vector<std::pair<uint160, AddressType> > addresses;
     addresses.push_back(std::make_pair(uint160(), AddressType::lelantusJSplit));
-    addresses.push_back(std::make_pair(uint160(), AddressType::sigmaSpend));
-    addresses.push_back(std::make_pair(uint160(), AddressType::privcoinSpend));
     addresses.push_back(std::make_pair(uint160(), AddressType::sparkSpend));
 
     // Iterate over all types of transactions
@@ -1036,11 +1043,7 @@ static bool GetUTXOStats(CCoinsView *view, CCoinsStats &stats)
         }
         addressIndex.clear();
     }
-    stats.nTotalAmount += 44666700000000; // The estimated amount of coins forged during the Privcoin attacks
-    stats.nTotalAmount += 23750000000000; // The estimated amount of coins forged during the Lelantus attacks.
-    stats.nTotalAmount -= 17326986000000; // Total locked in code after CVE-2018-17144 attacks.
-    stats.nTotalAmount -= 16810168037691; // Total burnt Coins sent to unrecoverable address https://explorer.BZX.org/tx/0b53178c1b22bae4c04ef943ee6d6d30f2483327fe9beb54952951592e8ce368
-
+    stats.nTotalAmount += 0;
     stats.hashSerialized = ss.GetHash();
     stats.nDiskSize = view->EstimateSize();
     return true;
@@ -1250,14 +1253,23 @@ static UniValue SoftForkMajorityDesc(int version, CBlockIndex* pindex, const Con
     bool activated = false;
     switch(version)
     {
-        case 2:
-            activated = pindex->nHeight >= consensusParams.BIP34Height;
-            break;
-        case 3:
+        case 1:
             activated = pindex->nHeight >= consensusParams.BIP66Height;
             break;
-        case 4:
+        case 2:
             activated = pindex->nHeight >= consensusParams.BIP65Height;
+            break;
+        case 3:
+            activated = pindex->nHeight >= consensusParams.CSV;
+            break;
+        case 4:
+            activated = pindex->nHeight >= consensusParams.DIP0003Height;
+            break;
+        case 5:
+            activated = pindex->nHeight >= consensusParams.DIP0003EnforcementHeight;
+            break;
+        case 6:
+            activated = pindex->nHeight >= consensusParams.DIP0008Height;
             break;
     }
     rv.push_back(Pair("status", activated));
@@ -1354,7 +1366,7 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     obj.push_back(Pair("bestblockhash",         chainActive.Tip()->GetBlockHash().GetHex()));
     obj.push_back(Pair("difficulty",            (double)GetDifficulty()));
     obj.push_back(Pair("mediantime",            (int64_t)chainActive.Tip()->GetMedianTimePast()));
-    obj.push_back(Pair("verificationprogress",  GuessVerificationProgress(Params().TxData(), chainActive.Tip())));
+    obj.push_back(Pair("verificationprogress",  Checkpoints::GuessVerificationProgress(chainActive.Tip())));
     obj.push_back(Pair("chainwork",             chainActive.Tip()->nChainWork.GetHex()));
     obj.push_back(Pair("pruned",                fPruneMode));
 
@@ -1362,11 +1374,12 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     CBlockIndex* tip = chainActive.Tip();
     UniValue softforks(UniValue::VARR);
     UniValue bip9_softforks(UniValue::VOBJ);
-    softforks.push_back(SoftForkDesc("bip34", 2, tip, consensusParams));
-    softforks.push_back(SoftForkDesc("bip66", 3, tip, consensusParams));
-    softforks.push_back(SoftForkDesc("bip65", 4, tip, consensusParams));
-    BIP9SoftForkDescPushBack(bip9_softforks, "csv", consensusParams, Consensus::DEPLOYMENT_CSV);
-    BIP9SoftForkDescPushBack(bip9_softforks, "segwit", consensusParams, Consensus::DEPLOYMENT_SEGWIT);
+    softforks.push_back(SoftForkDesc("bip66", 1, tip, consensusParams));
+    softforks.push_back(SoftForkDesc("bip65", 2, tip, consensusParams));
+    softforks.push_back(SoftForkDesc("csv", 3, tip, consensusParams));
+    softforks.push_back(SoftForkDesc("DIP3", 4, tip, consensusParams));
+    softforks.push_back(SoftForkDesc("DIP3Enforcement", 5, tip, consensusParams));
+    softforks.push_back(SoftForkDesc("DIP8", 6, tip, consensusParams));
     obj.push_back(Pair("softforks",             softforks));
     obj.push_back(Pair("bip9_softforks", bip9_softforks));
 
