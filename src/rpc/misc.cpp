@@ -2107,7 +2107,6 @@ static const CRPCCommand commands[] =
 
     { "mobile",             "checkifmncollateral",   &checkifmncollateral, false,              {} },
 
-    { "hidden",             "setmocktime",            &setmocktime,            true,           {"timestamp"} },
     { "hidden",             "echo",                   &echo,                   true,           {"arg0","arg1","arg2","arg3","arg4","arg5","arg6","arg7","arg8","arg9"} },
     { "hidden",             "echojson",               &echo,                  true,            {"arg0","arg1","arg2","arg3","arg4","arg5","arg6","arg7","arg8","arg9"} },
 };
