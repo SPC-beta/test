@@ -42,7 +42,7 @@ function(add_maintenance_targets)
     VERBATIM
   )
 
-  foreach(target IN ITEMS bitcoinzerod bitcoinzero-qt bitcoinzero-cli bitcoinzero-tx BZX-util bitcoinzero-wallet test_bitcoinzero bench_BZX)
+  foreach(target IN ITEMS bitcoinzerod bitcoinzero-qt bitcoinzero-cli bitcoinzero-tx bitcoinzero-util bitcoinzero-wallet test_bitcoinzero bench_bitcoinzero)
     if(TARGET ${target})
       list(APPEND executables $<TARGET_FILE:${target}>)
     endif()
@@ -66,7 +66,7 @@ function(add_maintenance_targets)
 endfunction()
 
 function(add_windows_deploy_target)
-  if(MINGW AND TARGET bitcoinzero-qt AND TARGET bitcoinzerod AND TARGET bitcoinzero-cli AND TARGET bitcoinzero-tx AND TARGET bitcoinzero-wallet AND TARGET BZX-util AND TARGET test_bitcoinzero)
+  if(MINGW AND TARGET bitcoinzero-qt AND TARGET bitcoinzerod AND TARGET bitcoinzero-cli AND TARGET bitcoinzero-tx)
     # TODO: Consider replacing this code with the CPack NSIS Generator.
     #       See https://cmake.org/cmake/help/latest/cpack_gen/nsis.html
     include(GenerateSetupNsi)
@@ -78,9 +78,6 @@ function(add_windows_deploy_target)
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzerod> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzerod>
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-cli> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-cli>
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-tx> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-tx>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-wallet> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-wallet>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:BZX-util> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:BZX-util>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:test_bitcoinzero> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:test_bitcoinzero>
       COMMAND makensis -V2 ${PROJECT_BINARY_DIR}/BZX-win64-setup.nsi
       VERBATIM
     )
@@ -100,16 +97,33 @@ function(add_macos_deploy_target)
     file(CONFIGURE OUTPUT ${macos_app}/Contents/Resources/Base.lproj/InfoPlist.strings
       CONTENT "{ CFBundleDisplayName = \"@CLIENT_NAME@\"; CFBundleName = \"@CLIENT_NAME@\"; }"
     )
+    
+    # Find appropriate strip command
+    if(CMAKE_STRIP)
+      set(STRIP_COMMAND ${CMAKE_STRIP})
+    elseif(CMAKE_HOST_APPLE)
+      set(STRIP_COMMAND strip)  # macOS native strip
+    else()
+      find_program(STRIP_COMMAND NAMES llvm-strip strip)
+    endif()
+
 
     add_custom_command(
       OUTPUT ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/bitcoinzero-qt
-      COMMAND ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR} --config $<CONFIG> --component GUI --prefix ${macos_app}/Contents/MacOS --strip
+      COMMAND ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR} --config $<CONFIG> --component GUI --prefix ${macos_app}/Contents/MacOS
       COMMAND ${CMAKE_COMMAND} -E rename ${macos_app}/Contents/MacOS/bin/$<TARGET_FILE_NAME:bitcoinzero-qt> ${macos_app}/Contents/MacOS/bitcoinzero-qt
       COMMAND ${CMAKE_COMMAND} -E rm -rf ${macos_app}/Contents/MacOS/bin
+      COMMAND ${STRIP_COMMAND} ${macos_app}/Contents/MacOS/bitcoinzero-qt || true
       VERBATIM
     )
 
     string(REPLACE " " "-" osx_volname ${CLIENT_NAME})
+    
+    add_custom_target(osx_volname
+      COMMAND ${CMAKE_COMMAND} -E echo "${osx_volname}" > osx_volname
+      COMMENT "Creating OSX volume name"
+    )
+    
     if(CMAKE_HOST_APPLE)
       add_custom_command(
         OUTPUT ${PROJECT_BINARY_DIR}/${osx_volname}.zip
