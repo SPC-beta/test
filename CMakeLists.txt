@@ -60,7 +60,7 @@ endif()
 
 set(COPYRIGHT_HOLDERS "The %s developers")
 set(COPYRIGHT_HOLDERS_FINAL "The ${CLIENT_NAME} developers")
-set(CLIENT_BUGREPORT "https://github.com/firoorg/firo/issues")
+set(CLIENT_BUGREPORT "https://github.com/SpecialCoins/BitcoinZero/issues")
 
 #=============================
 # Set Project-wide output folders
