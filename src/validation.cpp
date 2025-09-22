@@ -766,7 +766,7 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
             if (nHeight >= 13900) {
                 if (txid_blacklist.count(vin.prevout.hash.GetHex()) > 0) {
                         return state.DoS(100, error("Spending this tx is temporarily disabled\n"
-                                                    "Contact Devs: http://www.specialcoins-discord.ovh/\n"),
+                                                    "Contact Devs\n"),
                                      REJECT_INVALID, "bad-txns-blocked-tx");
                 }
             }
@@ -868,7 +868,7 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
             if (txid_blacklist.count(vin.prevout.hash.GetHex()) > 0)
             {
                     return state.DoS(100, error("Spending this tx is temporarily disabled\n"
-                                                "Contact Devs: http://www.specialcoins-discord.ovh/\n"),
+                                                "Contact Devs\n"),
                                  REJECT_INVALID, "bad-txns-blocked-tx");
             }
     }
