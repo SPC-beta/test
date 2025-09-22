@@ -236,7 +236,7 @@ endif()
 
 
 # P2P and RPC server functionality used by `bitcoind` and `bitcoinzero-qt` executables.
-add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
+add_library(bitcoinzero_node STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/activemasternode.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/addrdb.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/addrman.cpp
@@ -355,7 +355,7 @@ add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/warnings.cpp
 )
 
-target_link_libraries(bitcoin_node
+target_link_libraries(bitcoinzero_node
   PRIVATE
     core_interface
     bitcoin_common
@@ -388,12 +388,12 @@ if(BUILD_DAEMON)
     core_interface
     univalue
     Boost::thread
-    bitcoin_node
+    bitcoinzero_node
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
     $<$<BOOL:${WITH_ZMQ}>:BZX_zmq>
-    bitcoin_cli
+    bitcoinzero_cli
     secp256k1
     secp256k1pp
     $<TARGET_NAME_IF_EXISTS:BZX_wallet>
@@ -411,7 +411,7 @@ if(WITH_MULTIPROCESS)
   )
   target_link_libraries(bitcoin-node
     core_interface
-    bitcoin_node
+    bitcoinzero_node
     bitcoin_ipc
     $<TARGET_NAME_IF_EXISTS:BZX_wallet>
   )
@@ -435,19 +435,19 @@ if(WITH_MULTIPROCESS)
 endif()
 
 
-add_library(bitcoin_cli STATIC EXCLUDE_FROM_ALL
+add_library(bitcoinzero_cli STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/rpc/client.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/rpc/protocol.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
 )
-target_link_libraries(bitcoin_cli
+target_link_libraries(bitcoinzero_cli
   PUBLIC
     core_interface
     univalue
     Boost::filesystem
     Boost::thread
     Boost::program_options
-    bitcoin_node
+    bitcoinzero_node
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
@@ -456,7 +456,7 @@ target_link_libraries(bitcoin_cli
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
 )
-target_include_directories(bitcoin_cli
+target_include_directories(bitcoinzero_cli
   PUBLIC
 )
 
@@ -467,12 +467,12 @@ if(BUILD_CLI)
   target_link_libraries(bitcoinzero-cli
     core_interface
     univalue
-    bitcoin_node
+    bitcoinzero_node
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
     $<$<BOOL:${WITH_ZMQ}>:BZX_zmq>
-    bitcoin_cli
+    bitcoinzero_cli
     $<TARGET_NAME_IF_EXISTS:BZX_wallet>
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
@@ -492,7 +492,7 @@ if(BUILD_TX)
   target_link_libraries(bitcoinzero-tx
     core_interface
     bitcoin_crypto    
-    bitcoin_cli
+    bitcoinzero_cli
     bitcoin_common
     bitcoin_util
     univalue
