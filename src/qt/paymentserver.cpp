@@ -1,10 +1,10 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2016 The BZX Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "paymentserver.h"
 
-#include "bitcoinunits.h"
+#include "BZXunits.h"
 #include "guiutil.h"
 #include "optionsmodel.h"
 
@@ -30,8 +30,8 @@
 #include <QStringList>
 #include <QUrlQuery>
 
-const int BITCOIN_IPC_CONNECT_TIMEOUT = 1000; // milliseconds
-const QString BITCOIN_IPC_PREFIX("BZX:");
+const int BZX_IPC_CONNECT_TIMEOUT = 1000; // milliseconds
+const QString BZX_IPC_PREFIX("BZX:");
 
 //
 // Create a name that is unique for:
@@ -40,7 +40,7 @@ const QString BITCOIN_IPC_PREFIX("BZX:");
 //
 static QString ipcServerName()
 {
-    QString name("BitcoinQt");
+    QString name("BZXQt");
 
     // Append a simple hash of the datadir
     // Note that GetDataDir(true) returns a different path
@@ -79,14 +79,14 @@ void PaymentServer::ipcParseCommandLine(int argc, char* argv[])
         // network as that would require fetching and parsing the payment request.
         // That means clicking such an URI which contains a testnet payment request
         // will start a mainnet instance and throw a "wrong network" error.
-        if (arg.startsWith(BITCOIN_IPC_PREFIX, Qt::CaseInsensitive)) // BZX: URI
+        if (arg.startsWith(BZX_IPC_PREFIX, Qt::CaseInsensitive)) // BZX: URI
         {
             savedPaymentRequests.append(arg);
 
             SendCoinsRecipient r;
-            if (GUIUtil::parseBitcoinURI(arg, &r) && !r.address.isEmpty())
+            if (GUIUtil::parseBZXURI(arg, &r) && !r.address.isEmpty())
             {
-                CBitcoinAddress address(r.address.toStdString());
+                CBZXAddress address(r.address.toStdString());
 
                 if (address.IsValid(Params(CBaseChainParams::MAIN)))
                 {
@@ -120,7 +120,7 @@ bool PaymentServer::ipcSendCommandLine()
     {
         QLocalSocket* socket = new QLocalSocket();
         socket->connectToServer(ipcServerName(), QIODevice::WriteOnly);
-        if (!socket->waitForConnected(BITCOIN_IPC_CONNECT_TIMEOUT))
+        if (!socket->waitForConnected(BZX_IPC_CONNECT_TIMEOUT))
         {
             delete socket;
             socket = NULL;
@@ -135,7 +135,7 @@ bool PaymentServer::ipcSendCommandLine()
 
         socket->write(block);
         socket->flush();
-        socket->waitForBytesWritten(BITCOIN_IPC_CONNECT_TIMEOUT);
+        socket->waitForBytesWritten(BZX_IPC_CONNECT_TIMEOUT);
         socket->disconnectFromServer();
 
         delete socket;
@@ -215,15 +215,15 @@ void PaymentServer::handleURIOrFile(const QString& s)
         return;
     }
 
-    if (s.startsWith(BITCOIN_IPC_PREFIX, Qt::CaseInsensitive)) // BZX: URI
+    if (s.startsWith(BZX_IPC_PREFIX, Qt::CaseInsensitive)) // BZX: URI
     {
         QUrlQuery uri((QUrl(s)));
         // normal URI
         {
             SendCoinsRecipient recipient;
-            if (GUIUtil::parseBitcoinURI(s, &recipient))
+            if (GUIUtil::parseBZXURI(s, &recipient))
             {
-                CBitcoinAddress address(recipient.address.toStdString());
+                CBZXAddress address(recipient.address.toStdString());
                 if (!address.IsValid()) {
                     if (uri.hasQueryItem("r")) {  // payment request
                         Q_EMIT message(tr("URI handling"),

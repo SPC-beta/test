@@ -359,7 +359,7 @@ If you have an existing recovery seed phrase, please select "Recover existing wa
     </message>
 </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>BZXGUI</name>
     <message>
         <source>BZX Core</source>
         <translation>BZX 核心</translation>

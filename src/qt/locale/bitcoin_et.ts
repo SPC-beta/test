@@ -220,7 +220,7 @@
     </message>
     </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>BZXGUI</name>
     <message>
         <source>Sign &amp;message...</source>
         <translation>Signeeri &amp;sõnum</translation>

@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2016 The BZX Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_PRIMITIVES_BLOCK_H
-#define BITCOIN_PRIMITIVES_BLOCK_H
+#ifndef BZX_PRIMITIVES_BLOCK_H
+#define BZX_PRIMITIVES_BLOCK_H
 
 #include <deque>
 #include <type_traits>
@@ -210,4 +210,4 @@ struct CBlockLocator
 /** Compute the consensus-critical block weight (see BIP 141). */
 int64_t GetBlockWeight(const CBlock& tx);
 
-#endif // BITCOIN_PRIMITIVES_BLOCK_H
+#endif // BZX_PRIMITIVES_BLOCK_H

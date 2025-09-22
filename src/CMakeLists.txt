@@ -1,4 +1,4 @@
-# Copyright (c) 2023-present The Bitcoin Core developers
+# Copyright (c) 2023-present The BZX Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
@@ -6,30 +6,30 @@ include(GNUInstallDirs)
 include(AddWindowsResources)
 include(WindowsSystemConfiguration)
 
-configure_file(${PROJECT_SOURCE_DIR}/cmake/bitcoin-build-config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config/bitcoin-config.h USE_SOURCE_PERMISSIONS @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/cmake/BZX-build-config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config/BZX-config.h USE_SOURCE_PERMISSIONS @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_custom_target(generate_build_info
-  BYPRODUCTS ${PROJECT_BINARY_DIR}/src/bitcoin-build-info.h
-  COMMAND ${CMAKE_COMMAND} -DBUILD_INFO_HEADER_PATH=${PROJECT_BINARY_DIR}/src/bitcoin-build-info.h -DSOURCE_DIR=${PROJECT_SOURCE_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/script/GenerateBuildInfo.cmake
-  COMMENT "Generating bitcoin-build-info.h"
+  BYPRODUCTS ${PROJECT_BINARY_DIR}/src/BZX-build-info.h
+  COMMAND ${CMAKE_COMMAND} -DBUILD_INFO_HEADER_PATH=${PROJECT_BINARY_DIR}/src/BZX-build-info.h -DSOURCE_DIR=${PROJECT_SOURCE_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/script/GenerateBuildInfo.cmake
+  COMMENT "Generating BZX-build-info.h"
   VERBATIM
 )
-add_library(bitcoin_clientversion OBJECT EXCLUDE_FROM_ALL
+add_library(BZX_clientversion OBJECT EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/clientversion.cpp
 )
-target_link_libraries(bitcoin_clientversion
+target_link_libraries(BZX_clientversion
   PRIVATE
     core_interface
 )
-add_dependencies(bitcoin_clientversion generate_build_info)
+add_dependencies(BZX_clientversion generate_build_info)
 
 #=============================
 # util library
 # BZX does not have util subdirectory
 #=============================
 
-add_library(bitcoin_util STATIC EXCLUDE_FROM_ALL
+add_library(BZX_util STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/bls/bls_batchverifier.h
   ${CMAKE_CURRENT_SOURCE_DIR}/bls/bls_ies.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bls/bls_ies.h
@@ -57,11 +57,11 @@ add_library(bitcoin_util STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/utiltime.cpp
 )
 
-target_link_libraries(bitcoin_util
+target_link_libraries(BZX_util
   PRIVATE
     core_interface
-    bitcoin_clientversion
-    bitcoin_crypto
+    BZX_clientversion
+    BZX_crypto
     Boost::thread
     Boost::chrono
     univalue
@@ -127,7 +127,7 @@ set_target_properties(secp256k1 PROPERTIES
 )
 string(APPEND CMAKE_C_COMPILE_OBJECT " ${APPEND_CPPFLAGS} ${APPEND_CFLAGS}")
 
-add_library(bitcoin_consensus STATIC EXCLUDE_FROM_ALL
+add_library(BZX_consensus STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/amount.h
   ${CMAKE_CURRENT_SOURCE_DIR}/arith_uint256.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/arith_uint256.h
@@ -149,7 +149,7 @@ add_library(bitcoin_consensus STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/primitives/transaction.h
   ${CMAKE_CURRENT_SOURCE_DIR}/pubkey.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/pubkey.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/script/bitcoinconsensus.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/script/BZXconsensus.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/script/interpreter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/script/interpreter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/script/script.cpp
@@ -164,7 +164,7 @@ add_library(bitcoin_consensus STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/utilstrencodings.h
   ${CMAKE_CURRENT_SOURCE_DIR}/version.h
 )
-target_link_libraries(bitcoin_consensus
+target_link_libraries(BZX_consensus
   PRIVATE
     core_interface
     secp256k1
@@ -174,7 +174,7 @@ target_link_libraries(bitcoin_consensus
   PUBLIC
     univalue
     OpenSSL::Crypto
-    bitcoin_crypto
+    BZX_crypto
 )
 
 if(WITH_ZMQ)
@@ -182,8 +182,8 @@ if(WITH_ZMQ)
 endif()
 
 # Home for common functionality shared by different executables and libraries.
-# Similar to `bitcoin_util` library, but higher-level.
-add_library(bitcoin_common STATIC EXCLUDE_FROM_ALL
+# Similar to `BZX_util` library, but higher-level.
+add_library(BZX_common STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/amount.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/base58.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bloom.cpp
@@ -211,11 +211,11 @@ add_library(bitcoin_common STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/warnings.cpp
   $<$<BOOL:${ENABLE_CRASH_HOOKS}>:${CMAKE_CURRENT_SOURCE_DIR}/stacktraces.cpp>
 )
-target_link_libraries(bitcoin_common
+target_link_libraries(BZX_common
   PUBLIC
     core_interface
-    bitcoin_consensus
-    bitcoin_util
+    BZX_consensus
+    BZX_util
     univalue
     secp256k1
     Boost::headers
@@ -226,7 +226,7 @@ target_link_libraries(bitcoin_common
     $<$<BOOL:${WIN32}>:windows_system>
 )
 
-apply_wrapped_exception_flags(bitcoin_common)
+apply_wrapped_exception_flags(BZX_common)
 
 include(InstallBinaryComponent)
 set(installable_targets)
@@ -235,8 +235,8 @@ if(ENABLE_WALLET)
 endif()
 
 
-# P2P and RPC server functionality used by `bitcoind` and `BZX-qt` executables.
-add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
+# P2P and RPC server functionality used by `BZXd` and `BZX-qt` executables.
+add_library(BZX_node STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/activemasternode.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/addrdb.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/addrman.cpp
@@ -355,11 +355,11 @@ add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/warnings.cpp
 )
 
-target_link_libraries(bitcoin_node
+target_link_libraries(BZX_node
   PRIVATE
     core_interface
-    bitcoin_common
-    bitcoin_util
+    BZX_common
+    BZX_util
     secp256k1
     $<$<BOOL:${WITH_ZMQ}>:BZX_zmq>
     leveldb
@@ -378,76 +378,76 @@ target_link_libraries(bitcoin_node
     $<$<BOOL:${WIN32}>:windows_system>
 )
 
-# Bitcoin Core BZXd.
+# BZX Core BZXd.
 if(BUILD_DAEMON)
-  add_executable(bitcoind
-  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoind.cpp
+  add_executable(BZXd
+  ${CMAKE_CURRENT_SOURCE_DIR}/BZXd.cpp
   )
-  add_windows_resources(bitcoind bitcoind-res.rc)
-  target_link_libraries(bitcoind
+  add_windows_resources(BZXd BZXd-res.rc)
+  target_link_libraries(BZXd
     core_interface
     univalue
     Boost::thread
-    bitcoin_node
+    BZX_node
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
     $<$<BOOL:${WITH_ZMQ}>:BZX_zmq>
-    bitcoin_cli
+    BZX_cli
     secp256k1
     secp256k1pp
     $<TARGET_NAME_IF_EXISTS:BZX_wallet>
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
   )
-  set_platform_output_name(BZXd BITCOIN_DAEMON_NAME)
+  set_platform_output_name(BZXd BZX_DAEMON_NAME)
   apply_wrapped_exception_flags(BZXd)
   list(APPEND installable_targets BZXd)
 endif()
 if(WITH_MULTIPROCESS)
-  add_executable(bitcoin-node
-    ${CMAKE_CURRENT_SOURCE_DIR}/bitcoind.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/init/bitcoin-node.cpp
+  add_executable(BZX-node
+    ${CMAKE_CURRENT_SOURCE_DIR}/BZXd.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/init/BZX-node.cpp
   )
-  target_link_libraries(bitcoin-node
+  target_link_libraries(BZX-node
     core_interface
-    bitcoin_node
-    bitcoin_ipc
+    BZX_node
+    BZX_ipc
     $<TARGET_NAME_IF_EXISTS:BZX_wallet>
   )
-  list(APPEND installable_targets bitcoin-node)
+  list(APPEND installable_targets BZX-node)
 
   if(BUILD_TESTS)
-    # bitcoin_ipc_test library target is defined here in src/CMakeLists.txt
+    # BZX_ipc_test library target is defined here in src/CMakeLists.txt
     # instead of src/test/CMakeLists.txt so capnp files in src/test/ are able to
     # reference capnp files in src/ipc/capnp/ by relative path. The Cap'n Proto
     # compiler only allows importing by relative path when the importing and
     # imported files are underneath the same compilation source prefix, so the
     # source prefix must be src/, not src/test/
-    add_library(bitcoin_ipc_test STATIC EXCLUDE_FROM_ALL
+    add_library(BZX_ipc_test STATIC EXCLUDE_FROM_ALL
       test/ipc_test.cpp
     )
-    target_capnp_sources(bitcoin_ipc_test ${PROJECT_SOURCE_DIR}
+    target_capnp_sources(BZX_ipc_test ${PROJECT_SOURCE_DIR}
       test/ipc_test.capnp
     )
-    add_dependencies(bitcoin_ipc_test bitcoin_ipc_headers)
+    add_dependencies(BZX_ipc_test BZX_ipc_headers)
   endif()
 endif()
 
 
-add_library(bitcoin_cli STATIC EXCLUDE_FROM_ALL
+add_library(BZX_cli STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/rpc/client.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/rpc/protocol.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
 )
-target_link_libraries(bitcoin_cli
+target_link_libraries(BZX_cli
   PUBLIC
     core_interface
     univalue
     Boost::filesystem
     Boost::thread
     Boost::program_options
-    bitcoin_node
+    BZX_node
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
@@ -456,52 +456,52 @@ target_link_libraries(bitcoin_cli
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
 )
-target_include_directories(bitcoin_cli
+target_include_directories(BZX_cli
   PUBLIC
 )
 
-# Bitcoin Core RPC client
+# BZX Core RPC client
 if(BUILD_CLI)
-  add_executable(BZX-cli ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin-cli.cpp)
-  add_windows_resources(BZX-cli bitcoin-cli-res.rc)
+  add_executable(BZX-cli ${CMAKE_CURRENT_SOURCE_DIR}/BZX-cli.cpp)
+  add_windows_resources(BZX-cli BZX-cli-res.rc)
   target_link_libraries(BZX-cli
     core_interface
     univalue
-    bitcoin_node
+    BZX_node
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
     $<$<BOOL:${WITH_ZMQ}>:BZX_zmq>
-    bitcoin_cli
+    BZX_cli
     $<TARGET_NAME_IF_EXISTS:BZX_wallet>
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
   )
-  set_platform_output_name(BZX-cli BITCOIN_CLI_NAME)
+  set_platform_output_name(BZX-cli BZX_CLI_NAME)
   apply_wrapped_exception_flags(BZX-cli)
   list(APPEND installable_targets BZX-cli)
 endif()
 
 
 if(BUILD_TX)
-  add_executable(BZX-tx ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin-tx.cpp
+  add_executable(BZX-tx ${CMAKE_CURRENT_SOURCE_DIR}/BZX-tx.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/keystore.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/script/standard.cpp
   )
-  add_windows_resources(BZX-tx bitcoin-tx-res.rc)
+  add_windows_resources(BZX-tx BZX-tx-res.rc)
   target_link_libraries(BZX-tx
     core_interface
-    bitcoin_crypto    
-    bitcoin_cli
-    bitcoin_common
-    bitcoin_util
+    BZX_crypto    
+    BZX_cli
+    BZX_common
+    BZX_util
     univalue
     secp256k1pp
     secp256k1
     $<$<BOOL:${WIN32}>:windows_system>
     $<$<BOOL:${WIN32}>:OpenSSL::Crypto>
   )
-  set_platform_output_name(BZX-tx BITCOIN_TX_NAME)
+  set_platform_output_name(BZX-tx BZX_TX_NAME)
   apply_wrapped_exception_flags(BZX-tx)
   list(APPEND installable_targets BZX-tx)
 endif()
@@ -518,22 +518,22 @@ if(BUILD_KERNEL_LIB)
 endif()
 
 if(BUILD_UTIL_CHAINSTATE)
-  add_executable(bitcoin-chainstate
-  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin-chainstate.cpp
+  add_executable(BZX-chainstate
+  ${CMAKE_CURRENT_SOURCE_DIR}/BZX-chainstate.cpp
   )
   # TODO: The `SKIP_BUILD_RPATH` property setting can be deleted
   #       in the future after reordering Guix script commands to
   #       perform binary checks after the installation step.
   # Relevant discussions:
-  # - https://github.com/hebasto/bitcoin/pull/236#issuecomment-2183120953
-  # - https://github.com/bitcoin/bitcoin/pull/30312#issuecomment-2191235833
-  set_target_properties(bitcoin-chainstate PROPERTIES
+  # - https://github.com/hebasto/BZX/pull/236#issuecomment-2183120953
+  # - https://github.com/BZX/BZX/pull/30312#issuecomment-2191235833
+  set_target_properties(BZX-chainstate PROPERTIES
     SKIP_BUILD_RPATH OFF
   )
-  target_link_libraries(bitcoin-chainstate
+  target_link_libraries(BZX-chainstate
     PRIVATE
       core_interface
-      bitcoinkernel
+      BZXkernel
   )
 endif()
 

@@ -1,12 +1,12 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2016 The BZX Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/bitcoin-config.h"
+#include "config/BZX-config.h"
 #endif
 
-#include "bitcoingui.h"
+#include "BZXgui.h"
 
 #include "chainparams.h"
 #include "clientmodel.h"
@@ -150,11 +150,11 @@ static void initTranslations(QTranslator &qtTranslatorBase, QTranslator &qtTrans
     if (qtTranslator.load("qt_" + lang_territory, QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
         QApplication::installTranslator(&qtTranslator);
 
-    // Load e.g. bitcoin_de.qm (shortcut "de" needs to be defined in bitcoin.qrc)
+    // Load e.g. BZX_de.qm (shortcut "de" needs to be defined in BZX.qrc)
     if (translatorBase.load(lang, ":/translations/"))
         QApplication::installTranslator(&translatorBase);
 
-    // Load e.g. bitcoin_de_DE.qm (shortcut "de_DE" needs to be defined in bitcoin.qrc)
+    // Load e.g. BZX_de_DE.qm (shortcut "de_DE" needs to be defined in BZX.qrc)
     if (translator.load(lang_territory, ":/translations/"))
         QApplication::installTranslator(&translator);
 }
@@ -175,14 +175,14 @@ void DebugMessageHandler(QtMsgType type, const QMessageLogContext& context, cons
 }
 #endif
 
-/** Class encapsulating Bitcoin Core startup and shutdown.
+/** Class encapsulating BZX Core startup and shutdown.
  * Allows running startup and shutdown in a different thread from the UI thread.
  */
-class BitcoinCore: public QObject
+class BZXCore: public QObject
 {
     Q_OBJECT
 public:
-    explicit BitcoinCore();
+    explicit BZXCore();
 
 public Q_SLOTS:
     void initialize();
@@ -204,13 +204,13 @@ private:
     void handleRunawayException(const std::exception_ptr e);
 };
 
-/** Main Bitcoin application object */
-class BitcoinApplication: public QApplication
+/** Main BZX application object */
+class BZXApplication: public QApplication
 {
     Q_OBJECT
 public:
-    explicit BitcoinApplication(int &argc, char **argv);
-    ~BitcoinApplication();
+    explicit BZXApplication(int &argc, char **argv);
+    ~BZXApplication();
 
 #ifdef ENABLE_WALLET
     /// Create payment server
@@ -233,7 +233,7 @@ public:
     /// Get process return value
     int getReturnValue() { return returnValue; }
 
-    /// Get window identifier of QMainWindow (BitcoinGUI)
+    /// Get window identifier of QMainWindow (BZXGUI)
     WId getMainWinId() const;
 
 public Q_SLOTS:
@@ -256,7 +256,7 @@ private:
     QThread *coreThread;
     OptionsModel *optionsModel;
     ClientModel *clientModel;
-    BitcoinGUI *window;
+    BZXGUI *window;
     QTimer *pollShutdownTimer;
 #ifdef ENABLE_WALLET
     PaymentServer* paymentServer;
@@ -269,20 +269,20 @@ private:
     void startThread();
 };
 
-#include "bitcoin.moc"
+#include "BZX.moc"
 
-BitcoinCore::BitcoinCore():
+BZXCore::BZXCore():
     QObject()
 {
 }
 
-void BitcoinCore::handleRunawayException(const std::exception_ptr e)
+void BZXCore::handleRunawayException(const std::exception_ptr e)
 {
     PrintExceptionContinue(e, "Runaway exception");
     Q_EMIT runawayException(QString::fromStdString(GetWarnings("gui")));
 }
 
-void BitcoinCore::initialize()
+void BZXCore::initialize()
 {
     execute_restart = true;
 
@@ -312,7 +312,7 @@ void BitcoinCore::initialize()
     }
 }
 
-void BitcoinCore::restart(QStringList args)
+void BZXCore::restart(QStringList args)
 {
     if(execute_restart) { // Only restart 1x, no matter how often a user clicks on a restart-button
         execute_restart = false;
@@ -335,7 +335,7 @@ void BitcoinCore::restart(QStringList args)
     }
 }
 
-void BitcoinCore::shutdown()
+void BZXCore::shutdown()
 {
     try
     {
@@ -352,7 +352,7 @@ void BitcoinCore::shutdown()
 }
 
 #ifdef ENABLE_WALLET
-static void unlockWallet(BitcoinApplication* application, CWallet* wallet)
+static void unlockWallet(BZXApplication* application, CWallet* wallet)
 {
     Q_UNUSED(wallet);
     QMetaObject::invokeMethod(application, "unlockWallet_", Qt::QueuedConnection,
@@ -360,7 +360,7 @@ static void unlockWallet(BitcoinApplication* application, CWallet* wallet)
 }
 #endif
 
-BitcoinApplication::BitcoinApplication(int &argc, char **argv):
+BZXApplication::BZXApplication(int &argc, char **argv):
     QApplication(argc, argv),
     coreThread(0),
     optionsModel(0),
@@ -376,10 +376,10 @@ BitcoinApplication::BitcoinApplication(int &argc, char **argv):
     setQuitOnLastWindowClosed(false);
 
     // UI per-platform customization
-    // This must be done inside the BitcoinApplication constructor, or after it, because
+    // This must be done inside the BZXApplication constructor, or after it, because
     // PlatformStyle::instantiate requires a QApplication
     std::string platformName;
-    platformName = GetArg("-uiplatform", BitcoinGUI::DEFAULT_UIPLATFORM);
+    platformName = GetArg("-uiplatform", BZXGUI::DEFAULT_UIPLATFORM);
     platformStyle = PlatformStyle::instantiate(QString::fromStdString(platformName));
     if (!platformStyle) // Fall back to "other" if specified name not found
         platformStyle = PlatformStyle::instantiate("other");
@@ -390,7 +390,7 @@ BitcoinApplication::BitcoinApplication(int &argc, char **argv):
 #endif
 }
 
-BitcoinApplication::~BitcoinApplication()
+BZXApplication::~BZXApplication()
 {
     if(coreThread)
     {
@@ -415,12 +415,12 @@ BitcoinApplication::~BitcoinApplication()
 }
 
 #ifdef ENABLE_WALLET
-void BitcoinApplication::createPaymentServer()
+void BZXApplication::createPaymentServer()
 {
     paymentServer = new PaymentServer(this);
 }
 
-void BitcoinApplication::unlockWallet_(void * wallet)
+void BZXApplication::unlockWallet_(void * wallet)
 {
     CWallet * wallet_ = reinterpret_cast<CWallet *>(wallet);
 
@@ -438,65 +438,65 @@ void BitcoinApplication::unlockWallet_(void * wallet)
 }
 #endif
 
-void BitcoinApplication::createOptionsModel(bool resetSettings)
+void BZXApplication::createOptionsModel(bool resetSettings)
 {
     optionsModel = new OptionsModel(NULL, resetSettings);
 }
 
-void BitcoinApplication::createWindow(const NetworkStyle *networkStyle)
+void BZXApplication::createWindow(const NetworkStyle *networkStyle)
 {
-    window = new BitcoinGUI(platformStyle, networkStyle, 0);
+    window = new BZXGUI(platformStyle, networkStyle, 0);
 
     pollShutdownTimer = new QTimer(window);
-    connect(pollShutdownTimer, &QTimer::timeout, window, &BitcoinGUI::detectShutdown);
+    connect(pollShutdownTimer, &QTimer::timeout, window, &BZXGUI::detectShutdown);
     pollShutdownTimer->start(200);
 }
 
-void BitcoinApplication::createSplashScreen(const NetworkStyle *networkStyle)
+void BZXApplication::createSplashScreen(const NetworkStyle *networkStyle)
 {
     SplashScreen *splash = new SplashScreen(QPixmap(), Qt::WindowFlags());
     // We don't hold a direct pointer to the splash screen after creation, but the splash
     // screen will take care of deleting itself when slotFinish happens.
     splash->show();
-    connect(this, &BitcoinApplication::splashFinished, splash, &SplashScreen::slotFinish);
-    connect(this, &BitcoinApplication::requestedShutdown, splash, &QWidget::close);
+    connect(this, &BZXApplication::splashFinished, splash, &SplashScreen::slotFinish);
+    connect(this, &BZXApplication::requestedShutdown, splash, &QWidget::close);
 }
 
-void BitcoinApplication::startThread()
+void BZXApplication::startThread()
 {
     if(coreThread)
         return;
     coreThread = new QThread(this);
-    BitcoinCore *executor = new BitcoinCore();
+    BZXCore *executor = new BZXCore();
     executor->moveToThread(coreThread);
 
     /*  communication to and from thread */
-    connect(executor, &BitcoinCore::initializeResult, this, &BitcoinApplication::initializeResult);
-    connect(executor, &BitcoinCore::shutdownResult, this, &BitcoinApplication::shutdownResult);
-    connect(executor, &BitcoinCore::runawayException, this, &BitcoinApplication::handleRunawayException);
-    connect(this, &BitcoinApplication::requestedInitialize, executor, &BitcoinCore::initialize);
-    connect(this, &BitcoinApplication::requestedShutdown, executor, &BitcoinCore::shutdown);
+    connect(executor, &BZXCore::initializeResult, this, &BZXApplication::initializeResult);
+    connect(executor, &BZXCore::shutdownResult, this, &BZXApplication::shutdownResult);
+    connect(executor, &BZXCore::runawayException, this, &BZXApplication::handleRunawayException);
+    connect(this, &BZXApplication::requestedInitialize, executor, &BZXCore::initialize);
+    connect(this, &BZXApplication::requestedShutdown, executor, &BZXCore::shutdown);
     /*  make sure executor object is deleted in its own thread */
-    connect(this, &BitcoinApplication::stopThread, executor, &QObject::deleteLater);
-    connect(this, &BitcoinApplication::stopThread, coreThread, &QThread::quit);
-    connect(window, &BitcoinGUI::requestedRestart, executor, &BitcoinCore::restart);
+    connect(this, &BZXApplication::stopThread, executor, &QObject::deleteLater);
+    connect(this, &BZXApplication::stopThread, coreThread, &QThread::quit);
+    connect(window, &BZXGUI::requestedRestart, executor, &BZXCore::restart);
     coreThread->start();
 }
 
-void BitcoinApplication::parameterSetup()
+void BZXApplication::parameterSetup()
 {
     InitLogging();
     InitParameterInteraction();
 }
 
-void BitcoinApplication::requestInitialize()
+void BZXApplication::requestInitialize()
 {
     qDebug() << __func__ << ": Requesting initialize";
     startThread();
     Q_EMIT requestedInitialize();
 }
 
-void BitcoinApplication::requestShutdown()
+void BZXApplication::requestShutdown()
 {
     // Show a simple window indicating shutdown status
     // Do this first as some of the steps may take some time below,
@@ -523,7 +523,7 @@ void BitcoinApplication::requestShutdown()
     Q_EMIT requestedShutdown();
 }
 
-void BitcoinApplication::initializeResult(int retval)
+void BZXApplication::initializeResult(int retval)
 {
     qDebug() << __func__ << ": Initialization result: " << retval;
     // Set exit result: 0 if successful, 1 if failure
@@ -540,8 +540,8 @@ void BitcoinApplication::initializeResult(int retval)
         {
             walletModel = new WalletModel(platformStyle, pwalletMain, optionsModel);
 
-            window->addWallet(BitcoinGUI::DEFAULT_WALLET, walletModel);
-            window->setCurrentWallet(BitcoinGUI::DEFAULT_WALLET);
+            window->addWallet(BZXGUI::DEFAULT_WALLET, walletModel);
+            window->setCurrentWallet(BZXGUI::DEFAULT_WALLET);
         }
 #endif
 
@@ -564,8 +564,8 @@ void BitcoinApplication::initializeResult(int retval)
 
         // Now that initialization/startup is done, process any command-line
         // BZX: URIs or payment requests:
-        connect(paymentServer, &PaymentServer::receivedPaymentRequest, window, &BitcoinGUI::handlePaymentRequest);
-        connect(window, &BitcoinGUI::receivedURI, paymentServer, &PaymentServer::handleURIOrFile);
+        connect(paymentServer, &PaymentServer::receivedPaymentRequest, window, &BZXGUI::handlePaymentRequest);
+        connect(window, &BZXGUI::receivedURI, paymentServer, &PaymentServer::handleURIOrFile);
         connect(paymentServer, &PaymentServer::message, [this](const QString& title, const QString& message, unsigned int style) {
             window->message(title, message, style);
         });
@@ -576,19 +576,19 @@ void BitcoinApplication::initializeResult(int retval)
     }
 }
 
-void BitcoinApplication::shutdownResult(int retval)
+void BZXApplication::shutdownResult(int retval)
 {
     qDebug() << __func__ << ": Shutdown result: " << retval;
     quit(); // Exit main loop after shutdown finished
 }
 
-void BitcoinApplication::handleRunawayException(const QString &message)
+void BZXApplication::handleRunawayException(const QString &message)
 {
-    QMessageBox::critical(0, "Runaway exception", BitcoinGUI::tr("A fatal error occurred. BZX can no longer continue safely and will quit.") + QString("\n\n") + message);
+    QMessageBox::critical(0, "Runaway exception", BZXGUI::tr("A fatal error occurred. BZX can no longer continue safely and will quit.") + QString("\n\n") + message);
     ::exit(EXIT_FAILURE);
 }
 
-WId BitcoinApplication::getMainWinId() const
+WId BZXApplication::getMainWinId() const
 {
     if (!window)
         return 0;
@@ -596,7 +596,7 @@ WId BitcoinApplication::getMainWinId() const
     return window->winId();
 }
 
-#ifndef BITCOIN_QT_TEST
+#ifndef BZX_QT_TEST
 int main(int argc, char *argv[])
 {
 #ifdef ENABLE_CRASH_HOOKS
@@ -618,8 +618,8 @@ int main(int argc, char *argv[])
     QTextCodec::setCodecForCStrings(QTextCodec::codecForTr());
 #endif
 
-    Q_INIT_RESOURCE(bitcoin);
-    Q_INIT_RESOURCE(bitcoin_locale);
+    Q_INIT_RESOURCE(BZX);
+    Q_INIT_RESOURCE(BZX_locale);
 
 #if QT_VERSION > 0x050100
     // Generate high-dpi pixmaps
@@ -632,7 +632,7 @@ int main(int argc, char *argv[])
     QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
 #endif
 
-    BitcoinApplication app(argc, argv);
+    BZXApplication app(argc, argv);
 
     // Register meta types used for QMetaObject::invokeMethod
     qRegisterMetaType< bool* >();
@@ -692,7 +692,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     try {
-        ReadConfigFile(GetArg("-conf", BITCOIN_CONF_FILENAME));
+        ReadConfigFile(GetArg("-conf", BZX_CONF_FILENAME));
     } catch (const std::exception& e) {
         QMessageBox::critical(0, QObject::tr(PACKAGE_NAME),
                               QObject::tr("Error: Cannot parse configuration file: %1. Only use key=value syntax.").arg(e.what()));
@@ -792,4 +792,4 @@ int main(int argc, char *argv[])
     }
     return app.getReturnValue();
 }
-#endif // BITCOIN_QT_TEST
+#endif // BZX_QT_TEST

@@ -228,7 +228,7 @@
     </message>
 </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>BZXGUI</name>
     <message>
         <source>Sign &amp;message...</source>
         <translation>Assinar &amp;mensagem...</translation>

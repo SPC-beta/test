@@ -36,7 +36,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>BZXGUI</name>
     </context>
 <context>
     <name>CoinControlDialog</name>

@@ -1,5 +1,5 @@
 // Copyright (c) 2010 Satoshi Nakamoto// Copyright (c) 2016-2019 The BZX Core developers
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2016 The BZX Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -190,7 +190,7 @@ UniValue getnewaddress(const JSONRPCRequest& request)
 
     pwallet->SetAddressBook(keyID, strAccount, "receive");
 
-    return CBitcoinAddress(keyID).ToString();
+    return CBZXAddress(keyID).ToString();
 }
 
 UniValue getnewexchangeaddress(const JSONRPCRequest& request)
@@ -230,7 +230,7 @@ UniValue getnewexchangeaddress(const JSONRPCRequest& request)
             CKeyID operator() (const CScriptID&) const {return CKeyID();}
         };
 
-        CBitcoinAddress existingKey(request.params[0].get_str());
+        CBZXAddress existingKey(request.params[0].get_str());
         if (!existingKey.IsValid()) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
         }
@@ -241,7 +241,7 @@ UniValue getnewexchangeaddress(const JSONRPCRequest& request)
         }
     }
 
-    CBitcoinAddress newAddress;
+    CBZXAddress newAddress;
     newAddress.SetExchange(keyID);
 
     pwallet->SetAddressBook(newAddress.Get(), "", "receive");
@@ -249,14 +249,14 @@ UniValue getnewexchangeaddress(const JSONRPCRequest& request)
     return newAddress.ToString();
 }
 
-CBitcoinAddress GetAccountAddress(CWallet * const pwallet, std::string strAccount, bool bForceNew=false)
+CBZXAddress GetAccountAddress(CWallet * const pwallet, std::string strAccount, bool bForceNew=false)
 {
     CPubKey pubKey;
     if (!pwallet->GetAccountPubkey(pubKey, strAccount, bForceNew)) {
         throw JSONRPCError(RPC_WALLET_KEYPOOL_RAN_OUT, "Error: Keypool ran out, please call keypoolrefill first");
     }
 
-    return CBitcoinAddress(pubKey.GetID());
+    return CBZXAddress(pubKey.GetID());
 }
 
 UniValue getaccountaddress(const JSONRPCRequest& request)
@@ -327,7 +327,7 @@ UniValue getrawchangeaddress(const JSONRPCRequest& request)
 
     CKeyID keyID = vchPubKey.GetID();
 
-    return CBitcoinAddress(keyID).ToString();
+    return CBZXAddress(keyID).ToString();
 }
 
 
@@ -352,7 +352,7 @@ UniValue setaccount(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    CBitcoinAddress address(request.params[0].get_str());
+    CBZXAddress address(request.params[0].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
 
@@ -400,7 +400,7 @@ UniValue getaccount(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    CBitcoinAddress address(request.params[0].get_str());
+    CBZXAddress address(request.params[0].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
 
@@ -459,7 +459,7 @@ UniValue getaddressesbyaccount(const JSONRPCRequest& request)
     // Find all addresses that have the given account
     UniValue ret(UniValue::VARR);
     for (const auto& item : pwallet->mapAddressBook) {
-        const CBitcoinAddress& address = item.first;
+        const CBZXAddress& address = item.first;
         const std::string& strName = item.second.name;
         if (strName == strAccount)
             ret.push_back(address.ToString());
@@ -526,7 +526,7 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
             "                             to which you're sending the transaction. This is not part of the \n"
             "                             transaction, just kept in your wallet.\n"
             "5. subtractfeefromamount  (boolean, optional, default=false) The fee will be deducted from the amount being sent.\n"
-            "                             The recipient will receive less bitcoins than you enter in the amount field.\n"
+            "                             The recipient will receive less BZXs than you enter in the amount field.\n"
             "\nResult:\n"
             "\"txid\"                  (string) The transaction id.\n"
             "\nExamples:\n"
@@ -538,7 +538,7 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    CBitcoinAddress address(request.params[0].get_str());
+    CBZXAddress address(request.params[0].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
 
@@ -604,11 +604,11 @@ UniValue listaddressgroupings(const JSONRPCRequest& request)
         BOOST_FOREACH(CTxDestination address, grouping)
         {
             UniValue addressInfo(UniValue::VARR);
-            addressInfo.push_back(CBitcoinAddress(address).ToString());
+            addressInfo.push_back(CBZXAddress(address).ToString());
             addressInfo.push_back(ValueFromAmount(balances[address]));
             {
-                if (pwallet->mapAddressBook.find(CBitcoinAddress(address).Get()) != pwallet->mapAddressBook.end()) {
-                    addressInfo.push_back(pwallet->mapAddressBook.find(CBitcoinAddress(address).Get())->second.name);
+                if (pwallet->mapAddressBook.find(CBZXAddress(address).Get()) != pwallet->mapAddressBook.end()) {
+                    addressInfo.push_back(pwallet->mapAddressBook.find(CBZXAddress(address).Get())->second.name);
                 }
             }
             jsonGrouping.push_back(addressInfo);
@@ -655,7 +655,7 @@ UniValue listaddressbalances(const JSONRPCRequest& request)
     std::map<CTxDestination, CAmount> balances = pwallet->GetAddressBalances();
     for (auto& balance : balances)
         if (balance.second >= nMinAmount)
-            jsonBalances.push_back(Pair(CBitcoinAddress(balance.first).ToString(), ValueFromAmount(balance.second)));
+            jsonBalances.push_back(Pair(CBZXAddress(balance.first).ToString(), ValueFromAmount(balance.second)));
 
     return jsonBalances;
 }
@@ -695,7 +695,7 @@ UniValue signmessage(const JSONRPCRequest& request)
     std::string strAddress = request.params[0].get_str();
     std::string strMessage = request.params[1].get_str();
 
-    CBitcoinAddress addr(strAddress);
+    CBZXAddress addr(strAddress);
     if (!addr.IsValid())
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid address");
 
@@ -796,7 +796,7 @@ UniValue getreceivedbyaddress(const JSONRPCRequest& request)
     LOCK2(cs_main, pwallet->cs_wallet);
 
     // address
-    CBitcoinAddress address = CBitcoinAddress(request.params[0].get_str());
+    CBZXAddress address = CBZXAddress(request.params[0].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
     CScript scriptPubKey = GetScriptForDestination(address.Get());
@@ -1083,7 +1083,7 @@ UniValue sendfrom(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() < 3 || request.params.size() > 6)
         throw std::runtime_error(
             "sendfrom \"fromaccount\" \"toaddress\" amount ( minconf \"comment\" \"comment_to\" )\n"
-            "\nDEPRECATED (use sendtoaddress). Sent an amount from an account to a bitcoin address."
+            "\nDEPRECATED (use sendtoaddress). Sent an amount from an account to a BZX address."
             + HelpRequiringPassphrase(pwallet) + "\n"
             "\nArguments:\n"
             "1. \"fromaccount\"       (string, required) The name of the account to send funds from. May be the default account using \"\".\n"
@@ -1112,7 +1112,7 @@ UniValue sendfrom(const JSONRPCRequest& request)
     LOCK2(cs_main, pwallet->cs_wallet);
 
     std::string strAccount = AccountFromValue(request.params[0]);
-    CBitcoinAddress address(request.params[1].get_str());
+    CBZXAddress address(request.params[1].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
     CAmount nAmount = AmountFromValue(request.params[2]);
@@ -1165,7 +1165,7 @@ UniValue sendmany(const JSONRPCRequest& request)
             "4. \"comment\"             (string, optional) A comment\n"
             "5. subtractfeefrom         (array, optional) A json array with addresses.\n"
             "                           The fee will be equally deducted from the amount of each selected address.\n"
-            "                           Those recipients will receive less bitcoins than you enter in their corresponding amount field.\n"
+            "                           Those recipients will receive less BZXs than you enter in their corresponding amount field.\n"
             "                           If no addresses are specified here, the sender pays the fee.\n"
             "    [\n"
             "      \"address\"          (string) Subtract fee from this address\n"
@@ -1206,14 +1206,14 @@ UniValue sendmany(const JSONRPCRequest& request)
     if (request.params.size() > 4)
         subtractFeeFromAmount = request.params[4].get_array();
 
-    std::set<CBitcoinAddress> setAddress;
+    std::set<CBZXAddress> setAddress;
     std::vector<CRecipient> vecSend;
 
     CAmount totalAmount = 0;
     std::vector<std::string> keys = sendTo.getKeys();
     BOOST_FOREACH(const std::string& name_, keys)
     {
-        CBitcoinAddress address(name_);
+        CBZXAddress address(name_);
         if (!address.IsValid())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid address: ")+name_);
 
@@ -1312,7 +1312,7 @@ UniValue addmultisigaddress(const JSONRPCRequest& request)
     pwallet->AddCScript(inner);
 
     pwallet->SetAddressBook(innerID, strAccount, "send");
-    return CBitcoinAddress(innerID).ToString();
+    return CBZXAddress(innerID).ToString();
 }
 
 class Witnessifier : public boost::static_visitor<bool>
@@ -1389,7 +1389,7 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool fByA
             filter = filter | ISMINE_WATCH_ONLY;
 
     // Tally
-    std::map<CBitcoinAddress, tallyitem> mapTally;
+    std::map<CBZXAddress, tallyitem> mapTally;
     for (const std::pair<const uint256, CWalletTx>& pairWtx : pwallet->mapWallet) {
         const CWalletTx& wtx = pairWtx.second;
 
@@ -1423,9 +1423,9 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool fByA
     UniValue ret(UniValue::VARR);
     std::map<std::string, tallyitem> mapAccountTally;
     for (const auto& item : pwallet->mapAddressBook) {
-        const CBitcoinAddress& address = item.first;
+        const CBZXAddress& address = item.first;
         const std::string& strAccount = item.second.name;
-        std::map<CBitcoinAddress, tallyitem>::iterator it = mapTally.find(address);
+        std::map<CBZXAddress, tallyitem>::iterator it = mapTally.find(address);
         if (it == mapTally.end() && !fIncludeEmpty)
             continue;
 
@@ -1579,7 +1579,7 @@ UniValue listreceivedbyaccount(const JSONRPCRequest& request)
     return ListReceived(pwallet, request.params, true, fAddLocked);
 }
 
-static void MaybePushAddress(UniValue & entry, const CTxDestination &dest, CBitcoinAddress &addr)
+static void MaybePushAddress(UniValue & entry, const CTxDestination &dest, CBZXAddress &addr)
 {
     if (addr.Set(dest))
         entry.push_back(Pair("address", addr.ToString()));
@@ -1591,7 +1591,7 @@ void ListTransactions(CWallet * const pwallet, const CWalletTx& wtx, const std::
     std::string strSentAccount;
     std::list<COutputEntry> listReceived;
     std::list<COutputEntry> listSent;
-    CBitcoinAddress addr;
+    CBZXAddress addr;
 
     wtx.GetAmounts(listReceived, listSent, nFee, strSentAccount, filter);
 
@@ -1676,7 +1676,7 @@ void ListTransactions(CWallet * const pwallet, const CWalletTx& wtx, const std::
                         for(CTxOut const & out : voutMasternodePaymentsRet) {
                             CTxDestination payeeDest;
                             ExtractDestination(out.scriptPubKey, payeeDest);
-                            CBitcoinAddress payeeAddr(payeeDest);
+                            CBZXAddress payeeAddr(payeeDest);
 
                             if(addr.ToString() == payeeAddr.ToString()) {
                                 its_masternode_payment = true;
@@ -2461,7 +2461,7 @@ UniValue encryptwallet(const JSONRPCRequest& request)
             "\nExamples:\n"
             "\nEncrypt you wallet\n"
             + HelpExampleCli("encryptwallet", "\"my pass phrase\"") +
-            "\nNow set the passphrase to use the wallet, such as for signing or sending bitcoin\n"
+            "\nNow set the passphrase to use the wallet, such as for signing or sending BZX\n"
             + HelpExampleCli("walletpassphrase", "\"my pass phrase\"") +
             "\nNow we can so something like sign\n"
             + HelpExampleCli("signmessage", "\"address\" \"test message\"") +
@@ -2516,7 +2516,7 @@ UniValue lockunspent(const JSONRPCRequest& request)
             "\nUpdates list of temporarily unspendable outputs.\n"
             "Temporarily lock (unlock=false) or unlock (unlock=true) specified transaction outputs.\n"
             "If no transaction outputs are specified when unlocking then all current locked transaction outputs are unlocked.\n"
-            "A locked transaction output will not be chosen by automatic coin selection, when spending bitcoins.\n"
+            "A locked transaction output will not be chosen by automatic coin selection, when spending BZXs.\n"
             "Locks are stored in memory only. Nodes start with zero locked outputs, and the locked output list\n"
             "is always cleared (by virtue of process exit) when a node stops or fails.\n"
             "Also see the listunspent call\n"
@@ -2813,13 +2813,13 @@ UniValue listunspent(const JSONRPCRequest& request)
         nMaxDepth = request.params[1].get_int();
     }
 
-    std::set<CBitcoinAddress> setAddress;
+    std::set<CBZXAddress> setAddress;
     if (request.params.size() > 2 && !request.params[2].isNull()) {
         RPCTypeCheckArgument(request.params[2], UniValue::VARR);
         UniValue inputs = request.params[2].get_array();
         for (unsigned int idx = 0; idx < inputs.size(); idx++) {
             const UniValue& input = inputs[idx];
-            CBitcoinAddress address(input.get_str());
+            CBZXAddress address(input.get_str());
             if (!address.IsValid())
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid address: ")+input.get_str());
             if (setAddress.count(address))
@@ -2855,7 +2855,7 @@ UniValue listunspent(const JSONRPCRequest& request)
         entry.push_back(Pair("vout", out.i));
 
         if (fValidAddress) {
-            entry.push_back(Pair("address", CBitcoinAddress(address).ToString()));
+            entry.push_back(Pair("address", CBZXAddress(address).ToString()));
 
             if (pwallet->mapAddressBook.count(address)) {
                 entry.push_back(Pair("account", pwallet->mapAddressBook[address].name));
@@ -2914,7 +2914,7 @@ UniValue fundrawtransaction(const JSONRPCRequest& request)
                             "     \"subtractFeeFromOutputs\" (array, optional) A json array of integers.\n"
                             "                              The fee will be equally deducted from the amount of each specified output.\n"
                             "                              The outputs are specified by their zero-based index, before any change output is added.\n"
-                            "                              Those recipients will receive less bitcoins than you enter in their corresponding amount field.\n"
+                            "                              Those recipients will receive less BZXs than you enter in their corresponding amount field.\n"
                             "                              If no outputs are specified here, the sender pays the fee.\n"
                             "                                  [vout_index,...]\n"
                             "   }\n"
@@ -2971,7 +2971,7 @@ UniValue fundrawtransaction(const JSONRPCRequest& request)
             true, true);
 
         if (options.exists("changeAddress")) {
-            CBitcoinAddress address(options["changeAddress"].get_str());
+            CBZXAddress address(options["changeAddress"].get_str());
 
             if (!address.IsValid())
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "changeAddress must be a valid address");
@@ -3600,7 +3600,7 @@ UniValue mintspark(const JSONRPCRequest& request)
         for (unsigned int idx = 0; idx < sendFrom.size(); idx++)
         {
             std::string name_ =sendFrom[idx].get_str();
-            CBitcoinAddress address(name_);
+            CBZXAddress address(name_);
             if (!address.IsValid())
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid address: ") + name_);
             CScript scriptPubKey = GetScriptForDestination(address.Get());
@@ -3706,7 +3706,7 @@ UniValue spendspark(const JSONRPCRequest& request)
     UniValue sendTo = request.params[0].get_obj();
     std::vector<std::string> keys = sendTo.getKeys();
     const spark::Params* params = spark::Params::get_default();
-    std::set<CBitcoinAddress> setAddress;
+    std::set<CBZXAddress> setAddress;
     unsigned char network = spark::GetNetworkType();
 
     BOOST_FOREACH(const std::string& name_, keys)
@@ -3768,7 +3768,7 @@ UniValue spendspark(const JSONRPCRequest& request)
             continue;
         }
 
-        CBitcoinAddress address(name_);
+        CBZXAddress address(name_);
         if (address.IsValid()) {
             if (setAddress.count(address))
                 throw JSONRPCError(RPC_INVALID_PARAMETER,
@@ -4223,7 +4223,7 @@ UniValue joinsplit(const JSONRPCRequest& request) {
         }
     }
 
-    std::set<CBitcoinAddress> setAddress;
+    std::set<CBZXAddress> setAddress;
     std::vector<CRecipient> vecSend;
     std::vector<CAmount> vMints;
 
@@ -4236,7 +4236,7 @@ UniValue joinsplit(const JSONRPCRequest& request) {
         throw JSONRPCError(RPC_TYPE_ERROR, "You have to provide at least public addressed or amount to mint");
 
     for (const auto& strAddr : keys) {
-        CBitcoinAddress address(strAddr);
+        CBZXAddress address(strAddr);
         if (!address.IsValid())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address: " + strAddr);
 
@@ -5104,7 +5104,7 @@ UniValue sendtorapaddress(const JSONRPCRequest& request)
             "                             to which you're sending the transaction. This is not part of the \n"
             "                             transaction, just kept in your wallet.\n"
             "5. subtractfeefromamount  (boolean, optional, default=false) The fee will be deducted from the amount being sent.\n"
-            "                             The recipient will receive less bitcoins than you enter in the amount field.\n"
+            "                             The recipient will receive less BZXs than you enter in the amount field.\n"
             "\nResult:\n"
             "\"txid\"                  (string) The transaction id.\n"
             "\nExamples:\n"
@@ -5125,7 +5125,7 @@ UniValue sendtorapaddress(const JSONRPCRequest& request)
 
     EnsureWalletIsUnlocked(pwallet);
 
-    CBitcoinAddress address = pwallet->GetTheirNextAddress(theirPcode);
+    CBZXAddress address = pwallet->GetTheirNextAddress(theirPcode);
 
     // Wallet comments
     CWalletTx wtx;

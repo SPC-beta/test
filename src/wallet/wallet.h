@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2016 The BZX Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_WALLET_WALLET_H
-#define BITCOIN_WALLET_WALLET_H
+#ifndef BZX_WALLET_WALLET_H
+#define BZX_WALLET_WALLET_H
 
 #include "amount.h"
 #include "../sigma/coin.h"
@@ -137,7 +137,7 @@ enum WalletFeature
 
 struct CompactTallyItem
 {
-    CBitcoinAddress address;
+    CBZXAddress address;
     CAmount nAmount;
     std::vector<CTxIn> vecTxIn;
     CompactTallyItem()
@@ -323,7 +323,7 @@ public:
     unsigned int nTimeSmart;
     /**
      * From me flag is set to 1 for transactions that were created by the wallet
-     * on this bitcoin node, and set to 0 for transactions that were created
+     * on this BZX node, and set to 0 for transactions that were created
      * externally and came in through the network or sendrawtransaction RPC.
      */
     char fFromMe;
@@ -1391,10 +1391,10 @@ public:
     void SetNotificationTxId(bip47::CPaymentCode const & theirPcode, uint256 const & txid);
 
     /* Returns next unused address for their payment code. Throws if no payment channel was setup */
-    CBitcoinAddress GetTheirNextAddress(bip47::CPaymentCode const & theirPcode) const;
+    CBZXAddress GetTheirNextAddress(bip47::CPaymentCode const & theirPcode) const;
 
     /* Returns and stores a next unused address for their payment code. Throws if no payment channel was setup */
-    CBitcoinAddress GenerateTheirNextAddress(bip47::CPaymentCode const & theirPcode);
+    CBZXAddress GenerateTheirNextAddress(bip47::CPaymentCode const & theirPcode);
 
     /*Loads previously stored bip47 accounts */
     void LoadBip47Wallet();
@@ -1402,10 +1402,10 @@ public:
     std::shared_ptr<bip47::CWallet const>  GetBip47Wallet() const;
 
     boost::optional<bip47::CPaymentCodeDescription> FindPcode(bip47::CPaymentCode const & pcode) const;
-    boost::optional<bip47::CPaymentCodeDescription> FindPcode(CBitcoinAddress const & address) const;
+    boost::optional<bip47::CPaymentCodeDescription> FindPcode(CBZXAddress const & address) const;
 
     /*Marks address as used for a receiving bip47 account. Returns the account if found*/
-    bip47::CAccountReceiver const * AddressUsed(CBitcoinAddress const & address);
+    bip47::CAccountReceiver const * AddressUsed(CBZXAddress const & address);
 
     /*Checks if this is a BIP47 transaction and handles it. May send an unlock request if wallet is locked.*/
     void HandleBip47Transaction(CWalletTx const & wtx);
@@ -1518,4 +1518,4 @@ bool CWallet::DummySignTx(CMutableTransaction &txNew, const ContainerType &coins
 
 CWalletTx PrepareAndSendNotificationTx(CWallet* pwallet, bip47::CPaymentCode const & theirPcode);
 
-#endif // BITCOIN_WALLET_WALLET_H
+#endif // BZX_WALLET_WALLET_H

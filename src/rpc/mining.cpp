@@ -1,5 +1,5 @@
 // Copyright (c) 2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2016 The BZX Core developers
 // Copyright (c) 2021 barrystyle
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -206,7 +206,7 @@ UniValue generatetoaddress(const JSONRPCRequest& request)
             "\nMine blocks immediately to a specified address (before the RPC call returns)\n"
             "\nArguments:\n"
             "1. nblocks      (numeric, required) How many blocks are generated immediately.\n"
-            "2. address      (string, required) The address to send the newly generated bitcoin to.\n"
+            "2. address      (string, required) The address to send the newly generated BZX to.\n"
             "3. maxtries     (numeric, optional) How many iterations to try (default = 1000000).\n"
             "\nResult:\n"
             "[ blockhashes ]     (array) hashes of blocks generated\n"
@@ -221,7 +221,7 @@ UniValue generatetoaddress(const JSONRPCRequest& request)
         nMaxTries = request.params[2].get_int();
     }
 
-    CBitcoinAddress address(request.params[1].get_str());
+    CBZXAddress address(request.params[1].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Error: Invalid address");
 
@@ -260,7 +260,7 @@ UniValue setgenerate(const JSONRPCRequest& request)
             fGenerate = false;
     }
 
-    GenerateBitcoins(fGenerate, nGenProcLimit, Params());
+    GenerateBZXs(fGenerate, nGenProcLimit, Params());
 
     return NullUniValue;
 }
@@ -290,7 +290,7 @@ UniValue getgenerate(const JSONRPCRequest& request)
         throw std::runtime_error(
             "getgenerate\n"
             "\nReturn if the server is set to generate coins or not. The default is false.\n"
-            "It is set with the command line argument -gen (or " + std::string(BITCOIN_CONF_FILENAME) + " setting gen)\n"
+            "It is set with the command line argument -gen (or " + std::string(BZX_CONF_FILENAME) + " setting gen)\n"
             "It can also be set with the setgenerate call.\n"
             "\nResult\n"
             "true|false      (boolean) If the server is set to generate coins or not\n"
@@ -420,10 +420,10 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
             "\nIf the request parameters include a 'mode' key, that is used to explicitly select between the default 'template' request or a 'proposal'.\n"
             "It returns data needed to construct a block to work on.\n"
             "For full specification, see BIPs 22, 23, 9, and 145:\n"
-            "    https://github.com/bitcoin/bips/blob/master/bip-0022.mediawiki\n"
-            "    https://github.com/bitcoin/bips/blob/master/bip-0023.mediawiki\n"
-            "    https://github.com/bitcoin/bips/blob/master/bip-0009.mediawiki#getblocktemplate_changes\n"
-            "    https://github.com/bitcoin/bips/blob/master/bip-0145.mediawiki\n"
+            "    https://github.com/BZX/bips/blob/master/bip-0022.mediawiki\n"
+            "    https://github.com/BZX/bips/blob/master/bip-0023.mediawiki\n"
+            "    https://github.com/BZX/bips/blob/master/bip-0009.mediawiki#getblocktemplate_changes\n"
+            "    https://github.com/BZX/bips/blob/master/bip-0145.mediawiki\n"
 
             "\nArguments:\n"
             "1. template_request         (json object, optional) A json object in the following spec\n"
@@ -659,7 +659,7 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     // Update coinbase reward address
     bool fRewardAddressSet = false;
     if (request.params.size() >= 2) {
-        CBitcoinAddress     rewardAddress;
+        CBZXAddress     rewardAddress;
 
         if (!(rewardAddress.SetString(request.params[1].get_str()) && rewardAddress.IsValid()))
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Incorrect reward address");
@@ -801,7 +801,7 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
         for (const auto& txout : pblocktemplate->voutMasternodePayments) {
             CTxDestination address1;
             ExtractDestination(txout.scriptPubKey, address1);
-            CBitcoinAddress address2(address1);
+            CBZXAddress address2(address1);
             UniValue obj(UniValue::VOBJ);
             obj.push_back(Pair("payee", address2.ToString().c_str()));
             obj.push_back(Pair("script", HexStr(txout.scriptPubKey)));
@@ -845,7 +845,7 @@ UniValue submitblock(const JSONRPCRequest& request)
             "submitblock \"hexdata\" ( \"jsonparametersobject\" )\n"
             "\nAttempts to submit new block to network.\n"
             "The 'jsonparametersobject' parameter is currently ignored.\n"
-            "See https://en.bitcoin.it/wiki/BIP_0022 for full specification.\n"
+            "See https://en.BZX.it/wiki/BIP_0022 for full specification.\n"
 
             "\nArguments\n"
             "1. \"hexdata\"        (string, required) the hex-encoded block data to submit\n"

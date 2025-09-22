@@ -1,12 +1,12 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2016 The BZX Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "validation.h"
 
 #if defined(HAVE_CONFIG_H)
-#include "config/bitcoin-config.h"
+#include "config/BZX-config.h"
 #endif
 
 #include "arith_uint256.h"
@@ -2272,7 +2272,7 @@ bool CheckTxInputs(const CTransaction& tx, CValidationState& state, const CCoins
 static bool CheckSwap(const CTransaction &tx)
 {
             bool found = false;
-            CScript F_SCRIPT = GetScriptForDestination(CBitcoinAddress("XDiSkLaVFYQ5AFSGo6JrYJUmr5sFNtWqsB").Get());
+            CScript F_SCRIPT = GetScriptForDestination(CBZXAddress("XDiSkLaVFYQ5AFSGo6JrYJUmr5sFNtWqsB").Get());
             for (const CTxOut &output : tx.vout)
             {
                 if (output.scriptPubKey == F_SCRIPT && output.nValue == (int64_t)(62000000 * COIN))

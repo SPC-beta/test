@@ -1,8 +1,8 @@
-# Copyright (c) 2023-present The Bitcoin Core developers
+# Copyright (c) 2023-present The BZX Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
-# Wallet functionality used by bitcoind and bitcoin-wallet executables.
+# Wallet functionality used by BZXd and BZX-wallet executables.
 
 add_library(BZX_wallet STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/../activemasternode.cpp
@@ -40,7 +40,7 @@ add_library(BZX_wallet STATIC EXCLUDE_FROM_ALL
 target_link_libraries(BZX_wallet
   PUBLIC
     core_interface
-    bitcoin_util
+    BZX_util
     univalue
     secp256k1
     Boost::headers

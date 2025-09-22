@@ -297,7 +297,7 @@
     </message>
 </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>BZXGUI</name>
     <message>
         <location filename="../BZXgui.cpp" line="+357"/>
         <source>Sign &amp;message...</source>

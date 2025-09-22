@@ -7,7 +7,7 @@
 
 namespace sigma {
 
-/** Any meta data needed for actual bitcoin integration.
+/** Any meta data needed for actual BZX integration.
  * Can extended provided the getHash() function is updated
  */
 class SpendMetaData {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2016 The BZX Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,7 +8,7 @@
 #include "askpassphrasedialog.h"
 #include "automintdialog.h"
 #include "automintmodel.h"
-#include "bitcoingui.h"
+#include "BZXgui.h"
 #include "clientmodel.h"
 #include "exportviewkeydialog.h"
 #include "guiutil.h"
@@ -66,7 +66,7 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     addWidget(masternodeListPage);
 
     // Clicking on a transaction on the overview pre-selects the transaction on the transaction history page
-    connect(overviewPage, &OverviewPage::transactionClicked, this, &WalletView::focusBitcoinHistoryTab);
+    connect(overviewPage, &OverviewPage::transactionClicked, this, &WalletView::focusBZXHistoryTab);
 }
 
 WalletView::~WalletView()
@@ -126,12 +126,12 @@ void WalletView::setupSendCoinPage()
     sendCoinsPage->setLayout(pageLayout);
 }
 
-void WalletView::setBitcoinGUI(BitcoinGUI *gui)
+void WalletView::setBZXGUI(BZXGUI *gui)
 {
     if (gui)
     {
         // Clicking on a transaction on the overview page simply sends you to transaction history page
-        connect(overviewPage, &OverviewPage::transactionClicked, gui, &BitcoinGUI::gotoHistoryPage);
+        connect(overviewPage, &OverviewPage::transactionClicked, gui, &BZXGUI::gotoHistoryPage);
 
         // Receive and report messages
         connect(this, &WalletView::message, [gui](const QString &title, const QString &message, unsigned int style) {
@@ -139,13 +139,13 @@ void WalletView::setBitcoinGUI(BitcoinGUI *gui)
         });
 
         // Pass through encryption status changed signals
-        connect(this, &WalletView::encryptionStatusChanged, gui, &BitcoinGUI::setEncryptionStatus);
+        connect(this, &WalletView::encryptionStatusChanged, gui, &BZXGUI::setEncryptionStatus);
 
         // Pass through transaction notifications
-        connect(this, &WalletView::incomingTransaction, gui, &BitcoinGUI::incomingTransaction);
+        connect(this, &WalletView::incomingTransaction, gui, &BZXGUI::incomingTransaction);
 
         // Connect HD enabled state signal
-        connect(this, &WalletView::hdEnabledStatusChanged, gui, &BitcoinGUI::setHDStatus);
+        connect(this, &WalletView::hdEnabledStatusChanged, gui, &BZXGUI::setHDStatus);
     }
 }
 
@@ -239,14 +239,14 @@ void WalletView::gotoHistoryPage()
     setCurrentWidget(transactionsPage);
 }
 
-void WalletView::gotoBitcoinHistoryTab()
+void WalletView::gotoBZXHistoryTab()
 {
     setCurrentWidget(transactionsPage);
 }
 
-void WalletView::focusBitcoinHistoryTab(const QModelIndex &idx)
+void WalletView::focusBZXHistoryTab(const QModelIndex &idx)
 {
-    gotoBitcoinHistoryTab();
+    gotoBZXHistoryTab();
     BZXTransactionList->focusTransaction(idx);
 }
 

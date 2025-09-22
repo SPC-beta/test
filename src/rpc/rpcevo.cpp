@@ -60,7 +60,7 @@ std::string GetHelpString(int nParamNum, std::string strParamName)
 
 // Allows to specify address or priv key. In case of address, the priv key is taken from the wallet
 static CKey ParsePrivKey(CWallet* pwallet, const std::string &strKeyOrAddress, bool allowAddresses = true) {
-    CBitcoinAddress address;
+    CBZXAddress address;
     if (allowAddresses && address.SetString(strKeyOrAddress) && address.IsValid()) {
         if (!pwallet) {
             throw std::runtime_error("addresses not supported when wallet is disabled");
@@ -73,7 +73,7 @@ static CKey ParsePrivKey(CWallet* pwallet, const std::string &strKeyOrAddress, b
         return key;
     }
 
-    CBitcoinSecret secret;
+    CBZXSecret secret;
     if (!secret.SetString(strKeyOrAddress) || !secret.IsValid()) {
         throw std::runtime_error(strprintf("invalid priv-key/address %s", strKeyOrAddress));
     }
@@ -82,7 +82,7 @@ static CKey ParsePrivKey(CWallet* pwallet, const std::string &strKeyOrAddress, b
 
 static CKeyID ParsePubKeyIDFromAddress(const std::string& strAddress, const std::string& paramName)
 {
-    CBitcoinAddress address(strAddress);
+    CBZXAddress address(strAddress);
     CKeyID keyID;
     if (!address.IsValid() || !address.GetKeyID(keyID)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("%s must be a valid P2PKH address, not %s", paramName, strAddress));
@@ -274,7 +274,7 @@ UniValue protx_masternode(const JSONRPCRequest& request)
     CProRegTx ptx;
     ptx.nVersion = CProRegTx::CURRENT_VERSION;
 
-    CBitcoinAddress collateralAddress(request.params[paramIdx].get_str());
+    CBZXAddress collateralAddress(request.params[paramIdx].get_str());
         if (!collateralAddress.IsValid()) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, strprintf("invalid collaterall address: %s", request.params[paramIdx].get_str()));
         }

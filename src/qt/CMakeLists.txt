@@ -1,4 +1,4 @@
-# Copyright (c) 2023-present The Bitcoin Core developers
+# Copyright (c) 2023-present The BZX Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
@@ -42,18 +42,18 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS forms)
 
 # TODO: The file(GLOB ...) command should be replaced with an explicit
 # file list. Such a change must be synced with the corresponding change
-# to https://github.com/bitcoin-core/bitcoin-maintainer-tools/blob/main/update-translations.py
+# to https://github.com/BZX-core/BZX-maintainer-tools/blob/main/update-translations.py
 file(GLOB ts_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} locale/*.ts)
 set_source_files_properties(${ts_files} PROPERTIES OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/locale)
 qt5_add_translation(qm_files ${ts_files})
 
-configure_file(bitcoin_locale.qrc bitcoin_locale.qrc USE_SOURCE_PERMISSIONS COPYONLY)
+configure_file(BZX_locale.qrc BZX_locale.qrc USE_SOURCE_PERMISSIONS COPYONLY)
 
 # The BZXqt sources have to include headers in
 # order to parse them to collect translatable strings.
 add_library(BZXqt STATIC EXCLUDE_FROM_ALL
-  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin.qrc
-  ${CMAKE_CURRENT_BINARY_DIR}/bitcoin_locale.qrc
+  ${CMAKE_CURRENT_SOURCE_DIR}/BZX.qrc
+  ${CMAKE_CURRENT_BINARY_DIR}/BZX_locale.qrc
   ${CMAKE_CURRENT_SOURCE_DIR}/addressbookpage.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/addresstablemodel.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/askpassphrasedialog.cpp
@@ -61,11 +61,11 @@ add_library(BZXqt STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/automintmodel.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/automintnotification.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bantablemodel.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoinaddressvalidator.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoinamountfield.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoingui.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoinstrings.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoinunits.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/BZXaddressvalidator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/BZXamountfield.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/BZXgui.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/BZXstrings.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/BZXunits.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/cancelpassworddialog.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/clientmodel.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/coincontroldialog.cpp
@@ -148,8 +148,8 @@ target_link_libraries(BZXqt
     Qt5::Network
   PRIVATE
     core_interface
-    bitcoin_cli
-    bitcoin_node
+    BZX_cli
+    BZX_node
     Boost::headers   
     $<TARGET_NAME_IF_EXISTS:QRencode::QRencode>
     $<$<PLATFORM_ID:Darwin>:-framework\ AppKit>
@@ -219,18 +219,18 @@ if(qt_lib_type STREQUAL "STATIC_LIBRARY")
 endif()
 
 add_executable(BZX-qt
-  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/BZX.cpp
 )
 
-add_windows_resources(BZX-qt res/bitcoin-qt-res.rc)
+add_windows_resources(BZX-qt res/BZX-qt-res.rc)
 target_link_libraries(BZX-qt
   PUBLIC
     core_interface
     BZXqt
     Qt5::Widgets
     Qt5::Dependencies
-    bitcoin_node
-    bitcoin_cli
+    BZX_node
+    BZX_cli
     univalue
     $<TARGET_NAME_IF_EXISTS:BZX_wallet>
     $<$<BOOL:${WITH_ZMQ}>:BZX_zmq>
@@ -263,11 +263,11 @@ endif()
 
 apply_wrapped_exception_flags(BZX-qt)
 import_plugins(BZX-qt)
-set_platform_output_name(BZX-qt BITCOIN_GUI_NAME)
+set_platform_output_name(BZX-qt BZX_GUI_NAME)
 list(APPEND installable_targets BZX-qt)
 set(installable_targets ${installable_targets} PARENT_SCOPE)
 if(NOT WIN32)
-  install(FILES ${PROJECT_SOURCE_DIR}/doc/man/bitcoin-qt.1
+  install(FILES ${PROJECT_SOURCE_DIR}/doc/man/BZX-qt.1
     DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
     RENAME BZX-qt.1
   )
@@ -277,19 +277,19 @@ if(WIN32)
 endif()
 
 if(WITH_MULTIPROCESS)
-  add_executable(bitcoin-gui
+  add_executable(BZX-gui
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   )
-  target_link_libraries(bitcoin-gui
+  target_link_libraries(BZX-gui
     core_interface
     BZXqt
-    bitcoin_node
-    bitcoin_ipc
+    BZX_node
+    BZX_ipc
   )
-  import_plugins(bitcoin-gui)
-  install_binary_component(bitcoin-gui)
+  import_plugins(BZX-gui)
+  install_binary_component(BZX-gui)
   if(WIN32)
-    set_target_properties(bitcoin-gui PROPERTIES WIN32_EXECUTABLE TRUE)
+    set_target_properties(BZX-gui PROPERTIES WIN32_EXECUTABLE TRUE)
   endif()
 endif()
 
@@ -359,10 +359,10 @@ else()
   file(GLOB ui_files ${CMAKE_CURRENT_SOURCE_DIR}/forms/*.ui)
   add_custom_target(translate
     COMMAND ${CMAKE_COMMAND} -E env XGETTEXT=${XGETTEXT_EXECUTABLE} COPYRIGHT_HOLDERS=${COPYRIGHT_HOLDERS} ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/share/qt/extract_strings_qt.py ${translatable_sources}
-    COMMAND Qt5::lupdate -no-obsolete -I ${PROJECT_SOURCE_DIR}/src -locations relative ${CMAKE_CURRENT_SOURCE_DIR}/bitcoinstrings.cpp ${ui_files} ${qt_translatable_sources} -ts ${CMAKE_CURRENT_SOURCE_DIR}/locale/bitcoin_en.ts
-    COMMAND Qt5::lconvert -drop-translations -o ${CMAKE_CURRENT_SOURCE_DIR}/locale/bitcoin_en.xlf -i ${CMAKE_CURRENT_SOURCE_DIR}/locale/bitcoin_en.ts
-    COMMAND ${SED_EXECUTABLE} -i.old -e "s|source-language=\"en\" target-language=\"en\"|source-language=\"en\"|" -e "/<target xml:space=\"preserve\"><\\/target>/d" ${CMAKE_CURRENT_SOURCE_DIR}/locale/bitcoin_en.xlf
-    COMMAND ${CMAKE_COMMAND} -E rm ${CMAKE_CURRENT_SOURCE_DIR}/locale/bitcoin_en.xlf.old
+    COMMAND Qt5::lupdate -no-obsolete -I ${PROJECT_SOURCE_DIR}/src -locations relative ${CMAKE_CURRENT_SOURCE_DIR}/BZXstrings.cpp ${ui_files} ${qt_translatable_sources} -ts ${CMAKE_CURRENT_SOURCE_DIR}/locale/BZX_en.ts
+    COMMAND Qt5::lconvert -drop-translations -o ${CMAKE_CURRENT_SOURCE_DIR}/locale/BZX_en.xlf -i ${CMAKE_CURRENT_SOURCE_DIR}/locale/BZX_en.ts
+    COMMAND ${SED_EXECUTABLE} -i.old -e "s|source-language=\"en\" target-language=\"en\"|source-language=\"en\"|" -e "/<target xml:space=\"preserve\"><\\/target>/d" ${CMAKE_CURRENT_SOURCE_DIR}/locale/BZX_en.xlf
+    COMMAND ${CMAKE_COMMAND} -E rm ${CMAKE_CURRENT_SOURCE_DIR}/locale/BZX_en.xlf.old
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src
     VERBATIM
   )

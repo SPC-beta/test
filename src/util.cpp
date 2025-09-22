@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2016 The BZX Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/bitcoin-config.h"
+#include "config/BZX-config.h"
 #endif
 
 #include "util.h"
@@ -105,8 +105,8 @@ bool fMasternodeMode = false;
 bool fLiteMode = false;
 int nWalletBackups = 10;
 
-const char * const BITCOIN_CONF_FILENAME = "BZX.conf";
-const char * const BITCOIN_PID_FILENAME = "BZX.pid";
+const char * const BZX_CONF_FILENAME = "BZX.conf";
+const char * const BZX_PID_FILENAME = "BZX.pid";
 
 CCriticalSection cs_args;
 std::map<std::string, std::string> mapArgs;
@@ -632,7 +632,7 @@ void ReadConfigFile(const std::string& confPath)
 
         for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it)
         {
-            // Don't overwrite existing settings so command line settings override bitcoin.conf
+            // Don't overwrite existing settings so command line settings override BZX.conf
             std::string strKey = std::string("-") + it->string_key;
             std::string strValue = it->value[0];
             InterpretNegativeSetting(strKey, strValue);
@@ -648,7 +648,7 @@ void ReadConfigFile(const std::string& confPath)
 #ifndef WIN32
 boost::filesystem::path GetPidFile()
 {
-    boost::filesystem::path pathPidFile(GetArg("-pid", BITCOIN_PID_FILENAME));
+    boost::filesystem::path pathPidFile(GetArg("-pid", BZX_PID_FILENAME));
     if (!pathPidFile.is_absolute()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
 }
@@ -981,9 +981,9 @@ std::string CopyrightHolders(const std::string& strPrefix)
     if (copyright_devs.find(_("BZX Core")) == std::string::npos) {
         strCopyrightHolders += '\n' + strPrefix + "The BZX Core developers";
     }
-    // Make sure Bitcoin Core copyright is not removed by accident
-    if (copyright_devs.find("Bitcoin Core") == std::string::npos) {
-        strCopyrightHolders += '\n' + strPrefix + "The Bitcoin Core developers";
+    // Make sure BZX Core copyright is not removed by accident
+    if (copyright_devs.find("BZX Core") == std::string::npos) {
+        strCopyrightHolders += '\n' + strPrefix + "The BZX Core developers";
     }
     
     return strCopyrightHolders;
