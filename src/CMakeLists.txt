@@ -144,7 +144,6 @@ add_library(bitcoin_consensus STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/prevector.h
   ${CMAKE_CURRENT_SOURCE_DIR}/primitives/block.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/primitives/block.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/primitives/precomputed_hash.h
   ${CMAKE_CURRENT_SOURCE_DIR}/primitives/transaction.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/primitives/transaction.h
   ${CMAKE_CURRENT_SOURCE_DIR}/pubkey.cpp
