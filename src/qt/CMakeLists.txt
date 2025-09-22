@@ -148,8 +148,8 @@ target_link_libraries(bitcoinzeroqt
     Qt5::Network
   PRIVATE
     core_interface
-    bitcoin_cli
-    bitcoin_node
+    bitcoinzero_cli
+    bitcoinzero_node
     Boost::headers   
     $<TARGET_NAME_IF_EXISTS:QRencode::QRencode>
     $<$<PLATFORM_ID:Darwin>:-framework\ AppKit>
@@ -229,8 +229,8 @@ target_link_libraries(bitcoinzero-qt
     bitcoinzeroqt
     Qt5::Widgets
     Qt5::Dependencies
-    bitcoin_node
-    bitcoin_cli
+    bitcoinzero_node
+    bitcoinzero_cli
     univalue
     $<TARGET_NAME_IF_EXISTS:BZX_wallet>
     $<$<BOOL:${WITH_ZMQ}>:BZX_zmq>
@@ -283,7 +283,7 @@ if(WITH_MULTIPROCESS)
   target_link_libraries(bitcoin-gui
     core_interface
     bitcoinzeroqt
-    bitcoin_node
+    bitcoinzero_node
     bitcoin_ipc
   )
   import_plugins(bitcoin-gui)
