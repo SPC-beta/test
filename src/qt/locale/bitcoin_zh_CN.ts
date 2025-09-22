@@ -2056,12 +2056,12 @@ After the notification transaction is received by the RAP address issuer, funds 
 <context>
     <name>OverviewPage</name>
     <message>
-        <source>Please restart the BZX wallet to route your connection through Tor to protect your IP address. &lt;br&gt;Syncing your wallet might be slower with TOR. &lt;br&gt;Note that -torsetup in BZX.conf will always override any changes made here.</source>
-        <translation>请重新启动 BZX 钱包，通过 Tor 来路由你的连接，以保护你的 IP 地址。&lt;br&gt;使用 Tor 同步你的钱包可能会比较慢。&lt;br&gt;请注意，BZX.conf 中的 -torsetup 将始终覆盖这里的任何更改。</translation>
+        <source>Please restart the BZX wallet to route your connection through Tor to protect your IP address. &lt;br&gt;Syncing your wallet might be slower with TOR. &lt;br&gt;Note that -torsetup in bitcoinzero.conf will always override any changes made here.</source>
+        <translation>请重新启动 BZX 钱包，通过 Tor 来路由你的连接，以保护你的 IP 地址。&lt;br&gt;使用 Tor 同步你的钱包可能会比较慢。&lt;br&gt;请注意，bitcoinzero.conf 中的 -torsetup 将始终覆盖这里的任何更改。</translation>
     </message>
     <message>
-        <source>Please restart the BZX wallet to disable routing of your connection through Tor to protect your IP address. &lt;br&gt;Note that -torsetup in BZX.conf will always override any changes made here.</source>
-        <translation>请重新启动 BZX 钱包，以禁用通过 Tor 来路由你的连接以保护你的 IP 地址。&lt;br&gt;请注意，BZX.conf 中的 -torsetup 将始终覆盖这里的任何更改。</translation>
+        <source>Please restart the BZX wallet to disable routing of your connection through Tor to protect your IP address. &lt;br&gt;Note that -torsetup in bitcoinzero.conf will always override any changes made here.</source>
+        <translation>请重新启动 BZX 钱包，以禁用通过 Tor 来路由你的连接以保护你的 IP 地址。&lt;br&gt;请注意，bitcoinzero.conf 中的 -torsetup 将始终覆盖这里的任何更改。</translation>
     </message>
     <message>
         <source>Form</source>

@@ -49,9 +49,9 @@ qt5_add_translation(qm_files ${ts_files})
 
 configure_file(bitcoin_locale.qrc bitcoin_locale.qrc USE_SOURCE_PERMISSIONS COPYONLY)
 
-# The BZXqt sources have to include headers in
+# The bitcoinzeroqt sources have to include headers in
 # order to parse them to collect translatable strings.
-add_library(BZXqt STATIC EXCLUDE_FROM_ALL
+add_library(bitcoinzeroqt STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin.qrc
   ${CMAKE_CURRENT_BINARY_DIR}/bitcoin_locale.qrc
   ${CMAKE_CURRENT_SOURCE_DIR}/addressbookpage.cpp
@@ -118,12 +118,12 @@ add_library(BZXqt STATIC EXCLUDE_FROM_ALL
   $<$<BOOL:${WIN32}>:${CMAKE_CURRENT_SOURCE_DIR}/winshutdownmonitor.cpp>
   $<$<BOOL:${WIN32}>:${CMAKE_CURRENT_SOURCE_DIR}/winshutdownmonitor.h>
 )
-target_compile_definitions(BZXqt
+target_compile_definitions(bitcoinzeroqt
   PUBLIC
     QT_NO_KEYWORDS
     QT_USE_QSTRINGBUILDER
 )
-target_include_directories(BZXqt
+target_include_directories(bitcoinzeroqt
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/qt> 
@@ -138,7 +138,7 @@ set_source_files_properties(
     ${CMAKE_CURRENT_SOURCE_DIR}/clientmodel.h
     PROPERTIES SKIP_AUTOUIC ON 
 )
-target_link_libraries(BZXqt
+target_link_libraries(bitcoinzeroqt
   PUBLIC
     leveldb
     secp256k1
@@ -163,7 +163,7 @@ target_link_libraries(BZXqt
 )
 
 if(ENABLE_WALLET)
-  target_sources(BZXqt
+  target_sources(bitcoinzeroqt
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/addressbookpage.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/automintdialog.cpp
@@ -199,7 +199,7 @@ if(ENABLE_WALLET)
         ${CMAKE_CURRENT_SOURCE_DIR}/sparkmodel.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/createsparknamepage.cpp
   )
-  target_link_libraries(BZXqt
+  target_link_libraries(bitcoinzeroqt
     PRIVATE
       BZX_wallet
       Qt5::Network
@@ -207,26 +207,26 @@ if(ENABLE_WALLET)
 endif()
 
 if(WITH_DBUS AND NOT MINGW)
-  target_link_libraries(BZXqt PRIVATE Qt5::DBus)
+  target_link_libraries(bitcoinzeroqt PRIVATE Qt5::DBus)
 endif()
 
 if(qt_lib_type STREQUAL "STATIC_LIBRARY")
   # We want to define static plugins to link ourselves, thus preventing
   # automatic linking against a "sane" set of default static plugins.
-  qt5_import_plugins(BZXqt
+  qt5_import_plugins(bitcoinzeroqt
       EXCLUDE_BY_TYPE bearer iconengines imageformats platforms styles
   )
 endif()
 
-add_executable(BZX-qt
+add_executable(bitcoinzero-qt
   ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin.cpp
 )
 
-add_windows_resources(BZX-qt res/bitcoin-qt-res.rc)
-target_link_libraries(BZX-qt
+add_windows_resources(bitcoinzero-qt res/bitcoin-qt-res.rc)
+target_link_libraries(bitcoinzero-qt
   PUBLIC
     core_interface
-    BZXqt
+    bitcoinzeroqt
     Qt5::Widgets
     Qt5::Dependencies
     bitcoin_node
@@ -246,7 +246,7 @@ target_link_libraries(BZX-qt
 
 # Add macOS-specific frameworks
 if(APPLE)
-    target_link_libraries(BZX-qt PRIVATE
+    target_link_libraries(bitcoinzero-qt PRIVATE
         "-framework CoreVideo"
         "-framework IOKit"
         "-framework IOSurface"
@@ -261,19 +261,19 @@ if(APPLE)
     )
 endif()
 
-apply_wrapped_exception_flags(BZX-qt)
-import_plugins(BZX-qt)
-set_platform_output_name(BZX-qt BITCOIN_GUI_NAME)
-list(APPEND installable_targets BZX-qt)
+apply_wrapped_exception_flags(bitcoinzero-qt)
+import_plugins(bitcoinzero-qt)
+set_platform_output_name(bitcoinzero-qt BITCOIN_GUI_NAME)
+list(APPEND installable_targets bitcoinzero-qt)
 set(installable_targets ${installable_targets} PARENT_SCOPE)
 if(NOT WIN32)
   install(FILES ${PROJECT_SOURCE_DIR}/doc/man/bitcoin-qt.1
     DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
-    RENAME BZX-qt.1
+    RENAME bitcoinzero-qt.1
   )
 endif()
 if(WIN32)
-  set_target_properties(BZX-qt PROPERTIES WIN32_EXECUTABLE TRUE)
+  set_target_properties(bitcoinzero-qt PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
 if(WITH_MULTIPROCESS)
@@ -282,7 +282,7 @@ if(WITH_MULTIPROCESS)
   )
   target_link_libraries(bitcoin-gui
     core_interface
-    BZXqt
+    bitcoinzeroqt
     bitcoin_node
     bitcoin_ipc
   )

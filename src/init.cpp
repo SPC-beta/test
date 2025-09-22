@@ -659,7 +659,7 @@ std::string HelpMessage(HelpMessageMode mode)
 
 std::string LicenseInfo()
 {
-    const std::string URL_SOURCE_CODE = "<https://github.com/SpecialCoins/BZX>";
+    const std::string URL_SOURCE_CODE = "<https://github.com/SpecialCoins/BitcoinZero>";
     const std::string URL_WEBSITE = "<https://bzx.world//>";
 
     std::string copyright = CopyrightHolders(strprintf(_("Copyright (C) %i-%i"), 2020, COPYRIGHT_YEAR) + " ");

@@ -1,8 +1,8 @@
-# BZX [BZX] (Lelantus) Core 2024
+# Bitcoinzero [BZX] (Lelantus) Core 2024
 
-[![Build Status](https://travis-ci.org/BZXOfficial/BZX.svg?branch=master)](https://travis-ci.org/BZXOfficial/BZX)
+[![Build Status](https://travis-ci.org/BitcoinZeroOfficial/bitcoinzero.svg?branch=master)](https://travis-ci.org/BitcoinZeroOfficial/bitcoinzero)
 
-## BZX
+## Bitcoinzero
 
 - Coin Suffix: BZX
 - Algorithm: Lyra2Z
@@ -19,14 +19,14 @@
 - P2P Port=29301
 - RPC Port=29201
 - Client core= based on Firo 14.12.X
-- Client name=BZX.qt
-- Conf file=BZX.conf
+- Client name=bitcoinzero.qt
+- Conf file=bitcoinzero.conf
 
 ## Installation folder
 
-- Windows: C:\Users\Username\AppData\Roaming\BZX
-- Mac: /Library/Application Support/BZX
-- Unix: /.BZX
+- Windows: C:\Users\Username\AppData\Roaming\bitcoinzero
+- Mac: /Library/Application Support/bitcoinzero
+- Unix: /.bitcoinzero
 
 # Debian/Ubuntu Linux Daemon Build Instructions
 
@@ -46,9 +46,9 @@
 
     sudo apt-get install make automake cmake curl g++-multilib libtool binutils-gold bsdmainutils pkg-config python3 patch bison
 
-    git clone https://github.com/BZXOfficial/BZX
+    git clone https://github.com/BitcoinZeroOfficial/bitcoinzero
 
-    cd BZX
+    cd bitcoinzero
     for vps:
     cd depends
     make -j4   (-j is optional, number of your cores, -j4)
@@ -70,21 +70,21 @@
     make -j4   (-j is optional, number of your cores, -j4)
 
     cd src
-    strip BZXd
-    strip BZX-cli
+    strip bitcoinzerod
+    strip bitcoinzero-cli
     or:
     cd src
     cd qt
-    strip BZX-qt
+    strip bitcoinzero-qt
 
     files are:
-    BZXd
-    BZX-cli
-    BZX-qt
-    BZX.conf
+    bitcoinzerod
+    bitcoinzero-cli
+    bitcoinzero-qt
+    bitcoinzero.conf
 
     data folder:
-    BZX
+    bitcoinzero
 
     port 29301
     rpc port 29201
