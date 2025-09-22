@@ -201,7 +201,7 @@ if(ENABLE_WALLET)
   )
   target_link_libraries(bitcoinzeroqt
     PRIVATE
-      BZX_wallet
+      bitcoinzero_wallet
       Qt5::Network
   )
 endif()
@@ -232,7 +232,7 @@ target_link_libraries(bitcoinzero-qt
     bitcoinzero_node
     bitcoinzero_cli
     univalue
-    $<TARGET_NAME_IF_EXISTS:BZX_wallet>
+    $<TARGET_NAME_IF_EXISTS:bitcoinzero_wallet>
     $<$<BOOL:${WITH_ZMQ}>:BZX_zmq>
     Boost::thread
     Boost::filesystem

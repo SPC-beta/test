@@ -23,9 +23,6 @@ target_link_libraries(bitcoin_crypto
   PRIVATE
     core_interface
     ${Boost_LIBRARIES}
-  PUBLIC 
-    ethash
-    keccak
 )
 
 target_include_directories(bitcoin_crypto

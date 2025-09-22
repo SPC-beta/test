@@ -395,7 +395,7 @@ if(BUILD_DAEMON)
     bitcoinzero_cli
     secp256k1
     secp256k1pp
-    $<TARGET_NAME_IF_EXISTS:BZX_wallet>
+    $<TARGET_NAME_IF_EXISTS:bitcoinzero_wallet>
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
   )
@@ -412,7 +412,7 @@ if(WITH_MULTIPROCESS)
     core_interface
     bitcoinzero_node
     bitcoin_ipc
-    $<TARGET_NAME_IF_EXISTS:BZX_wallet>
+    $<TARGET_NAME_IF_EXISTS:bitcoinzero_wallet>
   )
   list(APPEND installable_targets bitcoin-node)
 
@@ -451,7 +451,7 @@ target_link_libraries(bitcoinzero_cli
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
     $<$<BOOL:${WITH_ZMQ}>:BZX_zmq>
-    $<TARGET_NAME_IF_EXISTS:BZX_wallet>
+    $<TARGET_NAME_IF_EXISTS:bitcoinzero_wallet>
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
 )
@@ -472,7 +472,7 @@ if(BUILD_CLI)
     $<TARGET_NAME_IF_EXISTS:libevent::core>
     $<$<BOOL:${WITH_ZMQ}>:BZX_zmq>
     bitcoinzero_cli
-    $<TARGET_NAME_IF_EXISTS:BZX_wallet>
+    $<TARGET_NAME_IF_EXISTS:bitcoinzero_wallet>
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
   )
