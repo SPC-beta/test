@@ -26,9 +26,9 @@ public:
     CPaymentChannel(CPaymentCode const & theirPcode, CExtKey const & myChannelKey, Side side);
 
     CPaymentCode const & getTheirPcode() const;
-    CBZXAddress generateTheirNextSecretAddress();
+    CBitcoinAddress generateTheirNextSecretAddress();
     TheirAddrContT generateTheirSecretAddresses(uint32_t fromAddr, uint32_t uptoAddr) const;
-    CBZXAddress getTheirNextSecretAddress() const;
+    CBitcoinAddress getTheirNextSecretAddress() const;
     TheirAddrContT getTheirUsedSecretAddresses() const;
     size_t setTheirUsedAddressNumber(size_t number);
 
@@ -41,7 +41,7 @@ public:
     MyAddrContT const & generateMyUsedAddresses() const;
     MyAddrContT const & generateMyNextAddresses() const;
 
-    bool markAddressUsed(CBZXAddress const &);
+    bool markAddressUsed(CBitcoinAddress const &);
     size_t setMyUsedAddressNumber(size_t number);
 
     bool operator==(CPaymentChannel const & other) const;

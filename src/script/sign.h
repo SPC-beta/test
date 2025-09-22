@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_SCRIPT_SIGN_H
-#define BZX_SCRIPT_SIGN_H
+#ifndef BITCOIN_SCRIPT_SIGN_H
+#define BITCOIN_SCRIPT_SIGN_H
 
 #include "script/interpreter.h"
 
@@ -80,4 +80,4 @@ SignatureData CombineSignatures(const CScript& scriptPubKey, const BaseSignature
 SignatureData DataFromTransaction(const CMutableTransaction& tx, unsigned int nIn);
 void UpdateTransaction(CMutableTransaction& tx, unsigned int nIn, const SignatureData& data);
 
-#endif // BZX_SCRIPT_SIGN_H
+#endif // BITCOIN_SCRIPT_SIGN_H

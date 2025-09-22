@@ -1,8 +1,8 @@
-// Copyright (c) 2011-2014 The BZX Core developers
+// Copyright (c) 2011-2014 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "BZXaddressvalidator.h"
+#include "bitcoinaddressvalidator.h"
 
 #include "base58.h"
 #include "bip47/paymentcode.h"
@@ -16,12 +16,12 @@
   - All lower-case letters except for 'l'
 */
 
-BZXAddressEntryValidator::BZXAddressEntryValidator(QObject *parent) :
+BitcoinAddressEntryValidator::BitcoinAddressEntryValidator(QObject *parent) :
     QValidator(parent)
 {
 }
 
-QValidator::State BZXAddressEntryValidator::validate(QString &input, int &pos) const
+QValidator::State BitcoinAddressEntryValidator::validate(QString &input, int &pos) const
 {
     Q_UNUSED(pos);
 
@@ -83,16 +83,16 @@ QValidator::State BZXAddressEntryValidator::validate(QString &input, int &pos) c
     return state;
 }
 
-BZXAddressCheckValidator::BZXAddressCheckValidator(QObject *parent) :
+BitcoinAddressCheckValidator::BitcoinAddressCheckValidator(QObject *parent) :
     QValidator(parent)
 {
 }
 
-QValidator::State BZXAddressCheckValidator::validate(QString &input, int &pos) const
+QValidator::State BitcoinAddressCheckValidator::validate(QString &input, int &pos) const
 {
     Q_UNUSED(pos);
-    // Validate the passed BZX address
-    CBZXAddress addr(input.toStdString());
+    // Validate the passed Bitcoin address
+    CBitcoinAddress addr(input.toStdString());
     if (addr.IsValid())
         return QValidator::Acceptable;
 
@@ -105,7 +105,7 @@ QValidator::State BZXAddressCheckValidator::validate(QString &input, int &pos) c
     return QValidator::Invalid;
 }
 
-bool BZXAddressCheckValidator::validateSparkAddress(const std::string& address) const
+bool BitcoinAddressCheckValidator::validateSparkAddress(const std::string& address) const
 {
     // check for spark name
     if (address[0] == '@' && address.size() <= CSparkNameManager::maximumSparkNameLength + 1)

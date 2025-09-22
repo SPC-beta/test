@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -55,7 +55,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// BZXMiner
+// BitcoinMiner
 //
 
 //
@@ -1026,9 +1026,9 @@ void static BZXMiner(const CChainParams &chainparams) {
     }
 }
 
-void GenerateBZXs(bool fGenerate, int nThreads, const CChainParams& chainparams)
+void GenerateBitcoins(bool fGenerate, int nThreads, const CChainParams& chainparams)
 {
-    LogPrintf("BZXMiner GenerateBZXs\n");
+    LogPrintf("BZXMiner GenerateBitcoins\n");
     static boost::thread_group* minerThreads = NULL;
 
     if (nThreads < 0)

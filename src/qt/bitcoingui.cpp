@@ -1,14 +1,14 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/BZX-config.h"
+#include "config/bitcoin-config.h"
 #endif
 
-#include "BZXgui.h"
+#include "bitcoingui.h"
 
-#include "BZXunits.h"
+#include "bitcoinunits.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
 #include "guiutil.h"
@@ -71,7 +71,7 @@
 #include <QUrlQuery>
 #endif
 
-const std::string BZXGUI::DEFAULT_UIPLATFORM =
+const std::string BitcoinGUI::DEFAULT_UIPLATFORM =
 #if defined(Q_OS_MAC)
         "macosx"
 #elif defined(Q_OS_WIN)
@@ -83,9 +83,9 @@ const std::string BZXGUI::DEFAULT_UIPLATFORM =
 
 /** Display name for default wallet name. Uses tilde to avoid name
  * collisions in the future with additional wallets */
-const QString BZXGUI::DEFAULT_WALLET = "~Default";
+const QString BitcoinGUI::DEFAULT_WALLET = "~Default";
 
-BZXGUI::BZXGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networkStyle, QWidget *parent) :
+BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networkStyle, QWidget *parent) :
     QMainWindow(parent),
     enableWallet(false),
     clientModel(0),
@@ -274,19 +274,19 @@ BZXGUI::BZXGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networkS
     // Subscribe to notifications from core
     subscribeToCoreSignals();
 
-    connect(connectionsControl, &GUIUtil::ClickableLabel::clicked, this, &BZXGUI::toggleNetworkActive);
+    connect(connectionsControl, &GUIUtil::ClickableLabel::clicked, this, &BitcoinGUI::toggleNetworkActive);
 
     modalOverlay = new ModalOverlay(this->centralWidget());
 #ifdef ENABLE_WALLET
     if(enableWallet) {
-        connect(walletFrame, &WalletFrame::requestedSyncWarningInfo, this, &BZXGUI::showModalOverlay);
-        connect(labelBlocksIcon, &GUIUtil::ClickableLabel::clicked, this, &BZXGUI::showModalOverlay);
-        connect(progressBar, &GUIUtil::ClickableProgressBar::clicked, this, &BZXGUI::showModalOverlay);
+        connect(walletFrame, &WalletFrame::requestedSyncWarningInfo, this, &BitcoinGUI::showModalOverlay);
+        connect(labelBlocksIcon, &GUIUtil::ClickableLabel::clicked, this, &BitcoinGUI::showModalOverlay);
+        connect(progressBar, &GUIUtil::ClickableProgressBar::clicked, this, &BitcoinGUI::showModalOverlay);
     }
 #endif
 }
 
-BZXGUI::~BZXGUI()
+BitcoinGUI::~BitcoinGUI()
 {
     // Unsubscribe from notifications from core
     unsubscribeFromCoreSignals();
@@ -303,7 +303,7 @@ BZXGUI::~BZXGUI()
     delete rpcConsole;
 }
 
-void BZXGUI::createActions()
+void BitcoinGUI::createActions()
 {
     size_t key = Qt::Key_1;
 	QActionGroup *tabGroup = new QActionGroup(this);
@@ -369,19 +369,19 @@ void BZXGUI::createActions()
 
 #ifdef ENABLE_WALLET
     connect(masternodeAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
-    connect(masternodeAction, &QAction::triggered, this, &BZXGUI::gotoMasternodePage);
+    connect(masternodeAction, &QAction::triggered, this, &BitcoinGUI::gotoMasternodePage);
 	connect(overviewAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
-    connect(overviewAction, &QAction::triggered, this, &BZXGUI::gotoOverviewPage);
+    connect(overviewAction, &QAction::triggered, this, &BitcoinGUI::gotoOverviewPage);
 	connect(sendCoinsAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
 	connect(sendCoinsAction, &QAction::triggered, [this]{ gotoSendCoinsPage(); });
 	connect(sendCoinsMenuAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
 	connect(sendCoinsMenuAction, &QAction::triggered, [this]{ gotoSendCoinsPage(); });
 	connect(receiveCoinsAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
-	connect(receiveCoinsAction, &QAction::triggered, this, &BZXGUI::gotoReceiveCoinsPage);
+	connect(receiveCoinsAction, &QAction::triggered, this, &BitcoinGUI::gotoReceiveCoinsPage);
 	connect(receiveCoinsMenuAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
-	connect(receiveCoinsMenuAction, &QAction::triggered, this, &BZXGUI::gotoReceiveCoinsPage);
+	connect(receiveCoinsMenuAction, &QAction::triggered, this, &BitcoinGUI::gotoReceiveCoinsPage);
 	connect(historyAction, &QAction::triggered, this, [this]{ showNormalIfMinimized(); });
-	connect(historyAction, &QAction::triggered, this, &BZXGUI::gotoHistoryPage);
+	connect(historyAction, &QAction::triggered, this, &BitcoinGUI::gotoHistoryPage);
 
 #endif // ENABLE_WALLET
 
@@ -439,14 +439,14 @@ void BZXGUI::createActions()
     showHelpMessageAction->setStatusTip(tr("Show the %1 help message to get a list with possible BZX command-line options").arg(tr(PACKAGE_NAME)));
 
     connect(quitAction, &QAction::triggered, qApp, QApplication::quit);
-    connect(rpcConsole, &RPCConsole::handleRestart, this, &BZXGUI::handleRestart);
-    connect(aboutAction, &QAction::triggered, this, &BZXGUI::aboutClicked);
-    connect(openRepairAction, &QAction::triggered, this, &BZXGUI::showRepair);
+    connect(rpcConsole, &RPCConsole::handleRestart, this, &BitcoinGUI::handleRestart);
+    connect(aboutAction, &QAction::triggered, this, &BitcoinGUI::aboutClicked);
+    connect(openRepairAction, &QAction::triggered, this, &BitcoinGUI::showRepair);
     connect(aboutQtAction, &QAction::triggered, qApp, QApplication::aboutQt);
-    connect(optionsAction, &QAction::triggered, this, &BZXGUI::optionsClicked);
-    connect(toggleHideAction, &QAction::triggered, this, &BZXGUI::toggleHidden);
-    connect(showHelpMessageAction, &QAction::triggered, this, &BZXGUI::showHelpMessageClicked);
-    connect(openRPCConsoleAction, &QAction::triggered, this, &BZXGUI::showDebugWindow);
+    connect(optionsAction, &QAction::triggered, this, &BitcoinGUI::optionsClicked);
+    connect(toggleHideAction, &QAction::triggered, this, &BitcoinGUI::toggleHidden);
+    connect(showHelpMessageAction, &QAction::triggered, this, &BitcoinGUI::showHelpMessageClicked);
+    connect(openRPCConsoleAction, &QAction::triggered, this, &BitcoinGUI::showDebugWindow);
     // prevents an open debug window from becoming stuck/unusable on client shutdown
     connect(quitAction, &QAction::triggered, rpcConsole, &QWidget::hide);
 
@@ -461,16 +461,16 @@ void BZXGUI::createActions()
         connect(verifyMessageAction, &QAction::triggered, [this]{ gotoVerifyMessageTab(); });
         connect(usedSendingAddressesAction, &QAction::triggered, walletFrame, &WalletFrame::usedSendingAddresses);
         connect(usedReceivingAddressesAction, &QAction::triggered, walletFrame, &WalletFrame::usedReceivingAddresses);
-        connect(openAction, &QAction::triggered, this, &BZXGUI::openClicked);
+        connect(openAction, &QAction::triggered, this, &BitcoinGUI::openClicked);
     }
 #endif // ENABLE_WALLET
 
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C), this), &QShortcut::activated, this, &BZXGUI::showDebugWindowActivateConsole);
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D), this), &QShortcut::activated, this, &BZXGUI::showDebugWindow);
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this), &QShortcut::activated, this, &BZXGUI::showRepair);
+    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C), this), &QShortcut::activated, this, &BitcoinGUI::showDebugWindowActivateConsole);
+    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D), this), &QShortcut::activated, this, &BitcoinGUI::showDebugWindow);
+    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this), &QShortcut::activated, this, &BitcoinGUI::showRepair);
 }
 
-void BZXGUI::createMenuBar()
+void BitcoinGUI::createMenuBar()
 {
 #ifdef Q_OS_MAC
     // Create a decoupled menu bar on Mac which stays even if the window is closed
@@ -518,7 +518,7 @@ void BZXGUI::createMenuBar()
     help->addAction(aboutQtAction);
 }
 
-void BZXGUI::createToolBars()
+void BitcoinGUI::createToolBars()
 {
     if(walletFrame)
     {
@@ -545,7 +545,7 @@ void BZXGUI::createToolBars()
     }
 }
 
-void BZXGUI::setClientModel(ClientModel *_clientModel)
+void BitcoinGUI::setClientModel(ClientModel *_clientModel)
 {
     this->clientModel = _clientModel;
     if(_clientModel)
@@ -556,14 +556,14 @@ void BZXGUI::setClientModel(ClientModel *_clientModel)
 
         // Keep up to date with client
         updateNetworkState();
-        connect(_clientModel, &ClientModel::numConnectionsChanged, this, &BZXGUI::setNumConnections);
-        connect(_clientModel, &ClientModel::networkActiveChanged, this, &BZXGUI::setNetworkActive);
+        connect(_clientModel, &ClientModel::numConnectionsChanged, this, &BitcoinGUI::setNumConnections);
+        connect(_clientModel, &ClientModel::networkActiveChanged, this, &BitcoinGUI::setNetworkActive);
 
         modalOverlay->setKnownBestHeight(_clientModel->getHeaderTipHeight(), QDateTime::fromTime_t(_clientModel->getHeaderTipTime()));
         setNumBlocks(_clientModel->getNumBlocks(), _clientModel->getLastBlockDate(), _clientModel->getVerificationProgress(NULL), false);
-        connect(_clientModel, &ClientModel::numBlocksChanged, this, &BZXGUI::setNumBlocks);
+        connect(_clientModel, &ClientModel::numBlocksChanged, this, &BitcoinGUI::setNumBlocks);
 
-        connect(clientModel, &ClientModel::additionalDataSyncProgressChanged, this, &BZXGUI::setAdditionalDataSyncProgress);
+        connect(clientModel, &ClientModel::additionalDataSyncProgressChanged, this, &BitcoinGUI::setAdditionalDataSyncProgress);
 
         // Receive and report messages from client model
         connect(_clientModel, &ClientModel::message, [this](const QString &title, const QString &message, unsigned int style){
@@ -571,10 +571,10 @@ void BZXGUI::setClientModel(ClientModel *_clientModel)
         });
 
         // Show progress dialog
-        connect(_clientModel, &ClientModel::showProgress, this, &BZXGUI::showProgress);
+        connect(_clientModel, &ClientModel::showProgress, this, &BitcoinGUI::showProgress);
 
         // Update progress bar label textw
-        connect(_clientModel, &ClientModel::updateProgressBarLabel, this, &BZXGUI::updateProgressBarLabel);
+        connect(_clientModel, &ClientModel::updateProgressBarLabel, this, &BitcoinGUI::updateProgressBarLabel);
 
         rpcConsole->setClientModel(_clientModel);
 
@@ -590,7 +590,7 @@ void BZXGUI::setClientModel(ClientModel *_clientModel)
         if(optionsModel)
         {
             // be aware of the tray icon disable state change reported by the OptionsModel object.
-            connect(optionsModel, &OptionsModel::hideTrayIconChanged, this, &BZXGUI::setTrayIconVisible);
+            connect(optionsModel, &OptionsModel::hideTrayIconChanged, this, &BitcoinGUI::setTrayIconVisible);
 
             // initialize the disable state of the tray icon with the current value in the model.
             setTrayIconVisible(optionsModel->getHideTrayIcon());
@@ -622,7 +622,7 @@ void BZXGUI::setClientModel(ClientModel *_clientModel)
 }
 
 #ifdef ENABLE_WALLET
-bool BZXGUI::addWallet(const QString& name, WalletModel *walletModel)
+bool BitcoinGUI::addWallet(const QString& name, WalletModel *walletModel)
 {
     if(!walletFrame)
         return false;
@@ -630,14 +630,14 @@ bool BZXGUI::addWallet(const QString& name, WalletModel *walletModel)
     return walletFrame->addWallet(name, walletModel);
 }
 
-bool BZXGUI::setCurrentWallet(const QString& name)
+bool BitcoinGUI::setCurrentWallet(const QString& name)
 {
     if(!walletFrame)
         return false;
     return walletFrame->setCurrentWallet(name);
 }
 
-void BZXGUI::removeAllWallets()
+void BitcoinGUI::removeAllWallets()
 {
     if(!walletFrame)
         return;
@@ -646,7 +646,7 @@ void BZXGUI::removeAllWallets()
 }
 #endif // ENABLE_WALLET
 
-void BZXGUI::setWalletActionsEnabled(bool enabled)
+void BitcoinGUI::setWalletActionsEnabled(bool enabled)
 {
     overviewAction->setEnabled(enabled);
     sendCoinsAction->setEnabled(enabled);
@@ -667,7 +667,7 @@ void BZXGUI::setWalletActionsEnabled(bool enabled)
     openAction->setEnabled(enabled);
 }
 
-void BZXGUI::createTrayIcon(const NetworkStyle *networkStyle)
+void BitcoinGUI::createTrayIcon(const NetworkStyle *networkStyle)
 {
 #ifndef Q_OS_MAC
     trayIcon = new QSystemTrayIcon(this);
@@ -680,7 +680,7 @@ void BZXGUI::createTrayIcon(const NetworkStyle *networkStyle)
     notificator = new Notificator(QApplication::applicationName(), trayIcon, this);
 }
 
-void BZXGUI::createTrayIconMenu()
+void BitcoinGUI::createTrayIconMenu()
 {
 #ifndef Q_OS_MAC
     // return if trayIcon is unset (only on non-Mac OSes)
@@ -690,7 +690,7 @@ void BZXGUI::createTrayIconMenu()
     trayIconMenu = new QMenu(this);
     trayIcon->setContextMenu(trayIconMenu);
 
-    connect(trayIcon, &QSystemTrayIcon::activated, this, &BZXGUI::trayIconActivated);
+    connect(trayIcon, &QSystemTrayIcon::activated, this, &BitcoinGUI::trayIconActivated);
 #else
     // Note: On Mac, the dock icon is used to provide the tray's functionality.
     MacDockIconHandler *dockIconHandler = MacDockIconHandler::instance();
@@ -716,7 +716,7 @@ void BZXGUI::createTrayIconMenu()
 }
 
 #ifndef Q_OS_MAC
-void BZXGUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
+void BitcoinGUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
     if(reason == QSystemTrayIcon::Trigger)
     {
@@ -726,7 +726,7 @@ void BZXGUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 }
 #endif
 
-void BZXGUI::optionsClicked()
+void BitcoinGUI::optionsClicked()
 {
     if(!clientModel || !clientModel->getOptionsModel())
         return;
@@ -736,7 +736,7 @@ void BZXGUI::optionsClicked()
     dlg.exec();
 }
 
-void BZXGUI::aboutClicked()
+void BitcoinGUI::aboutClicked()
 {
     if(!clientModel)
         return;
@@ -745,7 +745,7 @@ void BZXGUI::aboutClicked()
     dlg.exec();
 }
 
-void BZXGUI::showDebugWindow()
+void BitcoinGUI::showDebugWindow()
 {
     rpcConsole->showNormal();
     rpcConsole->show();
@@ -753,25 +753,25 @@ void BZXGUI::showDebugWindow()
     rpcConsole->activateWindow();
 }
 
-void BZXGUI::showDebugWindowActivateConsole()
+void BitcoinGUI::showDebugWindowActivateConsole()
 {
     rpcConsole->setTabFocus(RPCConsole::TAB_CONSOLE);
     showDebugWindow();
 }
 
-void BZXGUI::showHelpMessageClicked()
+void BitcoinGUI::showHelpMessageClicked()
 {
     helpMessageDialog->show();
 }
 
-void BZXGUI::showRepair()
+void BitcoinGUI::showRepair()
 {
     rpcConsole->setTabFocus(RPCConsole::TAB_REPAIR);
     showDebugWindow();
 }
 
 #ifdef ENABLE_WALLET
-void BZXGUI::openClicked()
+void BitcoinGUI::openClicked()
 {
     OpenURIDialog dlg(this);
     if(dlg.exec())
@@ -780,55 +780,55 @@ void BZXGUI::openClicked()
     }
 }
 
-void BZXGUI::gotoOverviewPage()
+void BitcoinGUI::gotoOverviewPage()
 {
     overviewAction->setChecked(true);
     if (walletFrame) walletFrame->gotoOverviewPage();
 }
 
-void BZXGUI::gotoHistoryPage()
+void BitcoinGUI::gotoHistoryPage()
 {
     historyAction->setChecked(true);
     if (walletFrame) walletFrame->gotoHistoryPage();
 }
 
-void BZXGUI::gotoBZXHistoryTab()
+void BitcoinGUI::gotoBitcoinHistoryTab()
 {
     historyAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoBZXHistoryTab();
+    if (walletFrame) walletFrame->gotoBitcoinHistoryTab();
 }
 
-void BZXGUI::gotoMasternodePage()
+void BitcoinGUI::gotoMasternodePage()
 {
     QSettings settings;
     masternodeAction->setChecked(true);
     if (walletFrame) walletFrame->gotoMasternodePage();
 }
 
-void BZXGUI::gotoReceiveCoinsPage()
+void BitcoinGUI::gotoReceiveCoinsPage()
 {
     receiveCoinsAction->setChecked(true);
     if (walletFrame) walletFrame->gotoReceiveCoinsPage();
 }
 
-void BZXGUI::gotoSendCoinsPage(QString addr)
+void BitcoinGUI::gotoSendCoinsPage(QString addr)
 {
     sendCoinsAction->setChecked(true);
     if (walletFrame) walletFrame->gotoSendCoinsPage(addr);
 }
 
-void BZXGUI::gotoSignMessageTab(QString addr)
+void BitcoinGUI::gotoSignMessageTab(QString addr)
 {
     if (walletFrame) walletFrame->gotoSignMessageTab(addr);
 }
 
-void BZXGUI::gotoVerifyMessageTab(QString addr)
+void BitcoinGUI::gotoVerifyMessageTab(QString addr)
 {
     if (walletFrame) walletFrame->gotoVerifyMessageTab(addr);
 }
 #endif // ENABLE_WALLET
 
-void BZXGUI::updateNetworkState()
+void BitcoinGUI::updateNetworkState()
 {
     int count = clientModel->getNumConnections();
     QString icon;
@@ -857,17 +857,17 @@ void BZXGUI::updateNetworkState()
     connectionsControl->setPixmap(QIcon(icon).pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
 }
 
-void BZXGUI::setNumConnections(int count)
+void BitcoinGUI::setNumConnections(int count)
 {
     updateNetworkState();
 }
 
-void BZXGUI::setNetworkActive(bool networkActive)
+void BitcoinGUI::setNetworkActive(bool networkActive)
 {
     updateNetworkState();
 }
 
-void BZXGUI::updateHeadersSyncProgressLabel()
+void BitcoinGUI::updateHeadersSyncProgressLabel()
 {
     int64_t headersTipTime = clientModel->getHeaderTipTime();
     int headersTipHeight = clientModel->getHeaderTipHeight();
@@ -876,7 +876,7 @@ void BZXGUI::updateHeadersSyncProgressLabel()
         progressBarLabel->setText(tr("Syncing Headers (%1%)...").arg(QString::number(100.0 / (headersTipHeight+estHeadersLeft)*headersTipHeight, 'f', 1)));
 }
 
-void BZXGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVerificationProgress, bool header)
+void BitcoinGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVerificationProgress, bool header)
 {
     if (modalOverlay)
     {
@@ -991,7 +991,7 @@ void BZXGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVerific
 }
 
 
-void BZXGUI::setAdditionalDataSyncProgress(double nSyncProgress)
+void BitcoinGUI::setAdditionalDataSyncProgress(double nSyncProgress)
 {
     if(!clientModel)
         return;
@@ -1043,7 +1043,7 @@ void BZXGUI::setAdditionalDataSyncProgress(double nSyncProgress)
 }
 
 
-void BZXGUI::message(const QString &title, const QString &message, unsigned int style, bool *ret)
+void BitcoinGUI::message(const QString &title, const QString &message, unsigned int style, bool *ret)
 {
     QString strTitle = tr("BZX"); // default title
     // Default to information icon
@@ -1102,7 +1102,7 @@ void BZXGUI::message(const QString &title, const QString &message, unsigned int 
         notificator->notify((Notificator::Class)nNotifyIcon, strTitle, message);
 }
 
-void BZXGUI::changeEvent(QEvent *e)
+void BitcoinGUI::changeEvent(QEvent *e)
 {
     QMainWindow::changeEvent(e);
 #ifndef Q_OS_MAC // Ignored on Mac
@@ -1113,7 +1113,7 @@ void BZXGUI::changeEvent(QEvent *e)
             QWindowStateChangeEvent *wsevt = static_cast<QWindowStateChangeEvent*>(e);
             if(!(wsevt->oldState() & Qt::WindowMinimized) && isMinimized())
             {
-                QTimer::singleShot(0, this, &BZXGUI::hide);
+                QTimer::singleShot(0, this, &BitcoinGUI::hide);
                 e->ignore();
             }
         }
@@ -1121,7 +1121,7 @@ void BZXGUI::changeEvent(QEvent *e)
 #endif
 }
 
-void BZXGUI::closeEvent(QCloseEvent *event)
+void BitcoinGUI::closeEvent(QCloseEvent *event)
 {
 #ifndef Q_OS_MAC // Ignored on Mac
     if(clientModel && clientModel->getOptionsModel())
@@ -1144,7 +1144,7 @@ void BZXGUI::closeEvent(QCloseEvent *event)
 #endif
 }
 
-void BZXGUI::showEvent(QShowEvent *event)
+void BitcoinGUI::showEvent(QShowEvent *event)
 {
     // enable the debug window when the main window shows up
     openRPCConsoleAction->setEnabled(true);
@@ -1153,11 +1153,11 @@ void BZXGUI::showEvent(QShowEvent *event)
 }
 
 #ifdef ENABLE_WALLET
-void BZXGUI::incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label)
+void BitcoinGUI::incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label)
 {
     // On new transaction, make an info balloon
     QString msg = tr("Date: %1\n").arg(date) +
-                  tr("Amount: %1\n").arg(BZXUnits::formatWithUnit(unit, amount, true)) +
+                  tr("Amount: %1\n").arg(BitcoinUnits::formatWithUnit(unit, amount, true)) +
                   tr("Type: %1\n").arg(type);
     if (!label.isEmpty())
         msg += tr("Label: %1\n").arg(label);
@@ -1175,14 +1175,14 @@ void BZXGUI::incomingTransaction(const QString& date, int unit, const CAmount& a
 }
 #endif // ENABLE_WALLET
 
-void BZXGUI::dragEnterEvent(QDragEnterEvent *event)
+void BitcoinGUI::dragEnterEvent(QDragEnterEvent *event)
 {
     // Accept only URIs
     if(event->mimeData()->hasUrls())
         event->acceptProposedAction();
 }
 
-void BZXGUI::dropEvent(QDropEvent *event)
+void BitcoinGUI::dropEvent(QDropEvent *event)
 {
     if(event->mimeData()->hasUrls())
     {
@@ -1194,7 +1194,7 @@ void BZXGUI::dropEvent(QDropEvent *event)
     event->acceptProposedAction();
 }
 
-bool BZXGUI::eventFilter(QObject *object, QEvent *event)
+bool BitcoinGUI::eventFilter(QObject *object, QEvent *event)
 {
     // Catch status tip events
     if (event->type() == QEvent::StatusTip)
@@ -1207,7 +1207,7 @@ bool BZXGUI::eventFilter(QObject *object, QEvent *event)
 }
 
 #ifdef ENABLE_WALLET
-bool BZXGUI::handlePaymentRequest(const SendCoinsRecipient& recipient)
+bool BitcoinGUI::handlePaymentRequest(const SendCoinsRecipient& recipient)
 {
     // URI has to be valid
     if (walletFrame && walletFrame->handlePaymentRequest(recipient))
@@ -1219,7 +1219,7 @@ bool BZXGUI::handlePaymentRequest(const SendCoinsRecipient& recipient)
     return false;
 }
 
-void BZXGUI::setHDStatus(int hdEnabled)
+void BitcoinGUI::setHDStatus(int hdEnabled)
 {
     labelWalletHDStatusIcon->setPixmap(QIcon(hdEnabled ? ":/icons/hd_enabled" : ":/icons/hd_disabled").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
     labelWalletHDStatusIcon->setToolTip(hdEnabled ? tr("HD key generation is <b>enabled</b>") : tr("HD key generation is <b>disabled</b>"));
@@ -1228,7 +1228,7 @@ void BZXGUI::setHDStatus(int hdEnabled)
     labelWalletHDStatusIcon->setEnabled(hdEnabled);
 }
 
-void BZXGUI::setEncryptionStatus(int status)
+void BitcoinGUI::setEncryptionStatus(int status)
 {
     switch(status)
     {
@@ -1258,7 +1258,7 @@ void BZXGUI::setEncryptionStatus(int status)
 }
 #endif // ENABLE_WALLET
 
-void BZXGUI::showNormalIfMinimized(bool fToggleHidden)
+void BitcoinGUI::showNormalIfMinimized(bool fToggleHidden)
 {
     if(!clientModel)
         return;
@@ -1277,12 +1277,12 @@ void BZXGUI::showNormalIfMinimized(bool fToggleHidden)
     }
 }
 
-void BZXGUI::toggleHidden()
+void BitcoinGUI::toggleHidden()
 {
     showNormalIfMinimized(true);
 }
 
-void BZXGUI::detectShutdown()
+void BitcoinGUI::detectShutdown()
 {
     if (ShutdownRequested())
     {
@@ -1292,7 +1292,7 @@ void BZXGUI::detectShutdown()
     }
 }
 
-void BZXGUI::showProgress(const QString &title, int nProgress)
+void BitcoinGUI::showProgress(const QString &title, int nProgress)
 {
     if (nProgress == 0)
     {
@@ -1315,7 +1315,7 @@ void BZXGUI::showProgress(const QString &title, int nProgress)
         progressDialog->setValue(nProgress);
 }
 
-void BZXGUI::updateProgressBarLabel(const QString& text)
+void BitcoinGUI::updateProgressBarLabel(const QString& text)
 {
     if (progressBarLabel) 
     {
@@ -1324,7 +1324,7 @@ void BZXGUI::updateProgressBarLabel(const QString& text)
     }
 }
 
-void BZXGUI::setTrayIconVisible(bool fHideTrayIcon)
+void BitcoinGUI::setTrayIconVisible(bool fHideTrayIcon)
 {
     if (trayIcon)
     {
@@ -1332,13 +1332,13 @@ void BZXGUI::setTrayIconVisible(bool fHideTrayIcon)
     }
 }
 
-void BZXGUI::showModalOverlay()
+void BitcoinGUI::showModalOverlay()
 {
     if (modalOverlay && (progressBar->isVisible() || modalOverlay->isLayerVisible()))
         modalOverlay->toggleVisibility();
 }
 
-static bool ThreadSafeMessageBox(BZXGUI *gui, const std::string& message, const std::string& caption, unsigned int style)
+static bool ThreadSafeMessageBox(BitcoinGUI *gui, const std::string& message, const std::string& caption, unsigned int style)
 {
     bool modal = (style & CClientUIInterface::MODAL);
     // The SECURE flag has no effect in the Qt GUI.
@@ -1355,33 +1355,33 @@ static bool ThreadSafeMessageBox(BZXGUI *gui, const std::string& message, const 
     return ret;
 }
 
-void BZXGUI::subscribeToCoreSignals()
+void BitcoinGUI::subscribeToCoreSignals()
 {
     // Connect signals to client
     uiInterface.ThreadSafeMessageBox.connect(boost::bind(ThreadSafeMessageBox, this, _1, _2, _3));
     uiInterface.ThreadSafeQuestion.connect(boost::bind(ThreadSafeMessageBox, this, _1, _3, _4));
 }
 
-void BZXGUI::unsubscribeFromCoreSignals()
+void BitcoinGUI::unsubscribeFromCoreSignals()
 {
     // Disconnect signals from client
     uiInterface.ThreadSafeMessageBox.disconnect(boost::bind(ThreadSafeMessageBox, this, _1, _2, _3));
     uiInterface.ThreadSafeQuestion.disconnect(boost::bind(ThreadSafeMessageBox, this, _1, _3, _4));
 }
 
-void BZXGUI::checkMasternodeVisibility(int numBlocks)
+void BitcoinGUI::checkMasternodeVisibility(int numBlocks)
 {
     masternodeAction->setVisible(true);
 }
 
 /** Get restart command-line parameters and request restart */
-void BZXGUI::handleRestart(QStringList args)
+void BitcoinGUI::handleRestart(QStringList args)
 {
     if (!ShutdownRequested())
         Q_EMIT requestedRestart(args);
 }
 
-void BZXGUI::toggleNetworkActive()
+void BitcoinGUI::toggleNetworkActive()
 {
     if (clientModel) {
         clientModel->setNetworkActive(!clientModel->getNetworkActive());
@@ -1394,12 +1394,12 @@ UnitDisplayStatusBarControl::UnitDisplayStatusBarControl(const PlatformStyle *pl
 {
     createContextMenu();
     setToolTip(tr("Unit to show amounts in. Click to select another unit."));
-    QList<BZXUnits::Unit> units = BZXUnits::availableUnits();
+    QList<BitcoinUnits::Unit> units = BitcoinUnits::availableUnits();
     int max_width = 0;
     const QFontMetrics fm(font());
-    for (const BZXUnits::Unit unit : units)
+    for (const BitcoinUnits::Unit unit : units)
     {
-        max_width = qMax(max_width, GUIUtil::TextWidth(fm, BZXUnits::name(unit)));
+        max_width = qMax(max_width, GUIUtil::TextWidth(fm, BitcoinUnits::name(unit)));
     }
     setMinimumSize(max_width, 0);
     setAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -1415,9 +1415,9 @@ void UnitDisplayStatusBarControl::mousePressEvent(QMouseEvent *event)
 void UnitDisplayStatusBarControl::createContextMenu()
 {
     menu = new QMenu(this);
-    for (BZXUnits::Unit u : BZXUnits::availableUnits())
+    for (BitcoinUnits::Unit u : BitcoinUnits::availableUnits())
     {
-        QAction *menuAction = new QAction(QString(BZXUnits::name(u)), this);
+        QAction *menuAction = new QAction(QString(BitcoinUnits::name(u)), this);
         menuAction->setData(QVariant(u));
         menu->addAction(menuAction);
     }
@@ -1442,7 +1442,7 @@ void UnitDisplayStatusBarControl::setOptionsModel(OptionsModel *_optionsModel)
 /** When Display Units are changed on OptionsModel it will refresh the display text of the control on the status bar */
 void UnitDisplayStatusBarControl::updateDisplayUnit(int newUnits)
 {
-    setText(BZXUnits::name(newUnits));
+    setText(BitcoinUnits::name(newUnits));
 }
 
 /** Shows context menu with Display Unit options by the mouse coordinates */
@@ -1461,8 +1461,8 @@ void UnitDisplayStatusBarControl::onMenuSelection(QAction* action)
     }
 }
 
-// Handles resize events for the BZXGUI widget by adjusting internal component sizes.
-void BZXGUI::resizeEvent(QResizeEvent* event) {
+// Handles resize events for the BitcoinGUI widget by adjusting internal component sizes.
+void BitcoinGUI::resizeEvent(QResizeEvent* event) {
     QMainWindow::resizeEvent(event);  
 
     // Retrieve new dimensions from the resize event

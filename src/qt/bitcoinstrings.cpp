@@ -8,7 +8,7 @@
 #else
 #define UNUSED
 #endif
-static const char UNUSED *BZX_strings[] = {
+static const char UNUSED *bitcoin_strings[] = {
 QT_TRANSLATE_NOOP("BZX-core", "BZX Core"),
 QT_TRANSLATE_NOOP("BZX-core", "The %s developers"),
 QT_TRANSLATE_NOOP("BZX-core", ""

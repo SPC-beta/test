@@ -1,5 +1,5 @@
 // Copyright (c) 2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -162,7 +162,7 @@ public:
             obj.push_back(Pair("hex", HexStr(subscript.begin(), subscript.end())));
             UniValue a(UniValue::VARR);
             BOOST_FOREACH(const CTxDestination& addr, addresses)
-                a.push_back(CBZXAddress(addr).ToString());
+                a.push_back(CBitcoinAddress(addr).ToString());
             obj.push_back(Pair("addresses", a));
             if (whichType == TX_MULTISIG)
                 obj.push_back(Pair("sigsrequired", nRequired));
@@ -208,7 +208,7 @@ UniValue validateaddress(const JSONRPCRequest& request)
     LOCK(cs_main);
 #endif
 
-    CBZXAddress address(request.params[0].get_str());
+    CBitcoinAddress address(request.params[0].get_str());
     bool isValid = address.IsValid();
 
     bool isvalidSpark = false;
@@ -308,7 +308,7 @@ CScript _createmultisig_redeemScript(CWallet * const pwallet, const UniValue& pa
         const std::string& ks = keys[i].get_str();
 #ifdef ENABLE_WALLET
         // Case 1: address and we have full public key:
-        CBZXAddress address(ks);
+        CBitcoinAddress address(ks);
         if (pwallet && address.IsValid()) {
             CKeyID keyID;
             if (!address.GetKeyID(keyID))
@@ -425,7 +425,7 @@ UniValue createmultisig(const JSONRPCRequest& request)
     // Construct using pay-to-script-hash:
     CScript inner = _createmultisig_redeemScript(pwallet, request.params);
     CScriptID innerID(inner);
-    CBZXAddress address(innerID);
+    CBitcoinAddress address(innerID);
 
     UniValue result(UniValue::VOBJ);
     result.push_back(Pair("address", address.ToString()));
@@ -463,7 +463,7 @@ UniValue verifymessage(const JSONRPCRequest& request)
     std::string strSign     = request.params[1].get_str();
     std::string strMessage  = request.params[2].get_str();
 
-    CBZXAddress addr(strAddress);
+    CBitcoinAddress addr(strAddress);
     if (!addr.IsValid())
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid address");
 
@@ -511,7 +511,7 @@ UniValue signmessagewithprivkey(const JSONRPCRequest& request)
     std::string strPrivkey = request.params[0].get_str();
     std::string strMessage = request.params[1].get_str();
 
-    CBZXSecret vchSecret;
+    CBitcoinSecret vchSecret;
     bool fGood = vchSecret.SetString(strPrivkey);
     if (!fGood)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid private key");
@@ -568,9 +568,9 @@ UniValue verifyprivatetxown(const JSONRPCRequest& request)
 bool getAddressFromIndex(AddressType const & type, const uint160 &hash, std::string &address)
 {
     if (type == AddressType::payToScriptHash) {
-        address = CBZXAddress(CScriptID(hash)).ToString();
+        address = CBitcoinAddress(CScriptID(hash)).ToString();
     } else if (type == AddressType::payToPubKeyHash || type == AddressType::payToExchangeAddress) {
-        address = CBZXAddress(CKeyID(hash)).ToString();
+        address = CBitcoinAddress(CKeyID(hash)).ToString();
     } else {
         return false;
     }
@@ -580,7 +580,7 @@ bool getAddressFromIndex(AddressType const & type, const uint160 &hash, std::str
 bool getAddressesFromParams(const UniValue& params, std::vector<std::pair<uint160, AddressType> > &addresses)
 {
     if (params[0].isStr()) {
-        CBZXAddress address(params[0].get_str());
+        CBitcoinAddress address(params[0].get_str());
         uint160 hashBytes;
         AddressType type = AddressType::unknown;
         if (!address.GetIndexKey(hashBytes, type)) {
@@ -598,7 +598,7 @@ bool getAddressesFromParams(const UniValue& params, std::vector<std::pair<uint16
 
         for (std::vector<UniValue>::iterator it = values.begin(); it != values.end(); ++it) {
 
-            CBZXAddress address(it->get_str());
+            CBitcoinAddress address(it->get_str());
             uint160 hashBytes;
             AddressType type = AddressType::unknown;
             if (!address.GetIndexKey(hashBytes, type)) {
@@ -660,7 +660,7 @@ void handleSingleAddress(const UniValue& uniAddress, std::vector<std::pair<uint1
     } else if(privcoin::utils::isSparkName(addr)) {
         addresses.push_back(std::make_pair(uint160(), AddressType::sparkName));
     } else {
-        CBZXAddress address(addr);
+        CBitcoinAddress address(addr);
         uint160 hashBytes;
         AddressType type = AddressType::unknown;
         if (!address.GetIndexKey(hashBytes, type)) {
@@ -2054,7 +2054,7 @@ UniValue echo(const JSONRPCRequest& request)
             "echo|echojson \"message\" ...\n"
             "\nSimply echo back the input arguments. This command is for testing.\n"
             "\nThe difference between echo and echojson is that echojson has argument conversion enabled in the client-side table in"
-            "BZX-cli and the GUI. There is no server-side difference."
+            "bitcoin-cli and the GUI. There is no server-side difference."
         );
 
     return request.params;

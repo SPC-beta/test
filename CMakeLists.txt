@@ -1,4 +1,4 @@
-# Copyright (c) 2023-present The BZX Core developers
+# Copyright (c) 2023-present The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
@@ -48,10 +48,10 @@ project(BZXCore
   LANGUAGES NONE
 )
 
-set(BZX_DAEMON_NAME BZXd)
-set(BZX_GUI_NAME BZX-qt)
-set(BZX_CLI_NAME BZX-cli)
-set(BZX_TX_NAME BZX-tx)
+set(BITCOIN_DAEMON_NAME BZXd)
+set(BITCOIN_GUI_NAME BZX-qt)
+set(BITCOIN_CLI_NAME BZX-cli)
+set(BITCOIN_TX_NAME BZX-tx)
 
 set(CLIENT_VERSION_STRING ${PROJECT_VERSION})
 if(CLIENT_VERSION_RC GREATER 0)
@@ -105,9 +105,9 @@ include(cmake/utilities.cmake)
 #=============================
 include(CMakeDependentOption)
 # When adding a new option, end the <help_text> with a full stop for consistency.
-option(BUILD_DAEMON "Build ${BZX_DAEMON_NAME} executable." ON)
-option(BUILD_GUI "Build ${BZX_GUI_NAME} executable." ON)
-option(BUILD_CLI "Build ${BZX_CLI_NAME} executable." ON)
+option(BUILD_DAEMON "Build ${BITCOIN_DAEMON_NAME} executable." ON)
+option(BUILD_GUI "Build ${BITCOIN_GUI_NAME} executable." ON)
+option(BUILD_CLI "Build ${BITCOIN_CLI_NAME} executable." ON)
 
 
 option(BUILD_UTIL_CHAINSTATE "Build experimental BZX-chainstate executable." OFF)
@@ -115,7 +115,7 @@ option(BUILD_KERNEL_LIB "Build experimental BZXkernel library." ${BUILD_UTIL_CHA
 
 option(ENABLE_WALLET "Enable wallet." ON)
 cmake_dependent_option(BUILD_TESTS "Build tests." OFF "ENABLE_WALLET" OFF)
-option(BUILD_TX "Build ${BZX_TX_NAME} executable." ${BUILD_CLI})
+option(BUILD_TX "Build ${BITCOIN_TX_NAME} executable." ${BUILD_CLI})
 option(WITH_BDB "Enable Berkeley DB (BDB) wallet support." OFF)
 cmake_dependent_option(WARN_INCOMPATIBLE_BDB "Warn when using a Berkeley DB (BDB) version other than 4.8." ON "WITH_BDB" OFF)
 if(WITH_BDB)
@@ -834,8 +834,8 @@ if(BUILD_TESTS)
     endmacro()
 
     # Core binaries
-    set_configure_variable(BUILD_DAEMON ENABLE_BZXD)
-    set_configure_variable(BUILD_CLI BUILD_BZX_UTIL)
+    set_configure_variable(BUILD_DAEMON ENABLE_BITCOIND)
+    set_configure_variable(BUILD_CLI BUILD_BITCOIN_UTIL)
 
     # Wallet support
     set_configure_variable(ENABLE_WALLET ENABLE_WALLET)
@@ -883,12 +883,12 @@ message("\n")
 message("Configure summary")
 message("=================")
 message("Executables:")
-message("  BZXd ............................ ${BUILD_DAEMON}")
-message("  BZX-qt (GUI) .................... ${BUILD_GUI}")
-message("  BZX-cli ......................... ${BUILD_CLI}")
-message("  BZX-tx .......................... ${BUILD_TX}")
-message("  BZX-chainstate (experimental) ... ${BUILD_UTIL_CHAINSTATE}")
-message("  libBZXkernel (experimental) ..... ${BUILD_KERNEL_LIB}")
+message("  bitcoind ............................ ${BUILD_DAEMON}")
+message("  bitcoin-qt (GUI) .................... ${BUILD_GUI}")
+message("  bitcoin-cli ......................... ${BUILD_CLI}")
+message("  bitcoin-tx .......................... ${BUILD_TX}")
+message("  bitcoin-chainstate (experimental) ... ${BUILD_UTIL_CHAINSTATE}")
+message("  libbitcoinkernel (experimental) ..... ${BUILD_KERNEL_LIB}")
 message("Optional features:")
 message("  wallet support ...................... ${ENABLE_WALLET}")
 if(ENABLE_WALLET)
@@ -900,9 +900,9 @@ message("  USDT tracing ........................ ${WITH_USDT}")
 message("  QR code (GUI) ....................... ${WITH_QRENCODE}")
 message("  DBus (GUI, Linux only) .............. ${WITH_DBUS}")
 message("Tests:")
-message("  test_BZX ........................ ${BUILD_TESTS}")
-message("  test_BZX-qt ..................... ${BUILD_GUI_TESTS}")
-message("  bench_BZX ....................... ${BUILD_BENCH}")
+message("  test_bitcoin ........................ ${BUILD_TESTS}")
+message("  test_bitcoin-qt ..................... ${BUILD_GUI_TESTS}")
+message("  bench_bitcoin ....................... ${BUILD_BENCH}")
 message("  fuzz binary ......................... ${BUILD_FUZZ_BINARY}")
 message("")
 if(CMAKE_CROSSCOMPILING)

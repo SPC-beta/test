@@ -1,9 +1,9 @@
-// Copyright (c) 2012-2015 The BZX Core developers
+// Copyright (c) 2012-2015 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_CHECKQUEUE_H
-#define BZX_CHECKQUEUE_H
+#ifndef BITCOIN_CHECKQUEUE_H
+#define BITCOIN_CHECKQUEUE_H
 
 #include <algorithm>
 #include <vector>
@@ -214,4 +214,4 @@ public:
     }
 };
 
-#endif // BZX_CHECKQUEUE_H
+#endif // BITCOIN_CHECKQUEUE_H

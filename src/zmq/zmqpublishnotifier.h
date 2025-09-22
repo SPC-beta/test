@@ -1,9 +1,9 @@
-// Copyright (c) 2015-2016 The BZX Core developers
+// Copyright (c) 2015-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_ZMQ_ZMQPUBLISHNOTIFIER_H
-#define BZX_ZMQ_ZMQPUBLISHNOTIFIER_H
+#ifndef BITCOIN_ZMQ_ZMQPUBLISHNOTIFIER_H
+#define BITCOIN_ZMQ_ZMQPUBLISHNOTIFIER_H
 
 #include "zmqabstractnotifier.h"
 
@@ -52,4 +52,4 @@ public:
     bool NotifyTransaction(const CTransaction &transaction) override;
 };
 
-#endif // BZX_ZMQ_ZMQPUBLISHNOTIFIER_H
+#endif // BITCOIN_ZMQ_ZMQPUBLISHNOTIFIER_H

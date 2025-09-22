@@ -1,9 +1,9 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_QT_CLIENTMODEL_H
-#define BZX_QT_CLIENTMODEL_H
+#ifndef BITCOIN_QT_CLIENTMODEL_H
+#define BITCOIN_QT_CLIENTMODEL_H
 
 #include <QObject>
 #include <QDateTime>
@@ -39,7 +39,7 @@ enum NumConnections {
     CONNECTIONS_ALL  = (CONNECTIONS_IN | CONNECTIONS_OUT),
 };
 
-/** Model for BZX network client. */
+/** Model for Bitcoin network client. */
 class ClientModel : public QObject
 {
     Q_OBJECT
@@ -140,4 +140,4 @@ public Q_SLOTS:
     void updateBanlist();
 };
 
-#endif // BZX_QT_CLIENTMODEL_H
+#endif // BITCOIN_QT_CLIENTMODEL_H

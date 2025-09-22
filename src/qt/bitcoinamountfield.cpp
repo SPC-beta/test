@@ -1,10 +1,10 @@
-// Copyright (c) 2011-2015 The BZX Core developers
+// Copyright (c) 2011-2015 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "BZXamountfield.h"
+#include "bitcoinamountfield.h"
 
-#include "BZXunits.h"
+#include "bitcoinunits.h"
 #include "guiconstants.h"
 #include "qvaluecombobox.h"
 #include "guiutil.h"
@@ -25,7 +25,7 @@ class AmountSpinBox: public QAbstractSpinBox
 public:
     explicit AmountSpinBox(QWidget *parent):
         QAbstractSpinBox(parent),
-        currentUnit(BZXUnits::BTC),
+        currentUnit(BitcoinUnits::BTC),
         singleStep(10000) // satoshis
     {
         setAlignment(Qt::AlignRight);
@@ -52,7 +52,7 @@ public:
         CAmount val = parse(input, &valid);
         if(valid)
         {
-            input = BZXUnits::format(currentUnit, val, false, BZXUnits::separatorAlways);
+            input = BitcoinUnits::format(currentUnit, val, false, BitcoinUnits::separatorAlways);
             lineEdit()->setText(input);
         }
     }
@@ -64,7 +64,7 @@ public:
 
     void setValue(const CAmount& value)
     {
-        lineEdit()->setText(BZXUnits::format(currentUnit, value, false, BZXUnits::separatorAlways));
+        lineEdit()->setText(BitcoinUnits::format(currentUnit, value, false, BitcoinUnits::separatorAlways));
         Q_EMIT valueChanged();
     }
 
@@ -73,7 +73,7 @@ public:
         bool valid = false;
         CAmount val = value(&valid);
         val = val + steps * singleStep;
-        val = qMin(qMax(val, CAmount(0)), BZXUnits::maxMoney());
+        val = qMin(qMax(val, CAmount(0)), BitcoinUnits::maxMoney());
         setValue(val);
     }
 
@@ -103,7 +103,7 @@ public:
 
             const QFontMetrics fm(fontMetrics());
             int h = lineEdit()->minimumSizeHint().height();
-            int w = GUIUtil::TextWidth(fm, BZXUnits::format(BZXUnits::BTC, BZXUnits::maxMoney(), false, BZXUnits::separatorAlways));
+            int w = GUIUtil::TextWidth(fm, BitcoinUnits::format(BitcoinUnits::BTC, BitcoinUnits::maxMoney(), false, BitcoinUnits::separatorAlways));
             w += 2; // cursor blinking space
 
             QStyleOptionSpinBox opt;
@@ -141,10 +141,10 @@ private:
     CAmount parse(const QString &text, bool *valid_out=0) const
     {
         CAmount val = 0;
-        bool valid = BZXUnits::parse(currentUnit, text, &val);
+        bool valid = BitcoinUnits::parse(currentUnit, text, &val);
         if(valid)
         {
-            if(val < 0 || val > BZXUnits::maxMoney())
+            if(val < 0 || val > BitcoinUnits::maxMoney())
                 valid = false;
         }
         if(valid_out)
@@ -182,7 +182,7 @@ protected:
         {
             if(val > 0)
                 rv |= StepDownEnabled;
-            if(val < BZXUnits::maxMoney())
+            if(val < BitcoinUnits::maxMoney())
                 rv |= StepUpEnabled;
         }
         return rv;
@@ -192,9 +192,9 @@ Q_SIGNALS:
     void valueChanged();
 };
 
-#include "BZXamountfield.moc"
+#include "bitcoinamountfield.moc"
 
-BZXAmountField::BZXAmountField(QWidget *parent) :
+BitcoinAmountField::BitcoinAmountField(QWidget *parent) :
     QWidget(parent),
     amount(0)
 {
@@ -206,7 +206,7 @@ BZXAmountField::BZXAmountField(QWidget *parent) :
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->addWidget(amount);
     unit = new QValueComboBox(this);
-    unit->setModel(new BZXUnits(this));
+    unit->setModel(new BitcoinUnits(this));
     layout->addWidget(unit);
     layout->addStretch(1);
     layout->setContentsMargins(0,0,0,0);
@@ -217,26 +217,26 @@ BZXAmountField::BZXAmountField(QWidget *parent) :
     setFocusProxy(amount);
 
     // If one if the widgets changes, the combined content changes as well
-    connect(amount, &AmountSpinBox::valueChanged, this, &BZXAmountField::valueChanged);
-    connect(unit, qOverload<int>(&QComboBox::currentIndexChanged), this, &BZXAmountField::unitChanged);
+    connect(amount, &AmountSpinBox::valueChanged, this, &BitcoinAmountField::valueChanged);
+    connect(unit, qOverload<int>(&QComboBox::currentIndexChanged), this, &BitcoinAmountField::unitChanged);
 
     // Set default based on configuration
     unitChanged(unit->currentIndex());
 }
 
-void BZXAmountField::clear()
+void BitcoinAmountField::clear()
 {
     amount->clear();
     unit->setCurrentIndex(0);
 }
 
-void BZXAmountField::setEnabled(bool fEnabled)
+void BitcoinAmountField::setEnabled(bool fEnabled)
 {
     amount->setEnabled(fEnabled);
     unit->setEnabled(fEnabled);
 }
 
-bool BZXAmountField::validate()
+bool BitcoinAmountField::validate()
 {
     bool valid = false;
     value(&valid);
@@ -244,7 +244,7 @@ bool BZXAmountField::validate()
     return valid;
 }
 
-void BZXAmountField::setValid(bool valid)
+void BitcoinAmountField::setValid(bool valid)
 {
     if (valid)
         amount->setStyleSheet("");
@@ -252,7 +252,7 @@ void BZXAmountField::setValid(bool valid)
         amount->setStyleSheet(STYLE_INVALID);
 }
 
-bool BZXAmountField::eventFilter(QObject *object, QEvent *event)
+bool BitcoinAmountField::eventFilter(QObject *object, QEvent *event)
 {
     if (event->type() == QEvent::FocusIn)
     {
@@ -262,45 +262,45 @@ bool BZXAmountField::eventFilter(QObject *object, QEvent *event)
     return QWidget::eventFilter(object, event);
 }
 
-QWidget *BZXAmountField::setupTabChain(QWidget *prev)
+QWidget *BitcoinAmountField::setupTabChain(QWidget *prev)
 {
     QWidget::setTabOrder(prev, amount);
     QWidget::setTabOrder(amount, unit);
     return unit;
 }
 
-CAmount BZXAmountField::value(bool *valid_out) const
+CAmount BitcoinAmountField::value(bool *valid_out) const
 {
     return amount->value(valid_out);
 }
 
-void BZXAmountField::setValue(const CAmount& value)
+void BitcoinAmountField::setValue(const CAmount& value)
 {
     amount->setValue(value);
 }
 
-void BZXAmountField::setReadOnly(bool fReadOnly)
+void BitcoinAmountField::setReadOnly(bool fReadOnly)
 {
     amount->setReadOnly(fReadOnly);
 }
 
-void BZXAmountField::unitChanged(int idx)
+void BitcoinAmountField::unitChanged(int idx)
 {
     // Use description tooltip for current unit for the combobox
     unit->setToolTip(unit->itemData(idx, Qt::ToolTipRole).toString());
 
     // Determine new unit ID
-    int newUnit = unit->itemData(idx, BZXUnits::UnitRole).toInt();
+    int newUnit = unit->itemData(idx, BitcoinUnits::UnitRole).toInt();
 
     amount->setDisplayUnit(newUnit);
 }
 
-void BZXAmountField::setDisplayUnit(int newUnit)
+void BitcoinAmountField::setDisplayUnit(int newUnit)
 {
     unit->setValue(newUnit);
 }
 
-void BZXAmountField::setSingleStep(const CAmount& step)
+void BitcoinAmountField::setSingleStep(const CAmount& step)
 {
     amount->setSingleStep(step);
 }

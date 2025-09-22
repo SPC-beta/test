@@ -29,16 +29,16 @@ CPaymentCode::CPaymentCode (CPubKey const & pubKey, ChainCode const & chainCode)
     }
 }
 
-CBZXAddress CPaymentCode::getNotificationAddress() const
+CBitcoinAddress CPaymentCode::getNotificationAddress() const
 {
     if (!myNotificationAddress)
         myNotificationAddress.emplace(getNthPubkey(0).pubkey.GetID());
     return *myNotificationAddress;
 }
 
-CBZXAddress CPaymentCode::getNthAddress(size_t idx) const
+CBitcoinAddress CPaymentCode::getNthAddress(size_t idx) const
 {
-    return CBZXAddress(getNthPubkey(idx).pubkey.GetID());
+    return CBitcoinAddress(getNthPubkey(idx).pubkey.GetID());
 }
 
 std::vector<unsigned char> CPaymentCode::getPayload() const

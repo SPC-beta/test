@@ -1,9 +1,9 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_QT_RECEIVECOINSDIALOG_H
-#define BZX_QT_RECEIVECOINSDIALOG_H
+#ifndef BITCOIN_QT_RECEIVECOINSDIALOG_H
+#define BITCOIN_QT_RECEIVECOINSDIALOG_H
 
 #include "guiutil.h"
 
@@ -33,7 +33,7 @@ class QHBoxLayout;
 class QSortFilterProxyModel;
 QT_END_NAMESPACE
 
-/** Dialog for requesting payment of BZXs */
+/** Dialog for requesting payment of bitcoins */
 class ReceiveCoinsDialog : public QDialog
 {
     Q_OBJECT
@@ -115,4 +115,4 @@ private:
     quint32 typeFilter;
 };
 
-#endif // BZX_QT_RECEIVECOINSDIALOG_H
+#endif // BITCOIN_QT_RECEIVECOINSDIALOG_H

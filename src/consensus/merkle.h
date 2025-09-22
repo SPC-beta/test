@@ -1,9 +1,9 @@
-// Copyright (c) 2015 The BZX Core developers
+// Copyright (c) 2015 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_MERKLE
-#define BZX_MERKLE
+#ifndef BITCOIN_MERKLE
+#define BITCOIN_MERKLE
 
 #include <stdint.h>
 #include <vector>

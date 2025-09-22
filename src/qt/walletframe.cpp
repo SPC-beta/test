@@ -1,10 +1,10 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "walletframe.h"
 
-#include "BZXgui.h"
+#include "bitcoingui.h"
 #include "walletview.h"
 
 #include <cstdio>
@@ -12,7 +12,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
-WalletFrame::WalletFrame(const PlatformStyle *_platformStyle, BZXGUI *_gui) :
+WalletFrame::WalletFrame(const PlatformStyle *_platformStyle, BitcoinGUI *_gui) :
     QFrame(_gui),
     gui(_gui),
     platformStyle(_platformStyle)
@@ -44,7 +44,7 @@ bool WalletFrame::addWallet(const QString& name, WalletModel *walletModel)
         return false;
 
     WalletView *walletView = new WalletView(platformStyle, this);
-    walletView->setBZXGUI(gui);
+    walletView->setBitcoinGUI(gui);
     walletView->setClientModel(clientModel);
     walletView->setWalletModel(walletModel);
     walletView->showOutOfSyncWarning(bOutOfSync);
@@ -125,11 +125,11 @@ void WalletFrame::gotoHistoryPage()
         i.value()->gotoHistoryPage();
 }
 
-void WalletFrame::gotoBZXHistoryTab()
+void WalletFrame::gotoBitcoinHistoryTab()
 {
     QMap<QString, WalletView*>::const_iterator i;
     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-        i.value()->gotoBZXHistoryTab();
+        i.value()->gotoBitcoinHistoryTab();
 }
 
 void WalletFrame::gotoMasternodePage()

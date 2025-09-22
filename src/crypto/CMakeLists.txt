@@ -1,10 +1,10 @@
-# Copyright (c) 2023-present The BZX Core developers
+# Copyright (c) 2023-present The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
 add_subdirectory(progpow)
 
-add_library(BZX_crypto STATIC EXCLUDE_FROM_ALL
+add_library(bitcoin_crypto STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/aes.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/chacha20.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/hmac_sha256.cpp
@@ -22,7 +22,7 @@ add_library(BZX_crypto STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/../support/cleanse.cpp
 )
 
-target_link_libraries(BZX_crypto
+target_link_libraries(bitcoin_crypto
   PRIVATE
     core_interface
     ${Boost_LIBRARIES}
@@ -31,7 +31,7 @@ target_link_libraries(BZX_crypto
     keccak
 )
 
-target_include_directories(BZX_crypto
+target_include_directories(bitcoin_crypto
   PUBLIC
   ${Boost_INCLUDE_DIR}
 )

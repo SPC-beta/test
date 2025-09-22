@@ -1,9 +1,9 @@
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/BZX-config.h"
+#include "config/bitcoin-config.h"
 #endif
 
 #include "base58.h"
@@ -259,7 +259,7 @@ static void MutateTxAddOutAddr(CMutableTransaction& tx, const std::string& strIn
 
     // extract and validate ADDRESS
     std::string strAddr = vStrInputParts[1];
-    CBZXAddress addr(strAddr);
+    CBitcoinAddress addr(strAddr);
     if (!addr.IsValid())
         throw std::runtime_error("invalid TX output address");
     // build standard output script via GetScriptForDestination()
@@ -287,7 +287,7 @@ static void MutateTxAddOutPubKey(CMutableTransaction& tx, const std::string& str
     if (!pubkey.IsFullyValid())
         throw std::runtime_error("invalid TX output pubkey");
     CScript scriptPubKey = GetScriptForRawPubKey(pubkey);
-    CBZXAddress addr(scriptPubKey);
+    CBitcoinAddress addr(scriptPubKey);
 
     // Extract and validate FLAGS
     bool bScriptHash = false;
@@ -299,7 +299,7 @@ static void MutateTxAddOutPubKey(CMutableTransaction& tx, const std::string& str
     if (bScriptHash) {
         // Get the address for the redeem script, then call
         // GetScriptForDestination() to construct a P2SH scriptPubKey.
-        CBZXAddress redeemScriptAddr(scriptPubKey);
+        CBitcoinAddress redeemScriptAddr(scriptPubKey);
         scriptPubKey = GetScriptForDestination(redeemScriptAddr.Get());
     }
 
@@ -360,7 +360,7 @@ static void MutateTxAddOutMultiSig(CMutableTransaction& tx, const std::string& s
     if (bScriptHash) {
         // Get the address for the redeem script, then call
         // GetScriptForDestination() to construct a P2SH scriptPubKey.
-        CBZXAddress addr(scriptPubKey);
+        CBitcoinAddress addr(scriptPubKey);
         scriptPubKey = GetScriptForDestination(addr.Get());
     }
 
@@ -418,7 +418,7 @@ static void MutateTxAddOutScript(CMutableTransaction& tx, const std::string& str
         bScriptHash = (flags.find("S") != std::string::npos);
     }
     if (bScriptHash) {
-      CBZXAddress addr(scriptPubKey);
+      CBitcoinAddress addr(scriptPubKey);
       scriptPubKey = GetScriptForDestination(addr.Get());
     }
 
@@ -534,7 +534,7 @@ static void MutateTxSign(CMutableTransaction& tx, const std::string& flagStr)
     for (unsigned int kidx = 0; kidx < keysObj.size(); kidx++) {
         if (!keysObj[kidx].isStr())
             throw std::runtime_error("privatekey not a std::string");
-        CBZXSecret vchSecret;
+        CBitcoinSecret vchSecret;
         bool fGood = vchSecret.SetString(keysObj[kidx].getValStr());
         if (!fGood)
             throw std::runtime_error("privatekey not valid");
@@ -763,7 +763,7 @@ static int CommandLineRawTx(int argc, char* argv[])
             if (argc < 2)
                 throw std::runtime_error("too few parameters");
 
-            // param: hex-encoded BZX transaction
+            // param: hex-encoded bitcoin transaction
             std::string strHexTx(argv[1]);
             if (strHexTx == "-")                 // "-" implies standard input
                 strHexTx = readStdin();

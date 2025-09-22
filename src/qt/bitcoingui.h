@@ -1,13 +1,13 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_QT_BZXGUI_H
-#define BZX_QT_BZXGUI_H
+#ifndef BITCOIN_QT_BITCOINGUI_H
+#define BITCOIN_QT_BITCOINGUI_H
 
 #include "exportviewkeydialog.h"
 #if defined(HAVE_CONFIG_H)
-#include "config/BZX-config.h"
+#include "config/bitcoin-config.h"
 #endif
 
 #include "amount.h"
@@ -48,10 +48,10 @@ namespace GUIUtil {
 }
 
 /**
-  BZX GUI main class. This class represents the main window of the BZX UI. It communicates with both the client and
+  Bitcoin GUI main class. This class represents the main window of the Bitcoin UI. It communicates with both the client and
   wallet models to give the user an up-to-date view of the current core state.
 */
-class BZXGUI : public QMainWindow
+class BitcoinGUI : public QMainWindow
 {
     Q_OBJECT
 
@@ -59,8 +59,8 @@ public:
     static const QString DEFAULT_WALLET;
     static const std::string DEFAULT_UIPLATFORM;
 
-    explicit BZXGUI(const PlatformStyle *platformStyle, const NetworkStyle *networkStyle, QWidget *parent = 0);
-    ~BZXGUI();
+    explicit BitcoinGUI(const PlatformStyle *platformStyle, const NetworkStyle *networkStyle, QWidget *parent = 0);
+    ~BitcoinGUI();
 
     /** Set the client model.
         The client model represents the part of the core that communicates with the P2P network, and is wallet-agnostic.
@@ -222,7 +222,7 @@ public Q_SLOTS:
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch directly to BZX history tab */
-    void gotoBZXHistoryTab();
+    void gotoBitcoinHistoryTab();
     /** Switch to masternode page */
     void gotoMasternodePage();
     /** Switch to receive coins page */
@@ -309,4 +309,4 @@ private Q_SLOTS:
     void onMenuSelection(QAction* action);
 };
 
-#endif // BZX_QT_BZXGUI_H
+#endif // BITCOIN_QT_BITCOINGUI_H

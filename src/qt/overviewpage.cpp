@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,7 +7,7 @@
 #include "overviewpage.h"
 #include "ui_overviewpage.h"
 
-#include "BZXunits.h"
+#include "bitcoinunits.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
 #include "guiutil.h"
@@ -39,7 +39,7 @@ class TxViewDelegate : public QAbstractItemDelegate
     Q_OBJECT
 public:
     TxViewDelegate(const PlatformStyle *_platformStyle, QObject *parent=nullptr):
-        QAbstractItemDelegate(parent), unit(BZXUnits::BTC),
+        QAbstractItemDelegate(parent), unit(BitcoinUnits::BTC),
         platformStyle(_platformStyle)
     {
 
@@ -97,7 +97,7 @@ public:
             foreground = option.palette.color(QPalette::Text);
         }
         painter->setPen(foreground);
-        QString amountText = BZXUnits::formatWithUnit(unit, amount, true, BZXUnits::separatorAlways);
+        QString amountText = BitcoinUnits::formatWithUnit(unit, amount, true, BitcoinUnits::separatorAlways);
         if(!confirmed)
         {
             amountText = QString("[") + amountText + QString("]");
@@ -235,17 +235,17 @@ void OverviewPage::setBalance(
     currentPrivateBalance = privateBalance;
     currentUnconfirmedPrivateBalance = unconfirmedPrivateBalance;
     currentAnonymizableBalance = anonymizableBalance;
-    ui->labelBalance->setText(BZXUnits::formatWithUnit(unit, balance, false, BZXUnits::separatorAlways));
-    ui->labelUnconfirmed->setText(BZXUnits::formatWithUnit(unit, unconfirmedBalance, false, BZXUnits::separatorAlways));
-    ui->labelImmature->setText(BZXUnits::formatWithUnit(unit, immatureBalance, false, BZXUnits::separatorAlways));
-    ui->labelTotal->setText(BZXUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance + currentPrivateBalance + currentUnconfirmedPrivateBalance, false, BZXUnits::separatorAlways));
-    ui->labelWatchAvailable->setText(BZXUnits::formatWithUnit(unit, watchOnlyBalance, false, BZXUnits::separatorAlways));
-    ui->labelWatchPending->setText(BZXUnits::formatWithUnit(unit, watchUnconfBalance, false, BZXUnits::separatorAlways));
-    ui->labelWatchImmature->setText(BZXUnits::formatWithUnit(unit, watchImmatureBalance, false, BZXUnits::separatorAlways));
-    ui->labelWatchTotal->setText(BZXUnits::formatWithUnit(unit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance, false, BZXUnits::separatorAlways));
-    ui->labelPrivate->setText(BZXUnits::formatWithUnit(unit, privateBalance, false, BZXUnits::separatorAlways));
-    ui->labelUnconfirmedPrivate->setText(BZXUnits::formatWithUnit(unit, unconfirmedPrivateBalance, false, BZXUnits::separatorAlways));
-    ui->labelAnonymizable->setText(BZXUnits::formatWithUnit(unit, anonymizableBalance, false, BZXUnits::separatorAlways));
+    ui->labelBalance->setText(BitcoinUnits::formatWithUnit(unit, balance, false, BitcoinUnits::separatorAlways));
+    ui->labelUnconfirmed->setText(BitcoinUnits::formatWithUnit(unit, unconfirmedBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelImmature->setText(BitcoinUnits::formatWithUnit(unit, immatureBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelTotal->setText(BitcoinUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance + currentPrivateBalance + currentUnconfirmedPrivateBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelWatchAvailable->setText(BitcoinUnits::formatWithUnit(unit, watchOnlyBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelWatchPending->setText(BitcoinUnits::formatWithUnit(unit, watchUnconfBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelWatchImmature->setText(BitcoinUnits::formatWithUnit(unit, watchImmatureBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelWatchTotal->setText(BitcoinUnits::formatWithUnit(unit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelPrivate->setText(BitcoinUnits::formatWithUnit(unit, privateBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelUnconfirmedPrivate->setText(BitcoinUnits::formatWithUnit(unit, unconfirmedPrivateBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelAnonymizable->setText(BitcoinUnits::formatWithUnit(unit, anonymizableBalance, false, BitcoinUnits::separatorAlways));
 
     ui->anonymizeButton->setEnabled(spark::IsSparkAllowed() && anonymizableBalance > 0);
 
@@ -381,7 +381,7 @@ void OverviewPage::onRefreshClicked()
         ui->warningFrame->show();
         migrationWindowClosesIn = QString::fromStdString(std::to_string(daysUntilMigrationCloses));
         blocksRemaining = QString::fromStdString(std::to_string(heightDifference));
-        migrateAmount = "<b>" + BZXUnits::formatHtmlWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), privateBalance.first);
+        migrateAmount = "<b>" + BitcoinUnits::formatHtmlWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), privateBalance.first);
         migrateAmount.append("</b>");
         ui->textWarning1->setText(tr("We have detected Lelantus coins that have not been migrated to Spark. Migration window will close in %1 blocks (~ %2 days).").arg(blocksRemaining , migrationWindowClosesIn));
         ui->textWarning2->setText(tr("to migrate %1 ").arg(migrateAmount));
@@ -397,7 +397,7 @@ void OverviewPage::migrateClicked()
 {
     size_t confirmed, unconfirmed;
     auto privateBalance = walletModel->getWallet()->GetPrivateBalance(confirmed, unconfirmed);
-    migrateAmount = "<b>" + BZXUnits::formatHtmlWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), privateBalance.first);
+    migrateAmount = "<b>" + BitcoinUnits::formatHtmlWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), privateBalance.first);
     migrateAmount.append("</b>");
     QString info = tr("Your wallet needs to be unlocked to migrate your funds to Spark.");
 

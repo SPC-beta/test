@@ -146,7 +146,7 @@
          </widget>
         </item>
         <item row="5" column="2">
-         <widget class="BZXAmountField" name="reqAmount">
+         <widget class="BitcoinAmountField" name="reqAmount">
           <property name="minimumSize">
            <size>
             <width>80</width>
@@ -369,9 +369,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>BZXAmountField</class>
+   <class>BitcoinAmountField</class>
    <extends>QLineEdit</extends>
-   <header>BZXamountfield.h</header>
+   <header>bitcoinamountfield.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -387,7 +387,7 @@
   <tabstop>removeRequestButton</tabstop>
  </tabstops>
  <resources>
-  <include location="../BZX.qrc"/>
+  <include location="../bitcoin.qrc"/>
  </resources>
  <connections/>
 </ui>

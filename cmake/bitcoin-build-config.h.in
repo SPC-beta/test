@@ -1,9 +1,9 @@
-// Copyright (c) 2023-present The BZX Core developers
+// Copyright (c) 2023-present The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/license/mit/.
 
-#ifndef BZX_CONFIG_H
-#define BZX_CONFIG_H
+#ifndef BITCOIN_CONFIG_H
+#define BITCOIN_CONFIG_H
 
 /* Version Build */
 #define CLIENT_VERSION_BUILD @CLIENT_VERSION_BUILD@
@@ -150,4 +150,4 @@
 /* Define if sqlite support should be compiled in */
 #cmakedefine USE_SQLITE 1
 
-#endif //BZX_CONFIG_H
+#endif //BITCOIN_CONFIG_H

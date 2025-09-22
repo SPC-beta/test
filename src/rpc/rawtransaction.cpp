@@ -1,5 +1,5 @@
 // Copyright (c) 2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -74,7 +74,7 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, UniValue& out, bool fInclud
 
     UniValue a(UniValue::VARR);
     BOOST_FOREACH(const CTxDestination& addr, addresses)
-        a.push_back(CBZXAddress(addr).ToString());
+        a.push_back(CBitcoinAddress(addr).ToString());
     out.push_back(Pair("addresses", a));
 }
 
@@ -167,7 +167,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry)
 
                 CTxDestination dstAddr;
                 if(ExtractDestination(txOut.scriptPubKey, dstAddr))
-                    in.push_back(Pair("address", CBZXAddress(dstAddr).ToString()));
+                    in.push_back(Pair("address", CBitcoinAddress(dstAddr).ToString()));
             }
         }
         in.push_back(Pair("sequence", (int64_t)txin.nSequence));
@@ -570,7 +570,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
         rawTx.vin.push_back(in);
     }
 
-    std::set<CBZXAddress> setAddress;
+    std::set<CBitcoinAddress> setAddress;
     std::vector<std::string> addrList = sendTo.getKeys();
     BOOST_FOREACH(const std::string& name_, addrList) {
 
@@ -580,7 +580,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             CTxOut out(0, CScript() << OP_RETURN << data);
             rawTx.vout.push_back(out);
         } else {
-            CBZXAddress address(name_);
+            CBitcoinAddress address(name_);
             if (!address.IsValid())
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid address: ")+name_);
 
@@ -711,7 +711,7 @@ UniValue decodescript(const JSONRPCRequest& request)
     if (type.isStr() && type.get_str() != "scripthash") {
         // P2SH cannot be wrapped in a P2SH. If this script is already a P2SH,
         // don't return the address for a P2SH of the P2SH.
-        r.push_back(Pair("p2sh", CBZXAddress(CScriptID(script)).ToString()));
+        r.push_back(Pair("p2sh", CBitcoinAddress(CScriptID(script)).ToString()));
     }
 
     return r;
@@ -845,7 +845,7 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
         UniValue keys = request.params[2].get_array();
         for (unsigned int idx = 0; idx < keys.size(); idx++) {
             UniValue k = keys[idx];
-            CBZXSecret vchSecret;
+            CBitcoinSecret vchSecret;
             bool fGood = vchSecret.SetString(k.get_str());
             if (!fGood)
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid private key");

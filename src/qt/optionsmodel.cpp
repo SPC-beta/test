@@ -1,14 +1,14 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/BZX-config.h"
+#include "config/bitcoin-config.h"
 #endif
 
 #include "optionsmodel.h"
 
-#include "BZXunits.h"
+#include "bitcoinunits.h"
 #include "guiutil.h"
 
 #include "amount.h"
@@ -69,7 +69,7 @@ void OptionsModel::Init(bool resetSettings)
 
     // Display
     if (!settings.contains("nDisplayUnit"))
-        settings.setValue("nDisplayUnit", BZXUnits::BTC);
+        settings.setValue("nDisplayUnit", BitcoinUnits::BTC);
     nDisplayUnit = settings.value("nDisplayUnit").toInt();
 
     if (!settings.contains("strThirdPartyTxUrls"))

@@ -1,16 +1,16 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/BZX-config.h"
+#include "config/bitcoin-config.h"
 #endif
 
 #include "addressbookpage.h"
 #include "ui_addressbookpage.h"
 
 #include "addresstablemodel.h"
-#include "BZXgui.h"
+#include "bitcoingui.h"
 #include "csvmodelwriter.h"
 #include "editaddressdialog.h"
 #include "createsparknamepage.h"

@@ -1,9 +1,9 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_QT_BZXUNITS_H
-#define BZX_QT_BZXUNITS_H
+#ifndef BITCOIN_QT_BITCOINUNITS_H
+#define BITCOIN_QT_BITCOINUNITS_H
 
 #include "amount.h"
 
@@ -41,18 +41,18 @@
 #define THIN_SP_UTF8 REAL_THIN_SP_UTF8
 #define THIN_SP_HTML HTML_HACK_SP
 
-/** BZX unit definitions. Encapsulates parsing and formatting
+/** Bitcoin unit definitions. Encapsulates parsing and formatting
    and serves as list model for drop-down selection boxes.
 */
-class BZXUnits: public QAbstractListModel
+class BitcoinUnits: public QAbstractListModel
 {
     Q_OBJECT
 
 public:
-    explicit BZXUnits(QObject *parent);
+    explicit BitcoinUnits(QObject *parent);
 
-    /** BZX units.
-      @note Source: https://en.BZX.it/wiki/Units . Please add only sensible ones
+    /** Bitcoin units.
+      @note Source: https://en.bitcoin.it/wiki/Units . Please add only sensible ones
      */
     enum Unit
     {
@@ -121,8 +121,8 @@ public:
     static CAmount maxMoney();
 
 private:
-    QList<BZXUnits::Unit> unitlist;
+    QList<BitcoinUnits::Unit> unitlist;
 };
-typedef BZXUnits::Unit BZXUnit;
+typedef BitcoinUnits::Unit BitcoinUnit;
 
-#endif // BZX_QT_BZXUNITS_H
+#endif // BITCOIN_QT_BITCOINUNITS_H

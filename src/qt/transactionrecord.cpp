@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -82,10 +82,10 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                 CTxDestination address;
                 ExtractDestination(txout.scriptPubKey, address);
                 if (firstAddress) {
-                    addresses.append(CBZXAddress(address).ToString());
+                    addresses.append(CBitcoinAddress(address).ToString());
                     firstAddress = false;
                 } else
-                    addresses.append(", " + CBZXAddress(address).ToString());
+                    addresses.append(", " + CBitcoinAddress(address).ToString());
             }
             if(mine & ISMINE_WATCH_ONLY)
                 involvesWatchAddress = true;
@@ -113,7 +113,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                     sub.involvesWatchAddress = mine & ISMINE_WATCH_ONLY;
                     if (ExtractDestination(txout.scriptPubKey, address) && IsMine(*wallet, address)) {
                         sub.type = TransactionRecord::SpendToSelf;
-                        sub.address = CBZXAddress(address).ToString();
+                        sub.address = CBitcoinAddress(address).ToString();
                         sub.credit = txout.nValue;
                     }
                 } else {
@@ -121,7 +121,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                         continue;
                     ExtractDestination(txout.scriptPubKey, address);
                     sub.type = TransactionRecord::SpendToAddress;
-                    sub.address = CBZXAddress(address).ToString();
+                    sub.address = CBitcoinAddress(address).ToString();
                     sub.debit = -txout.nValue;
                     if (first) {
                         sub.debit -= nTxFee;
@@ -170,9 +170,9 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
 
                 if(ExtractDestination(txout.scriptPubKey, address) && IsMine(*wallet, address))
                 {
-                    // Received by BZX Address
+                    // Received by Bitcoin Address
                     sub.type = TransactionRecord::RecvWithAddress;
-                    sub.address = CBZXAddress(address).ToString();
+                    sub.address = CBitcoinAddress(address).ToString();
                 } else if(txout.scriptPubKey.IsSparkMint() || txout.scriptPubKey.IsSparkSMint()) {
                     sub.type = TransactionRecord::RecvSpark;
                     bool ok = true;
@@ -294,9 +294,9 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                 CTxDestination address;
                 if(ExtractDestination(txout.scriptPubKey, address))
                 {
-                    // Sent to BZX Address
+                    // Sent to Bitcoin Address
                     sub.type = TransactionRecord::SendToAddress;
-                    sub.address = CBZXAddress(address).ToString();
+                    sub.address = CBitcoinAddress(address).ToString();
                     boost::optional<bip47::CPaymentCodeDescription> pcode = wallet->FindPcode(address);
                     if(pcode)
                     {

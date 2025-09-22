@@ -1,9 +1,9 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/BZX-config.h"
+#include "config/bitcoin-config.h"
 #endif
 
 #include "rpcconsole.h"
@@ -766,7 +766,7 @@ void RPCConsole::buildParameterlist(QString arg)
     // Append repair parameter to command line.
     args.append(arg);
 
-    // Send command-line arguments to BZXGUI::handleRestart()
+    // Send command-line arguments to BitcoinGUI::handleRestart()
     Q_EMIT handleRestart(args);
 }
 

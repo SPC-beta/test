@@ -1,13 +1,13 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_COMPAT_H
-#define BZX_COMPAT_H
+#ifndef BITCOIN_COMPAT_H
+#define BITCOIN_COMPAT_H
 
 #if defined(HAVE_CONFIG_H)
-#include "config/BZX-config.h"
+#include "config/bitcoin-config.h"
 #endif
 
 #ifdef WIN32
@@ -102,4 +102,4 @@ bool static inline IsSelectableSocket(SOCKET s) {
 #endif
 }
 
-#endif // BZX_COMPAT_H
+#endif // BITCOIN_COMPAT_H

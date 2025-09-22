@@ -875,7 +875,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="BZXAmountField" name="customFee"/>
+                  <widget class="BitcoinAmountField" name="customFee"/>
                  </item>
                  <item>
                   <spacer name="horizontalSpacer_6">
@@ -1353,14 +1353,14 @@
    <header>qvalidatedlineedit.h</header>
   </customwidget>
   <customwidget>
-   <class>BZXAmountField</class>
+   <class>BitcoinAmountField</class>
    <extends>QLineEdit</extends>
-   <header>BZXamountfield.h</header>
+   <header>bitcoinamountfield.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../BZX.qrc"/>
+  <include location="../bitcoin.qrc"/>
  </resources>
  <connections/>
  <buttongroups>

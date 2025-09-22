@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2015 The BZX Core developers
+// Copyright (c) 2009-2015 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_POW_H
-#define BZX_POW_H
+#ifndef BITCOIN_POW_H
+#define BITCOIN_POW_H
 
 #include "consensus/params.h"
 
@@ -24,4 +24,4 @@ unsigned int NexxtDG(const CBlockIndex* pindexLast, const CBlockHeader *pblock, 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params &);
 
-#endif // BZX_POW_H
+#endif // BITCOIN_POW_H

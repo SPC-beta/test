@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -246,7 +246,7 @@ CPubKey CWallet::GenerateNewKey(uint32_t nChange, bool fWriteChain)
     uint32_t nIndex = Params().GetConsensus().IsMain() ? BIP44_BZX_INDEX : BIP44_TEST_INDEX;
 
     // use HD key derivation if HD was enabled during wallet creation
-    // TODO: change code to foloow BZX structure more closely
+    // TODO: change code to foloow bitcoin structure more closely
     if (IsHDEnabled()) {
         // use BIP44 keypath: m / purpose' / coin_type' / account' / change / address_index
         CKey key;                      //master key seed (256bit)
@@ -299,7 +299,7 @@ CPubKey CWallet::GenerateNewKey(uint32_t nChange, bool fWriteChain)
             if (!CWalletDB(strWalletFile).WriteHDChain(hdChain))
                 throw std::runtime_error(std::string(__func__) + ": Writing HD chain model failed");
         }
-    /* BZX 0.14:
+    /* bitcoin 0.14:
     if (IsHDEnabled()) {
         DeriveNewChildKey(metadata, secret);
     */
@@ -449,7 +449,7 @@ bool CWallet::LoadCScript(const CScript& redeemScript)
      * these. Do not add them to the wallet and warn. */
     if (redeemScript.size() > MAX_SCRIPT_ELEMENT_SIZE)
     {
-        std::string strAddr = CBZXAddress(CScriptID(redeemScript)).ToString();
+        std::string strAddr = CBitcoinAddress(CScriptID(redeemScript)).ToString();
         LogPrintf("%s: Warning: This wallet contains a redeemScript of size %i which exceeds maximum size %i thus can never be redeemed. Do not use address %s.\n",
             __func__, redeemScript.size(), MAX_SCRIPT_ELEMENT_SIZE, strAddr);
         return true;
@@ -3955,7 +3955,7 @@ bool CWallet::GetVinAndKeysFromOutput(COutput out, CTxIn &txinRet, CPubKey &pubK
 
     CTxDestination address1;
     ExtractDestination(pubScript, address1);
-    CBZXAddress address2(address1);
+    CBitcoinAddress address2(address1);
 
     CKeyID keyID;
     if (!address2.GetKeyID(keyID)) {
@@ -4914,7 +4914,7 @@ bool CWallet::CreateMintTransaction(const std::vector <CRecipient> &vecSend, CWa
                 if (nChange > 0) {
                     // Fill a vout to ourself
                     // TODO: pass in scriptChange instead of reservekey so
-                    // change transaction isn't always pay-to-BZX-address
+                    // change transaction isn't always pay-to-bitcoin-address
                     CScript scriptChange;
 
                     // coin control: send change to custom address
@@ -4923,7 +4923,7 @@ bool CWallet::CreateMintTransaction(const std::vector <CRecipient> &vecSend, CWa
 
                     // send change to one of the specified change addresses
                     else if (IsArgSet("-change") && mapMultiArgs.at("-change").size() > 0) {
-                        CBZXAddress address(mapMultiArgs.at("change")[GetRandInt(mapMultiArgs.at("-change").size())]);
+                        CBitcoinAddress address(mapMultiArgs.at("change")[GetRandInt(mapMultiArgs.at("-change").size())]);
                         CKeyID keyID;
                         if (!address.GetKeyID(keyID)) {
                             strFailReason = _("Bad change address");
@@ -5238,7 +5238,7 @@ bool CWallet::CreateLelantusMintTransactions(
                     if (nChange > 0) {
                         // Fill a vout to ourself
                         // TODO: pass in scriptChange instead of reservekey so
-                        // change transaction isn't always pay-to-BZX-address
+                        // change transaction isn't always pay-to-bitcoin-address
                         CScript scriptChange;
 
                         // coin control: send change to custom address
@@ -5247,7 +5247,7 @@ bool CWallet::CreateLelantusMintTransactions(
 
                             // send change to one of the specified change addresses
                         else if (IsArgSet("-change") && mapMultiArgs.at("-change").size() > 0) {
-                            CBZXAddress address(
+                            CBitcoinAddress address(
                                     mapMultiArgs.at("change")[GetRandInt(mapMultiArgs.at("-change").size())]);
                             CKeyID keyID;
                             if (!address.GetKeyID(keyID)) {
@@ -6472,9 +6472,9 @@ bool CWallet::SetAddressBook(const CTxDestination& address, const std::string& s
                              strPurpose, (fUpdated ? CT_UPDATED : CT_NEW) );
     if (!fFileBacked)
         return false;
-    if (!strPurpose.empty() && !CWalletDB(strWalletFile).WritePurpose(CBZXAddress(address).ToString(), strPurpose))
+    if (!strPurpose.empty() && !CWalletDB(strWalletFile).WritePurpose(CBitcoinAddress(address).ToString(), strPurpose))
         return false;
-    return CWalletDB(strWalletFile).WriteName(CBZXAddress(address).ToString(), strName);
+    return CWalletDB(strWalletFile).WriteName(CBitcoinAddress(address).ToString(), strName);
 }
 
 bool CWallet::DelAddressBook(const CTxDestination& address)
@@ -6485,7 +6485,7 @@ bool CWallet::DelAddressBook(const CTxDestination& address)
         if(fFileBacked)
         {
             // Delete destdata tuples associated with address
-            std::string strAddress = CBZXAddress(address).ToString();
+            std::string strAddress = CBitcoinAddress(address).ToString();
             BOOST_FOREACH(const PAIRTYPE(std::string, std::string) &item, mapAddressBook[address].destdata)
             {
                 CWalletDB(strWalletFile).EraseDestData(strAddress, item.first);
@@ -6498,8 +6498,8 @@ bool CWallet::DelAddressBook(const CTxDestination& address)
 
     if (!fFileBacked)
         return false;
-    CWalletDB(strWalletFile).ErasePurpose(CBZXAddress(address).ToString());
-    return CWalletDB(strWalletFile).EraseName(CBZXAddress(address).ToString());
+    CWalletDB(strWalletFile).ErasePurpose(CBitcoinAddress(address).ToString());
+    return CWalletDB(strWalletFile).EraseName(CBitcoinAddress(address).ToString());
 }
 
 const std::string& CWallet::GetAccountName(const CScript& scriptPubKey) const
@@ -7059,13 +7059,13 @@ bool CWallet::AddDestData(const CTxDestination &dest, const std::string &key, co
     mapAddressBook[dest].destdata.insert(std::make_pair(key, value));
     if (!fFileBacked)
         return true;
-    return CWalletDB(strWalletFile).WriteDestData(CBZXAddress(dest).ToString(), key, value);
+    return CWalletDB(strWalletFile).WriteDestData(CBitcoinAddress(dest).ToString(), key, value);
 }
 
 bool CWallet::AddDestData(const std::string &dest, const std::string &key, const std::string &value)
 {
     if(validateAddress(dest)) {
-        CTxDestination _dest = CBZXAddress(dest).Get();
+        CTxDestination _dest = CBitcoinAddress(dest).Get();
         if (boost::get<CNoDestination>(&_dest))
             return false;
         mapAddressBook[_dest].destdata.insert(std::make_pair(key, value));
@@ -7085,13 +7085,13 @@ bool CWallet::EraseDestData(const CTxDestination &dest, const std::string &key)
         return false;
     if (!fFileBacked)
         return true;
-    return CWalletDB(strWalletFile).EraseDestData(CBZXAddress(dest).ToString(), key);
+    return CWalletDB(strWalletFile).EraseDestData(CBitcoinAddress(dest).ToString(), key);
 }
 
 bool CWallet::EraseDestData(const std::string &dest, const std::string &key)
 {
     if(validateAddress(dest)) {
-        CTxDestination _dest = CBZXAddress(dest).Get();
+        CTxDestination _dest = CBitcoinAddress(dest).Get();
         if (!mapAddressBook[_dest].destdata.erase(key))
             return false;
     } else if (bip47::CPaymentCode::validate(dest)) {
@@ -7115,7 +7115,7 @@ bool CWallet::LoadDestData(const CTxDestination &dest, const std::string &key, c
 bool CWallet::LoadDestData(const std::string &dest, const std::string &key, const std::string &value)
 {
     if(validateAddress(dest)) {
-        CTxDestination _dest = CBZXAddress(dest).Get();
+        CTxDestination _dest = CBitcoinAddress(dest).Get();
         mapAddressBook[_dest].destdata.insert(std::make_pair(key, value));
     } else if(bip47::CPaymentCode::validate(dest)) {
         mapRAPAddressBook[dest].destdata.insert(std::make_pair(key, value));
@@ -7661,7 +7661,7 @@ CWalletTx CWallet::PrepareAndSendNotificationTx(bip47::CPaymentCode const & thei
         throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
     }
 
-    CBZXAddress const notifAddr = pchannel.getTheirPcode().getNotificationAddress();
+    CBitcoinAddress const notifAddr = pchannel.getTheirPcode().getNotificationAddress();
 
     std::vector<CRecipient> recipients;
     std::vector<CAmount> newMints;
@@ -7757,7 +7757,7 @@ void CWallet::SetNotificationTxId(bip47::CPaymentCode const & theirPcode, uint25
 }
 
 namespace {
-CBZXAddress HandleTheirNextAddress(bip47::CWallet & wallet, std::string const & strWalletFile, bip47::CPaymentCode const & theirPcode, bool storeNextAddress)
+CBitcoinAddress HandleTheirNextAddress(bip47::CWallet & wallet, std::string const & strWalletFile, bip47::CPaymentCode const & theirPcode, bool storeNextAddress)
 {
     boost::optional<bip47::CAccountSender*> existingAcc;
     wallet.enumerateSenders(
@@ -7772,7 +7772,7 @@ CBZXAddress HandleTheirNextAddress(bip47::CWallet & wallet, std::string const & 
     );
     if(!existingAcc)
         throw std::runtime_error("There is no account setup for payment code " + theirPcode.toString());
-    CBZXAddress result;
+    CBitcoinAddress result;
     if(storeNextAddress)
     {
         result = existingAcc.get()->generateTheirNextSecretAddress();
@@ -7785,7 +7785,7 @@ CBZXAddress HandleTheirNextAddress(bip47::CWallet & wallet, std::string const & 
 }
 }
 
-CBZXAddress CWallet::GetTheirNextAddress(bip47::CPaymentCode const & theirPcode) const
+CBitcoinAddress CWallet::GetTheirNextAddress(bip47::CPaymentCode const & theirPcode) const
 {
     if (!bip47wallet)
         throw WalletError("BIP47 wallet was not created during the initialization");
@@ -7793,7 +7793,7 @@ CBZXAddress CWallet::GetTheirNextAddress(bip47::CPaymentCode const & theirPcode)
     return HandleTheirNextAddress(*bip47wallet, strWalletFile, theirPcode, false);
 }
 
-CBZXAddress CWallet::GenerateTheirNextAddress(bip47::CPaymentCode const & theirPcode)
+CBitcoinAddress CWallet::GenerateTheirNextAddress(bip47::CPaymentCode const & theirPcode)
 {
     if (!bip47wallet)
         throw WalletError("BIP47 wallet was not created during the initialization");
@@ -7848,7 +7848,7 @@ boost::optional<bip47::CPaymentCodeDescription> CWallet::FindPcode(bip47::CPayme
     return result;
 }
 
-boost::optional<bip47::CPaymentCodeDescription> CWallet::FindPcode(CBZXAddress const & address) const
+boost::optional<bip47::CPaymentCodeDescription> CWallet::FindPcode(CBitcoinAddress const & address) const
 {
     boost::optional<bip47::CPaymentCodeDescription> result;
     if (!bip47wallet)
@@ -7894,7 +7894,7 @@ boost::optional<bip47::CPaymentCodeDescription> CWallet::FindPcode(CBZXAddress c
     return result;
 }
 
-bip47::CAccountReceiver const * CWallet::AddressUsed(CBZXAddress const & address)
+bip47::CAccountReceiver const * CWallet::AddressUsed(CBitcoinAddress const & address)
 {
     bip47::CAccountReceiver const * result = nullptr;
     if(!bip47wallet)
@@ -7950,7 +7950,7 @@ void CWallet::HandleBip47Transaction(CWalletTx const & wtx)
     bip47wallet->enumerateReceivers(
         [&key, &addresses, &accFound](bip47::CAccountReceiver & acc)->bool
         {
-            for (CBZXAddress addr : addresses) {
+            for (CBitcoinAddress addr : addresses) {
                 if(acc.getMyNotificationAddress() == addr) {
                     key = acc.getMyNextAddresses()[0].second;
                     accFound = &acc;
@@ -7961,7 +7961,7 @@ void CWallet::HandleBip47Transaction(CWalletTx const & wtx)
         }
     );
     if(!accFound) {
-        LogBip47("There was no account set up to receive payments on address: %s\n", CBZXAddress(addresses[0]).ToString());
+        LogBip47("There was no account set up to receive payments on address: %s\n", CBitcoinAddress(addresses[0]).ToString());
         goto notifTxExit;
     }
     if(!accFound->acceptMaskedPayload(masked, *wtx.tx)){
@@ -7982,7 +7982,7 @@ notifTxExit:
             txnouttype typeRet = TX_NONSTANDARD;
             int nRequired = 0;
             if (ExtractDestinations(out.scriptPubKey, typeRet, addresses, nRequired)) {
-                for (CBZXAddress addr : addresses) {
+                for (CBitcoinAddress addr : addresses) {
                     bip47::CAccountReceiver const * rec = AddressUsed(addr);
                     if (rec) {
                         HandleSecretAddresses(*this, *rec);
@@ -8369,7 +8369,7 @@ bool CWallet::DelAddressBook(const std::string& address)
                     CWalletDB(strWalletFile).EraseDestData(address, item.first);
                 }
             } else if (validateAddress(address)) {
-                BOOST_FOREACH(const PAIRTYPE(std::string, std::string) &item, mapAddressBook[CBZXAddress(address).Get()].destdata)
+                BOOST_FOREACH(const PAIRTYPE(std::string, std::string) &item, mapAddressBook[CBitcoinAddress(address).Get()].destdata)
                 {
                     CWalletDB(strWalletFile).EraseDestData(address, item.first);
                 }
@@ -8381,7 +8381,7 @@ bool CWallet::DelAddressBook(const std::string& address)
         } else if(bip47::CPaymentCode::validate(address)) {
             mapRAPAddressBook.erase(address);
         } else if (validateAddress(address)) {
-            mapAddressBook.erase(CBZXAddress(address).Get());
+            mapAddressBook.erase(CBitcoinAddress(address).Get());
         }
 
     }
@@ -8399,7 +8399,7 @@ bool CWallet::DelAddressBook(const std::string& address)
         }
         
     } else if(validateAddress(address)){
-        NotifyAddressBookChanged(this, CBZXAddress(address).Get(), "", ::IsMine(*this, CBZXAddress(address).Get()) != ISMINE_NO, "", CT_DELETED);
+        NotifyAddressBookChanged(this, CBitcoinAddress(address).Get(), "", ::IsMine(*this, CBitcoinAddress(address).Get()) != ISMINE_NO, "", CT_DELETED);
     }
 
     if (!fFileBacked)
@@ -8410,7 +8410,7 @@ bool CWallet::DelAddressBook(const std::string& address)
 
 bool CWallet::validateAddress(const std::string& address)
 {
-    CBZXAddress addressParsed(address);
+    CBitcoinAddress addressParsed(address);
     return addressParsed.IsValid();
 }
 

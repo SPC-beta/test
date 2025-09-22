@@ -1,9 +1,9 @@
-// Copyright (c) 2011-2015 The BZX Core developers
+// Copyright (c) 2011-2015 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_QT_BZXAMOUNTFIELD_H
-#define BZX_QT_BZXAMOUNTFIELD_H
+#ifndef BITCOIN_QT_BITCOINAMOUNTFIELD_H
+#define BITCOIN_QT_BITCOINAMOUNTFIELD_H
 
 #include "amount.h"
 
@@ -15,18 +15,18 @@ QT_BEGIN_NAMESPACE
 class QValueComboBox;
 QT_END_NAMESPACE
 
-/** Widget for entering BZX amounts.
+/** Widget for entering bitcoin amounts.
   */
-class BZXAmountField: public QWidget
+class BitcoinAmountField: public QWidget
 {
     Q_OBJECT
 
     // ugly hack: for some unknown reason CAmount (instead of qint64) does not work here as expected
-    // discussion: https://github.com/BZX/BZX/pull/5117
+    // discussion: https://github.com/bitcoin/bitcoin/pull/5117
     Q_PROPERTY(qint64 value READ value WRITE setValue NOTIFY valueChanged USER true)
 
 public:
-    explicit BZXAmountField(QWidget *parent = 0);
+    explicit BitcoinAmountField(QWidget *parent = 0);
 
     CAmount value(bool *value=0) const;
     void setValue(const CAmount& value);
@@ -72,4 +72,4 @@ private Q_SLOTS:
 
 };
 
-#endif // BZX_QT_BZXAMOUNTFIELD_H
+#endif // BITCOIN_QT_BITCOINAMOUNTFIELD_H

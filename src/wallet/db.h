@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_WALLET_DB_H
-#define BZX_WALLET_DB_H
+#ifndef BITCOIN_WALLET_DB_H
+#define BITCOIN_WALLET_DB_H
 
 #include "clientversion.h"
 #include "serialize.h"
@@ -306,4 +306,4 @@ public:
     bool static Rewrite(const std::string& strFile, const char* pszSkip = NULL);
 };
 
-#endif // BZX_WALLET_DB_H
+#endif // BITCOIN_WALLET_DB_H

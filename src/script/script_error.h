@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_SCRIPT_SCRIPT_ERROR_H
-#define BZX_SCRIPT_SCRIPT_ERROR_H
+#ifndef BITCOIN_SCRIPT_SCRIPT_ERROR_H
+#define BITCOIN_SCRIPT_SCRIPT_ERROR_H
 
 typedef enum ScriptError_t
 {
@@ -58,4 +58,4 @@ typedef enum ScriptError_t
 
 const char* ScriptErrorString(const ScriptError error);
 
-#endif // BZX_SCRIPT_SCRIPT_ERROR_H
+#endif // BITCOIN_SCRIPT_SCRIPT_ERROR_H

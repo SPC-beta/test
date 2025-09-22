@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_PRIMITIVES_TRANSACTION_H
-#define BZX_PRIMITIVES_TRANSACTION_H
+#ifndef BITCOIN_PRIMITIVES_TRANSACTION_H
+#define BITCOIN_PRIMITIVES_TRANSACTION_H
 
 #include "amount.h"
 #include "script/script.h"
@@ -492,4 +492,4 @@ template <typename Tx> static inline CTransactionRef MakeTransactionRef(Tx&& txI
 /** Compute the weight of a transaction, as defined by BIP 141 */
 int64_t GetTransactionWeight(const CTransaction &tx);
 
-#endif // BZX_PRIMITIVES_TRANSACTION_H
+#endif // BITCOIN_PRIMITIVES_TRANSACTION_H

@@ -1,17 +1,17 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_CHAIN_H
-#define BZX_CHAIN_H
+#ifndef BITCOIN_CHAIN_H
+#define BITCOIN_CHAIN_H
 
 #include "arith_uint256.h"
 #include "primitives/block.h"
 #include "pow.h"
 #include "tinyformat.h"
 #include "uint256.h"
-#include "BZX_bignum/bignum.h"
+#include "bitcoin_bignum/bignum.h"
 #include <secp256k1/include/Scalar.h>
 #include <secp256k1/include/GroupElement.h>
 #include "sigma/coin.h"
@@ -576,4 +576,4 @@ public:
     CBlockIndex* FindEarliestAtLeast(int64_t nTime) const;
 };
 
-#endif // BZX_CHAIN_H
+#endif // BITCOIN_CHAIN_H

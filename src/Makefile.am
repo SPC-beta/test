@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2016 The BZX Core developers
+# Copyright (c) 2013-2016 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -45,34 +45,34 @@ TOR_LIBS = -ltor
 LIBBLSSIG_LIBS=-lbls-dash
 LIBBLSSIG_DEPENDS=-lgmp
 
-BZX_CONFIG_INCLUDES=-I$(builddir)/config
-BZX_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
+BITCOIN_CONFIG_INCLUDES=-I$(builddir)/config
+BITCOIN_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
 
-BZX_INCLUDES += -I$(srcdir)/secp256k1/include
-BZX_INCLUDES += -I$(srcdir)/secp256k1/src
-BZX_INCLUDES += $(UNIVALUE_CFLAGS)
+BITCOIN_INCLUDES += -I$(srcdir)/secp256k1/include
+BITCOIN_INCLUDES += -I$(srcdir)/secp256k1/src
+BITCOIN_INCLUDES += $(UNIVALUE_CFLAGS)
 
-LIBBZX_SERVER=libBZX_server.a
-LIBBZX_COMMON=libBZX_common.a
-LIBBZX_CONSENSUS=libBZX_consensus.a
-LIBBZX_CLI=libBZX_cli.a
-LIBBZX_UTIL=libBZX_util.a
+LIBBITCOIN_SERVER=libbitcoin_server.a
+LIBBITCOIN_COMMON=libbitcoin_common.a
+LIBBITCOIN_CONSENSUS=libbitcoin_consensus.a
+LIBBITCOIN_CLI=libbitcoin_cli.a
+LIBBITCOIN_UTIL=libbitcoin_util.a
 LIBLELANTUS=liblelantus.a
 LIBSPARK=libspark.a
-LIBBZX_CRYPTO=crypto/libBZX_crypto.a
-LIBBZXQT=qt/libBZXqt.a
+LIBBITCOIN_CRYPTO=crypto/libbitcoin_crypto.a
+LIBBITCOINQT=qt/libbitcoinqt.a
 LIBSECP256K1=secp256k1/libsecp256k1.la
 
-LIBBZX_SIGMA=libsigma.a
+LIBBITCOIN_SIGMA=libsigma.a
 
 if ENABLE_ZMQ
-LIBBZX_ZMQ=libBZX_zmq.a
+LIBBITCOIN_ZMQ=libbitcoin_zmq.a
 endif
-if BUILD_BZX_LIBS
-LIBBZXCONSENSUS=libBZXconsensus.la
+if BUILD_BITCOIN_LIBS
+LIBBITCOINCONSENSUS=libbitcoinconsensus.la
 endif
 if ENABLE_WALLET
-LIBBZX_WALLET=libBZX_wallet.a
+LIBBITCOIN_WALLET=libbitcoin_wallet.a
 endif
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
@@ -81,40 +81,40 @@ $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
 # Make is not made aware of per-object dependencies to avoid limiting building parallelization
 # But to build the less dependent modules first, we manually select their order here:
 EXTRA_LIBRARIES += \
-  $(LIBBZX_CRYPTO) \
-  $(LIBBZX_UTIL) \
-  $(LIBBZX_COMMON) \
-  $(LIBBZX_CONSENSUS) \
-  $(LIBBZX_SERVER) \
-  $(LIBBZX_CLI) \
-  $(LIBBZX_WALLET) \
-  $(LIBBZX_ZMQ) \
-  $(LIBBZX_SIGMA) \
+  $(LIBBITCOIN_CRYPTO) \
+  $(LIBBITCOIN_UTIL) \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_CONSENSUS) \
+  $(LIBBITCOIN_SERVER) \
+  $(LIBBITCOIN_CLI) \
+  $(LIBBITCOIN_WALLET) \
+  $(LIBBITCOIN_ZMQ) \
+  $(LIBBITCOIN_SIGMA) \
   $(LIBLELANTUS) \
   $(LIBSPARK)
 
-lib_LTLIBRARIES = $(LIBBZXCONSENSUS)
+lib_LTLIBRARIES = $(LIBBITCOINCONSENSUS)
 
 bin_PROGRAMS =
 noinst_PROGRAMS =
 TESTS =
 BENCHMARKS =
 
-if BUILD_BZXD
+if BUILD_BITCOIND
   bin_PROGRAMS += BZXd
 endif
 
-if BUILD_BZX_CLI
+if BUILD_BITCOIN_CLI
   bin_PROGRAMS += BZX-cli
 endif
 
-if BUILD_BZX_TX
+if BUILD_BITCOIN_TX
   bin_PROGRAMS += BZX-tx
 endif
 
 .PHONY: FORCE check-symbols check-security
-# BZX core #
-BZX_CORE_H = \
+# bitcoin core #
+BITCOIN_CORE_H = \
   activemasternode.h \
   addressindex.h \
   spentindex.h \
@@ -351,12 +351,12 @@ obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
 	@$(top_srcdir)/genbuild.sh $(abs_top_builddir)/src/obj/build.h \
 	  $(abs_top_srcdir)
-libBZX_util_a-clientversion.$(OBJEXT): obj/build.h
+libbitcoin_util_a-clientversion.$(OBJEXT): obj/build.h
 
 # server: shared between BZXd and BZX-qt
-libBZX_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS) $(LEVELDB_CPPFLAGS)
-libBZX_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libBZX_server_a_SOURCES = \
+libbitcoin_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS) $(LEVELDB_CPPFLAGS)
+libbitcoin_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libbitcoin_server_a_SOURCES = \
   activemasternode.cpp \
   addrman.cpp \
   addrdb.cpp \
@@ -434,12 +434,12 @@ libBZX_server_a_SOURCES = \
   spark/primitives.cpp \
   sparkname.cpp \
   coin_containers.cpp \
-  $(BZX_CORE_H)
+  $(BITCOIN_CORE_H)
 
 if ENABLE_ZMQ
-libBZX_zmq_a_CPPFLAGS = $(BZX_INCLUDES) $(ZMQ_CFLAGS)
-libBZX_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libBZX_zmq_a_SOURCES = \
+libbitcoin_zmq_a_CPPFLAGS = $(BITCOIN_INCLUDES) $(ZMQ_CFLAGS)
+libbitcoin_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libbitcoin_zmq_a_SOURCES = \
   zmq/zmqabstractnotifier.cpp \
   zmq/zmqnotificationinterface.cpp \
   zmq/zmqpublishnotifier.cpp
@@ -448,9 +448,9 @@ endif
 
 # wallet: shared between BZXd and BZX-qt, but only linked
 # when wallet enabled
-libBZX_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES)
-libBZX_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libBZX_wallet_a_SOURCES = \
+libbitcoin_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+libbitcoin_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libbitcoin_wallet_a_SOURCES = \
   activemasternode.cpp \
   hdmint/hdmint.cpp \
   masternode-sync.cpp \
@@ -482,13 +482,13 @@ libBZX_wallet_a_SOURCES = \
   bip47/paymentcode.cpp \
   bip47/secretpoint.cpp \
   primitives/mint_spend.cpp \
-  $(BZX_CORE_H)
+  $(BITCOIN_CORE_H)
 
 # crypto primitives library
-crypto_libBZX_crypto_a_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_CONFIG_INCLUDES)
-crypto_libBZX_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-crypto_libBZX_crypto_a_CFLAGS = $(AM_CFLAGS) $(PIE_FLAGS)
-crypto_libBZX_crypto_a_SOURCES = \
+crypto_libbitcoin_crypto_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_CONFIG_INCLUDES)
+crypto_libbitcoin_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+crypto_libbitcoin_crypto_a_CFLAGS = $(AM_CFLAGS) $(PIE_FLAGS)
+crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/aes.cpp \
   crypto/aes.h \
   crypto/common.h \
@@ -508,9 +508,9 @@ crypto_libBZX_crypto_a_SOURCES = \
   crypto/sha512.h
 
 # consensus: shared between all executables that validate any consensus rules.
-libBZX_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES) $(PIC_FLAGS)
-libBZX_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS) $(PIC_FLAGS)
-libBZX_consensus_a_SOURCES = \
+libbitcoin_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(PIC_FLAGS)
+libbitcoin_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS) $(PIC_FLAGS)
+libbitcoin_consensus_a_SOURCES = \
   amount.h \
   arith_uint256.cpp \
   arith_uint256.h \
@@ -531,7 +531,7 @@ libBZX_consensus_a_SOURCES = \
   primitives/transaction.h \
   pubkey.cpp \
   pubkey.h \
-  script/BZXconsensus.cpp \
+  script/bitcoinconsensus.cpp \
   script/interpreter.cpp \
   script/interpreter.h \
   script/script.cpp \
@@ -556,9 +556,9 @@ libBZX_consensus_a_SOURCES = \
   crypto/Lyra2Z/Sponge.h
 
 # common: shared between BZXd, and BZX-qt and non-server tools
-libBZX_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES)
-libBZX_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libBZX_common_a_SOURCES = \
+libbitcoin_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+libbitcoin_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libbitcoin_common_a_SOURCES = \
   amount.cpp \
   base58.cpp \
   chainparams.cpp \
@@ -577,14 +577,14 @@ libBZX_common_a_SOURCES = \
   script/sign.cpp \
   script/standard.cpp \
   warnings.cpp \
-  $(BZX_CORE_H)
+  $(BITCOIN_CORE_H)
 
 # util: shared between all executables.
 # This library *must* be included to make sure that the glibc
 # backward-compatibility objects and their sanity checks are linked.
-libBZX_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES)
-libBZX_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libBZX_util_a_SOURCES = \
+libbitcoin_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+libbitcoin_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libbitcoin_util_a_SOURCES = \
   bls/bls_batchverifier.h \
   bls/bls_ies.cpp \
   bls/bls_ies.h \
@@ -609,13 +609,13 @@ libBZX_util_a_SOURCES = \
   utiltime.cpp \
   crypto/scrypt.cpp \
   primitives/block.cpp \
-  BZX_bignum/allocators.h \
-  BZX_bignum/bignum.h \
-  BZX_bignum/compat.h \
-  BZX_bignum/netbase.h \
-  $(BZX_CORE_H)
+  bitcoin_bignum/allocators.h \
+  bitcoin_bignum/bignum.h \
+  bitcoin_bignum/compat.h \
+  bitcoin_bignum/netbase.h \
+  $(BITCOIN_CORE_H)
 
-libspark_a_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES)
+libspark_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libspark_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libspark_a_SOURCES = \
   libspark/transcript.h \
@@ -656,7 +656,7 @@ libspark_a_SOURCES = \
   libspark/bech32.h \
   libspark/bech32.cpp
 
-liblelantus_a_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES)
+liblelantus_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 liblelantus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 liblelantus_a_SOURCES = \
   liblelantus/challenge_generator.h \
@@ -698,7 +698,7 @@ liblelantus_a_SOURCES = \
   liblelantus/params.h \
   liblelantus/params.cpp
 
-libsigma_a_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES)
+libsigma_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libsigma_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libsigma_a_SOURCES = \
   sigma/r1_proof.h \
@@ -724,108 +724,108 @@ libsigma_a_SOURCES = \
   sigma/openssl_context.h
 
 if GLIBC_BACK_COMPAT
-libBZX_util_a_SOURCES += compat/glibc_compat.cpp
+libbitcoin_util_a_SOURCES += compat/glibc_compat.cpp
 AM_LDFLAGS += $(COMPAT_LDFLAGS)
 endif
 
 if ENABLE_CRASH_HOOKS
-libBZX_util_a_SOURCES += stacktraces.cpp
-libBZX_consensus_a_SOURCES += stacktraces.h
+libbitcoin_util_a_SOURCES += stacktraces.cpp
+libbitcoin_consensus_a_SOURCES += stacktraces.h
 endif
 
 # cli: shared between BZX-cli and BZX-qt
-libBZX_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES)
-libBZX_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libBZX_cli_a_SOURCES = \
+libbitcoin_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+libbitcoin_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libbitcoin_cli_a_SOURCES = \
   rpc/client.cpp \
-  $(BZX_CORE_H)
+  $(BITCOIN_CORE_H)
 
-nodist_libBZX_util_a_SOURCES = $(srcdir)/obj/build.h
+nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
-# BZXd binary #
-BZXd_SOURCES = BZXd.cpp
-BZXd_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES)
-BZXd_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-BZXd_LDFLAGS = $(LDFLAGS_WRAP_EXCEPTIONS) $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# bitcoind binary #
+bitcoind_SOURCES = bitcoind.cpp
+bitcoind_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+bitcoind_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+bitcoind_LDFLAGS = $(LDFLAGS_WRAP_EXCEPTIONS) $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-BZXd_SOURCES += BZXd-res.rc
+bitcoind_SOURCES += bitcoind-res.rc
 endif
 
-BZXd_LDADD = \
-  $(LIBBZX_SERVER) \
-  $(LIBBZX_COMMON) \
+bitcoind_LDADD = \
+  $(LIBBITCOIN_SERVER) \
+  $(LIBBITCOIN_COMMON) \
   $(LIBUNIVALUE) \
-  $(LIBBZX_UTIL) \
-  $(LIBBZX_WALLET) \
-  $(LIBBZX_SIGMA) \
+  $(LIBBITCOIN_UTIL) \
+  $(LIBBITCOIN_WALLET) \
+  $(LIBBITCOIN_SIGMA) \
   $(LIBLELANTUS) \
   $(LIBSPARK) \
-  $(LIBBZX_ZMQ) \
-  $(LIBBZX_CONSENSUS) \
-  $(LIBBZX_CRYPTO) \
+  $(LIBBITCOIN_ZMQ) \
+  $(LIBBITCOIN_CONSENSUS) \
+  $(LIBBITCOIN_CRYPTO) \
   $(LIBLEVELDB) \
   $(LIBMEMENV) \
   $(LIBSECP256K1) \
   $(LIBBLSSIG_LIBS)
 
-BZXd_LDADD += $(BACKTRACE_LIB) $(TOR_LIBS) $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(LIBBLSSIG_DEPENDS) -lz
+bitcoind_LDADD += $(BACKTRACE_LIB) $(TOR_LIBS) $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(LIBBLSSIG_DEPENDS) -lz
 
-# BZX-cli binary #
-BZX_cli_SOURCES = BZX-cli.cpp
-BZX_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES) $(EVENT_CFLAGS)
-BZX_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-BZX_cli_LDFLAGS = $(LDFLAGS_WRAP_EXCEPTIONS) $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# bitcoin-cli binary #
+bitcoin_cli_SOURCES = bitcoin-cli.cpp
+bitcoin_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
+bitcoin_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+bitcoin_cli_LDFLAGS = $(LDFLAGS_WRAP_EXCEPTIONS) $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-BZX_cli_SOURCES += BZX-cli-res.rc
+bitcoin_cli_SOURCES += bitcoin-cli-res.rc
 endif
 
-BZX_cli_LDADD = \
-  $(LIBBZX_CLI) \
+bitcoin_cli_LDADD = \
+  $(LIBBITCOIN_CLI) \
   $(LIBUNIVALUE) \
-  $(LIBBZX_UTIL) \
+  $(LIBBITCOIN_UTIL) \
   $(LIBMEMENV) \
-  $(LIBBZX_CRYPTO)
+  $(LIBBITCOIN_CRYPTO)
 
-BZX_cli_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
+bitcoin_cli_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
 #
 
-# BZX-tx binary #
-BZX_tx_SOURCES = BZX-tx.cpp
-BZX_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BZX_INCLUDES)
-BZX_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-BZX_tx_LDFLAGS = $(LDFLAGS_WRAP_EXCEPTIONS) $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# bitcoin-tx binary #
+bitcoin_tx_SOURCES = bitcoin-tx.cpp
+bitcoin_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+bitcoin_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+bitcoin_tx_LDFLAGS = $(LDFLAGS_WRAP_EXCEPTIONS) $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-BZX_tx_SOURCES += BZX-tx-res.rc
+bitcoin_tx_SOURCES += bitcoin-tx-res.rc
 endif
 
-BZX_tx_LDADD = \
+bitcoin_tx_LDADD = \
   $(LIBUNIVALUE) \
-  $(LIBBZX_COMMON) \
-  $(LIBBZX_UTIL) \
-  $(LIBBZX_CONSENSUS) \
-  $(LIBBZX_CRYPTO) \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_UTIL) \
+  $(LIBBITCOIN_CONSENSUS) \
+  $(LIBBITCOIN_CRYPTO) \
   $(LIBSECP256K1)
 
-BZX_tx_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(CRYPTO_LIBS)
+bitcoin_tx_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
-# BZXconsensus library #
-if BUILD_BZX_LIBS
-include_HEADERS = script/BZXconsensus.h
-libBZXconsensus_la_SOURCES = $(crypto_libBZX_crypto_a_SOURCES) $(libBZX_consensus_a_SOURCES)
+# bitcoinconsensus library #
+if BUILD_BITCOIN_LIBS
+include_HEADERS = script/bitcoinconsensus.h
+libbitcoinconsensus_la_SOURCES = $(crypto_libbitcoin_crypto_a_SOURCES) $(libbitcoin_consensus_a_SOURCES)
 
 if GLIBC_BACK_COMPAT
-  libBZXconsensus_la_SOURCES += compat/glibc_compat.cpp
+  libbitcoinconsensus_la_SOURCES += compat/glibc_compat.cpp
 endif
 
-libBZXconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
-libBZXconsensus_la_LIBADD = $(LIBBLSSIG_LIBS) $(LIBBLSSIG_DEPENDS) $(LIBSECP256K1)
-libBZXconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include $(LIBBLSSIG_INCLUDES) -DBUILD_BZX_INTERNAL
-libBZXconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libbitcoinconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
+libbitcoinconsensus_la_LIBADD = $(LIBBLSSIG_LIBS) $(LIBBLSSIG_DEPENDS) $(LIBSECP256K1)
+libbitcoinconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include $(LIBBLSSIG_INCLUDES) -DBUILD_BITCOIN_INTERNAL
+libbitcoinconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif
 #
@@ -858,12 +858,12 @@ EXTRA_DIST = $(CTAES_DIST) \
     wallet/rpcdump.h \
     compat_layer.h
 
-config/BZX-config.h: config/stamp-h1
+config/bitcoin-config.h: config/stamp-h1
 	@$(MAKE) -C $(top_builddir) $(subdir)/$(@)
-config/stamp-h1: $(top_srcdir)/$(subdir)/config/BZX-config.h.in $(top_builddir)/config.status
+config/stamp-h1: $(top_srcdir)/$(subdir)/config/bitcoin-config.h.in $(top_builddir)/config.status
 	$(AM_V_at)$(MAKE) -C $(top_builddir) $(subdir)/$(@)
-$(top_srcdir)/$(subdir)/config/BZX-config.h.in:  $(am__configure_deps)
-	$(AM_V_at)$(MAKE) -C $(top_srcdir) $(subdir)/config/BZX-config.h.in
+$(top_srcdir)/$(subdir)/config/bitcoin-config.h.in:  $(am__configure_deps)
+	$(AM_V_at)$(MAKE) -C $(top_srcdir) $(subdir)/config/bitcoin-config.h.in
 
 clean-local:
 	-$(MAKE) -C secp256k1 clean

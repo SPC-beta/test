@@ -74,7 +74,7 @@ std::string GetRequiredPaymentsString(int nBlockHeight, const CDeterministicMNCP
         CTxDestination dest;
         if (!ExtractDestination(payee->pdmnState->scriptPayout, dest))
             assert(false);
-        strPayee = CBZXAddress(dest).ToString();
+        strPayee = CBitcoinAddress(dest).ToString();
     }
 
     return strPayee;
@@ -133,7 +133,7 @@ bool CMasternodePayments::GetMasternodeTxOuts(int nBlockHeight, CAmount blockRew
     for (const auto& txout : voutMasternodePaymentsRet) {
         CTxDestination address1;
         ExtractDestination(txout.scriptPubKey, address1);
-        CBZXAddress address2(address1);
+        CBitcoinAddress address2(address1);
 
         LogPrintf("CMasternodePayments::%s -- Masternode payment %lld to %s\n", __func__, txout.nValue, address2.ToString());
     }
@@ -212,7 +212,7 @@ bool CMasternodePayments::IsTransactionValid(const CTransaction& txNew, int nBlo
             CTxDestination dest;
             if (!ExtractDestination(txout.scriptPubKey, dest))
                 assert(false);
-            LogPrintf("CMasternodePayments::%s -- ERROR failed to find expected payee %s in block at height %s\n", __func__, CBZXAddress(dest).ToString(), nBlockHeight);
+            LogPrintf("CMasternodePayments::%s -- ERROR failed to find expected payee %s in block at height %s\n", __func__, CBitcoinAddress(dest).ToString(), nBlockHeight);
             return false;
         }
     }

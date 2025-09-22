@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_MINER_H
-#define BZX_MINER_H
+#ifndef BITCOIN_MINER_H
+#define BITCOIN_MINER_H
 
 #include "primitives/block.h"
 #include "txmempool.h"
@@ -238,8 +238,8 @@ void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, unsigned
 int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev);
 void UpdateDiff(CBlockHeader* block, const CBlockIndex* pindexPrev);
 /** Run the miner threads */
-void GenerateBZXs(bool fGenerate, int nThreads, const CChainParams& chainparams);
+void GenerateBitcoins(bool fGenerate, int nThreads, const CChainParams& chainparams);
 extern double dHashesPerSec;
 extern int64_t nHPSTimerStart;
 
-#endif // BZX_MINER_H
+#endif // BITCOIN_MINER_H

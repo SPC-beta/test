@@ -1,9 +1,9 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_WALLET_COINCONTROL_H
-#define BZX_WALLET_COINCONTROL_H
+#ifndef BITCOIN_WALLET_COINCONTROL_H
+#define BITCOIN_WALLET_COINCONTROL_H
 
 #include "primitives/transaction.h"
 #include "base58.h"
@@ -98,4 +98,4 @@ private:
     std::set<COutPoint> setSelected;
 };
 
-#endif // BZX_WALLET_COINCONTROL_H
+#endif // BITCOIN_WALLET_COINCONTROL_H

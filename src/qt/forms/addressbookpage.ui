@@ -158,7 +158,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../BZX.qrc"/>
+  <include location="../bitcoin.qrc"/>
  </resources>
  <connections/>
 </ui>

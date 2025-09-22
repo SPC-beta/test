@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_COINS_H
-#define BZX_COINS_H
+#ifndef BITCOIN_COINS_H
+#define BITCOIN_COINS_H
 
 #include "compressor.h"
 #include "core_memusage.h"
@@ -259,7 +259,7 @@ public:
     size_t DynamicMemoryUsage() const;
 
     /** 
-     * Amount of BZXs coming in to a transaction
+     * Amount of bitcoins coming in to a transaction
      * Note that lightweight clients may not know anything besides the hash of previous transactions,
      * so may not be able to calculate this.
      *
@@ -297,4 +297,4 @@ void ModifyCoin(CCoinsViewCache & view, const COutPoint &out, M modifier){
     view.AddCoin(out, std::move(coin), true);
 }
 
-#endif // BZX_COINS_H
+#endif // BITCOIN_COINS_H

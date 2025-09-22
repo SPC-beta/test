@@ -64,7 +64,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>BZXGUI</name>
+    <name>BitcoinGUI</name>
     <message>
         <source>BZX</source>
         <translation>BZX Core</translation>

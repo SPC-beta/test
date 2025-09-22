@@ -29,16 +29,16 @@ std::string CDeterministicMNState::ToString() const
     std::string payoutAddress = "unknown";
     std::string operatorPayoutAddress = "none";
     if (ExtractDestination(scriptPayout, dest)) {
-        payoutAddress = CBZXAddress(dest).ToString();
+        payoutAddress = CBitcoinAddress(dest).ToString();
     }
     if (ExtractDestination(scriptOperatorPayout, dest)) {
-        operatorPayoutAddress = CBZXAddress(dest).ToString();
+        operatorPayoutAddress = CBitcoinAddress(dest).ToString();
     }
 
     return strprintf("CDeterministicMNState(nRegisteredHeight=%d, nLastPaidHeight=%d, nPoSePenalty=%d, nPoSeRevivedHeight=%d, nPoSeBanHeight=%d, nRevocationReason=%d, "
         "ownerAddress=%s, pubKeyOperator=%s, votingAddress=%s, addr=%s, payoutAddress=%s, operatorPayoutAddress=%s)",
         nRegisteredHeight, nLastPaidHeight, nPoSePenalty, nPoSeRevivedHeight, nPoSeBanHeight, nRevocationReason,
-        CBZXAddress(keyIDOwner).ToString(), pubKeyOperator.Get().ToString(), CBZXAddress(keyIDVoting).ToString(), addr.ToStringIPPort(false), payoutAddress, operatorPayoutAddress);
+        CBitcoinAddress(keyIDOwner).ToString(), pubKeyOperator.Get().ToString(), CBitcoinAddress(keyIDVoting).ToString(), addr.ToStringIPPort(false), payoutAddress, operatorPayoutAddress);
 }
 
 void CDeterministicMNState::ToJson(UniValue& obj) const
@@ -52,17 +52,17 @@ void CDeterministicMNState::ToJson(UniValue& obj) const
     obj.push_back(Pair("PoSeRevivedHeight", nPoSeRevivedHeight));
     obj.push_back(Pair("PoSeBanHeight", nPoSeBanHeight));
     obj.push_back(Pair("revocationReason", nRevocationReason));
-    obj.push_back(Pair("ownerAddress", CBZXAddress(keyIDOwner).ToString()));
-    obj.push_back(Pair("votingAddress", CBZXAddress(keyIDVoting).ToString()));
+    obj.push_back(Pair("ownerAddress", CBitcoinAddress(keyIDOwner).ToString()));
+    obj.push_back(Pair("votingAddress", CBitcoinAddress(keyIDVoting).ToString()));
 
     CTxDestination dest;
     if (ExtractDestination(scriptPayout, dest)) {
-        CBZXAddress payoutAddress(dest);
+        CBitcoinAddress payoutAddress(dest);
         obj.push_back(Pair("payoutAddress", payoutAddress.ToString()));
     }
     obj.push_back(Pair("pubKeyOperator", pubKeyOperator.Get().ToString()));
     if (ExtractDestination(scriptOperatorPayout, dest)) {
-        CBZXAddress operatorPayoutAddress(dest);
+        CBitcoinAddress operatorPayoutAddress(dest);
         obj.push_back(Pair("operatorPayoutAddress", operatorPayoutAddress.ToString()));
     }
 }
@@ -88,7 +88,7 @@ void CDeterministicMN::ToJson(UniValue& obj) const
     if (GetUTXOCoin(collateralOutpoint, coin)) {
         CTxDestination dest;
         if (ExtractDestination(coin.out.scriptPubKey, dest)) {
-            obj.push_back(Pair("collateralAddress", CBZXAddress(dest).ToString()));
+            obj.push_back(Pair("collateralAddress", CBitcoinAddress(dest).ToString()));
         }
     }
 
@@ -289,7 +289,7 @@ std::vector<std::pair<arith_uint256, CDeterministicMNCPtr>> CDeterministicMNList
         // calculate sha256(sha256(proTxHash, confirmedHash), modifier) per MN
         // Please note that this is not a double-sha256 but a single-sha256
         // The first part is already precalculated (confirmedHashWithProRegTxHash)
-        // TODO When https://github.com/BZX/BZX/pull/13191 gets backported, implement something that is similar but for single-sha256
+        // TODO When https://github.com/bitcoin/bitcoin/pull/13191 gets backported, implement something that is similar but for single-sha256
         uint256 h;
         CSHA256 sha256;
         sha256.Write(dmn->pdmnState->confirmedHashWithProRegTxHash.begin(), dmn->pdmnState->confirmedHashWithProRegTxHash.size());

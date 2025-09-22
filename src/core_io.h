@@ -1,9 +1,9 @@
-// Copyright (c) 2009-2016 The BZX Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_CORE_IO_H
-#define BZX_CORE_IO_H
+#ifndef BITCOIN_CORE_IO_H
+#define BITCOIN_CORE_IO_H
 
 #include <string>
 #include <vector>
@@ -30,4 +30,4 @@ std::string EncodeHexTx(const CTransaction& tx, const int serializeFlags = 0);
 void ScriptPubKeyToUniv(const CScript& scriptPubKey, UniValue& out, bool fIncludeHex);
 void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry);
 
-#endif // BZX_CORE_IO_H
+#endif // BITCOIN_CORE_IO_H

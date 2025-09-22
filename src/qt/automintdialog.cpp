@@ -2,7 +2,7 @@
 
 #include "automintdialog.h"
 #include "automintmodel.h"
-#include "BZXunits.h"
+#include "bitcoinunits.h"
 #include "sparkmodel.h"
 #include "ui_automintdialog.h"
 

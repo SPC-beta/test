@@ -2,7 +2,7 @@
 #include "../../streams.h"
 #include "../../version.h"
 
-#include "../../test/test_BZX.h"
+#include "../../test/test_bitcoin.h"
 #include <boost/test/unit_test.hpp>
 
 namespace spark {

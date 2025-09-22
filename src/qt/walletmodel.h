@@ -1,9 +1,9 @@
-// Copyright (c) 2011-2016 The BZX Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_QT_WALLETMODEL_H
-#define BZX_QT_WALLETMODEL_H
+#ifndef BITCOIN_QT_WALLETMODEL_H
+#define BITCOIN_QT_WALLETMODEL_H
 
 #include "walletmodeltransaction.h"
 
@@ -95,7 +95,7 @@ public:
     }
 };
 
-/** Interface to BZX wallet from Qt view code. */
+/** Interface to Bitcoin wallet from Qt view code. */
 class WalletModel : public QObject
 {
     Q_OBJECT
@@ -372,4 +372,4 @@ public Q_SLOTS:
     bool lockWallet();
 };
 
-#endif // BZX_QT_WALLETMODEL_H
+#endif // BITCOIN_QT_WALLETMODEL_H

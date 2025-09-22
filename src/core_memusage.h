@@ -1,9 +1,9 @@
-// Copyright (c) 2015-2016 The BZX Core developers
+// Copyright (c) 2015-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BZX_CORE_MEMUSAGE_H
-#define BZX_CORE_MEMUSAGE_H
+#ifndef BITCOIN_CORE_MEMUSAGE_H
+#define BITCOIN_CORE_MEMUSAGE_H
 
 #include "primitives/transaction.h"
 #include "primitives/block.h"
@@ -59,4 +59,4 @@ static inline size_t RecursiveDynamicUsage(const CBlockLocator& locator) {
     return memusage::DynamicUsage(locator.vHave);
 }
 
-#endif // BZX_CORE_MEMUSAGE_H
+#endif // BITCOIN_CORE_MEMUSAGE_H
