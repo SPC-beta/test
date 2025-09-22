@@ -2,14 +2,11 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
-add_subdirectory(progpow)
-
 add_library(bitcoin_crypto STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/aes.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/chacha20.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/hmac_sha256.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/hmac_sha512.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/progpow.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/ripemd160.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/sha1.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/sha256.cpp
