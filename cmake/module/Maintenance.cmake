@@ -72,16 +72,16 @@ function(add_windows_deploy_target)
     include(GenerateSetupNsi)
     generate_setup_nsi()
     add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/BZX-win64-setup.exe
+      OUTPUT ${PROJECT_BINARY_DIR}/bitcoinzero-win64-setup.exe
       COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/release
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-qt> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-qt>
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzerod> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzerod>
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-cli> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-cli>
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-tx> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-tx>
-      COMMAND makensis -V2 ${PROJECT_BINARY_DIR}/BZX-win64-setup.nsi
+      COMMAND makensis -V2 ${PROJECT_BINARY_DIR}/bitcoinzero-win64-setup.nsi
       VERBATIM
     )
-    add_custom_target(deploy DEPENDS ${PROJECT_BINARY_DIR}/BZX-win64-setup.exe)
+    add_custom_target(deploy DEPENDS ${PROJECT_BINARY_DIR}/bitcoinzero-win64-setup.exe)
   endif()
 endfunction()
 

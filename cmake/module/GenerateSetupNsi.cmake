@@ -18,5 +18,5 @@ function(generate_setup_nsi)
   # Set executable directory based on build system
   # CMake/Guix builds put executables in bin/, autotools in release/
   set(EXECUTABLE_DIR "bin")
-  configure_file(${PROJECT_SOURCE_DIR}/share/setup.nsi.in ${PROJECT_BINARY_DIR}/firo-win64-setup.nsi USE_SOURCE_PERMISSIONS @ONLY)
+  configure_file(${PROJECT_SOURCE_DIR}/share/setup.nsi.in ${PROJECT_BINARY_DIR}/bitcoinzero-win64-setup.nsi USE_SOURCE_PERMISSIONS @ONLY)
 endfunction()
