@@ -7,16 +7,16 @@ define(_CLIENT_VERSION_IS_RELEASE, true)
 define(_COPYRIGHT_YEAR, 2025)
 define(_COPYRIGHT_HOLDERS,[The %s developers])
 define(_COPYRIGHT_HOLDERS_SUBSTITUTION,[[BZX Core]])
-AC_INIT([BZX Core],[_CLIENT_VERSION_MAJOR._CLIENT_VERSION_MINOR._CLIENT_VERSION_REVISION],[https://github.com/SpecialCoins/BitcoinZero/])
+AC_INIT([BZX Core],[_CLIENT_VERSION_MAJOR._CLIENT_VERSION_MINOR._CLIENT_VERSION_REVISION],[https://github.com/SpecialCoins/BZX/])
 AC_CONFIG_SRCDIR([src/validation.cpp])
 AC_CONFIG_HEADERS([src/config/bitcoin-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 
-BITCOIN_DAEMON_NAME=bitcoinzerod
-BITCOIN_GUI_NAME=bitcoinzero-qt
-BITCOIN_CLI_NAME=bitcoinzero-cli
-BITCOIN_TX_NAME=bitcoinzero-tx
+BITCOIN_DAEMON_NAME=BZXd
+BITCOIN_GUI_NAME=BZX-qt
+BITCOIN_CLI_NAME=BZX-cli
+BITCOIN_TX_NAME=BZX-tx
 
 dnl Unless the user specified ARFLAGS, force it to be cr
 AC_ARG_VAR(ARFLAGS, [Flags for the archiver, defaults to <cr> if not set])

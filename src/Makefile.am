@@ -101,15 +101,15 @@ TESTS =
 BENCHMARKS =
 
 if BUILD_BITCOIND
-  bin_PROGRAMS += bitcoinzerod
+  bin_PROGRAMS += BZXd
 endif
 
 if BUILD_BITCOIN_CLI
-  bin_PROGRAMS += bitcoinzero-cli
+  bin_PROGRAMS += BZX-cli
 endif
 
 if BUILD_BITCOIN_TX
-  bin_PROGRAMS += bitcoinzero-tx
+  bin_PROGRAMS += BZX-tx
 endif
 
 .PHONY: FORCE check-symbols check-security
@@ -353,7 +353,7 @@ obj/build.h: FORCE
 	  $(abs_top_srcdir)
 libbitcoin_util_a-clientversion.$(OBJEXT): obj/build.h
 
-# server: shared between bitcoinzerod and bitcoinzero-qt
+# server: shared between BZXd and BZX-qt
 libbitcoin_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS) $(LEVELDB_CPPFLAGS)
 libbitcoin_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_server_a_SOURCES = \
@@ -446,7 +446,7 @@ libbitcoin_zmq_a_SOURCES = \
 endif
 
 
-# wallet: shared between bitcoinzerod and bitcoinzero-qt, but only linked
+# wallet: shared between BZXd and BZX-qt, but only linked
 # when wallet enabled
 libbitcoin_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
@@ -555,7 +555,7 @@ libbitcoin_consensus_a_SOURCES = \
   crypto/Lyra2Z/Sponge.c \
   crypto/Lyra2Z/Sponge.h
 
-# common: shared between bitcoinzerod, and bitcoinzero-qt and non-server tools
+# common: shared between BZXd, and BZX-qt and non-server tools
 libbitcoin_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_common_a_SOURCES = \
@@ -733,7 +733,7 @@ libbitcoin_util_a_SOURCES += stacktraces.cpp
 libbitcoin_consensus_a_SOURCES += stacktraces.h
 endif
 
-# cli: shared between bitcoinzero-cli and bitcoinzero-qt
+# cli: shared between BZX-cli and BZX-qt
 libbitcoin_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_cli_a_SOURCES = \

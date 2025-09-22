@@ -114,7 +114,7 @@ UniValue importprivkey(const JSONRPCRequest& request)
     const CHDChain& chain = pwallet->GetHDChain();
     if(chain.nVersion == chain.VERSION_WITH_BIP39){
         throw JSONRPCError(RPC_WALLET_ERROR, "Importing wallets and private keys is disabled for mnemonic-enabled wallets."
-                                             "To import your dump file, create a non-mnemonic wallet by setting \"usemnemonic=0\" in your bitcoinzero.conf file, after backing up and removing your existing wallet.");
+                                             "To import your dump file, create a non-mnemonic wallet by setting \"usemnemonic=0\" in your BZX.conf file, after backing up and removing your existing wallet.");
     }
 
 
@@ -464,7 +464,7 @@ UniValue importwallet(const JSONRPCRequest& request)
     const CHDChain& chain = pwallet->GetHDChain();
     if(chain.nVersion == chain.VERSION_WITH_BIP39){
         throw JSONRPCError(RPC_WALLET_ERROR, "Importing wallets and private keys is disabled for mnemonic-enabled wallets."
-                                             "To import your dump file, create a non-mnemonic wallet by setting \"usemnemonic=0\" in your bitcoinzero.conf file, after backing up and removing your existing wallet.");
+                                             "To import your dump file, create a non-mnemonic wallet by setting \"usemnemonic=0\" in your BZX.conf file, after backing up and removing your existing wallet.");
     }
 
 
