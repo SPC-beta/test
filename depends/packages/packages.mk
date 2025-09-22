@@ -1,4 +1,4 @@
-packages:=boost openssl libevent gmp zlib backtrace tor bls-dash qrencode miniupnpc
+packages:=boost openssl libevent gmp zlib backtrace tor bls-dash
 darwin_packages:=zeromq
 linux_packages:=zeromq
 native_packages :=
@@ -8,7 +8,14 @@ qt_linux_packages:=qt expat libxcb xcb_proto libXau xproto freetype fontconfig l
 qt_darwin_packages=qt
 qt_mingw32_packages=qt
 
+qrencode_linux_packages = qrencode
+qrencode_android_packages = qrencode
+qrencode_darwin_packages = qrencode
+qrencode_mingw32_packages = qrencode
+
 bdb_packages=bdb
+
+upnp_packages=miniupnpc
 
 zmq_packages=zeromq
 

@@ -39,6 +39,7 @@ NO_QR ?=
 NO_BDB ?=
 NO_SQLITE ?=
 NO_WALLET ?=
+NO_UPNP ?=
 NO_ZMQ ?=
 NO_USDT ?=
 MULTIPROCESS ?=
@@ -164,11 +165,12 @@ qt_native_packages_$(NO_QT) = $(qt_native_packages)
 bdb_packages_$(NO_BDB) = $(bdb_packages)
 sqlite_packages_$(NO_SQLITE) = $(sqlite_packages)
 wallet_packages_$(NO_WALLET) = $(bdb_packages_) $(sqlite_packages_)
+upnp_packages_$(NO_UPNP) = $(upnp_packages)
 
 zmq_packages_$(NO_ZMQ) = $(zmq_packages)
 multiprocess_packages_$(MULTIPROCESS) = $(multiprocess_packages)
 
-packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_)
+packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_) $(upnp_packages_)
 native_packages += $($(host_arch)_$(host_os)_native_packages) $($(host_os)_native_packages)
 
 ifneq ($(zmq_packages_),)
@@ -261,6 +263,7 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@qrencode_packages@|$(qrencode_packages_)|' \
             -e 's|@zmq_packages@|$(zmq_packages_)|' \
             -e 's|@wallet_packages@|$(wallet_packages_)|' \
+            -e 's|@no_upnp@|$(NO_UPNP)|' \
             -e 's|@bdb_packages@|$(bdb_packages_)|' \
             -e 's|@sqlite_packages@|$(sqlite_packages_)|' \
             -e 's|@usdt_packages@|$(usdt_packages_)|' \
