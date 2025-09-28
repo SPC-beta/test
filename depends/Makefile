@@ -39,15 +39,16 @@ NO_QR ?=
 NO_BDB ?=
 NO_SQLITE ?=
 NO_WALLET ?=
+NO_UPNP ?=
 NO_ZMQ ?=
 NO_USDT ?=
 MULTIPROCESS ?=
 LTO ?=
-NO_HARDEN ?=
 FALLBACK_DOWNLOAD_PATH ?= https://bitcoincore.org/depends-sources
+FALLBACK_DOWNLOAD_PATH_ALTERNATIVE ?= https://firo.org/depends-sources
 
 C_STANDARD ?= c11
-CXX_STANDARD ?= c++20
+CXX_STANDARD ?= c++17
 
 BUILD = $(shell ./config.guess)
 PATCHES_PATH = $(BASEDIR)/patches
@@ -143,13 +144,13 @@ include packages/packages.mk
 #
 build_id:=$(shell env CC='$(build_CC)' C_STANDARD='$(C_STANDARD)' CXX='$(build_CXX)' CXX_STANDARD='$(CXX_STANDARD)' \
                       AR='$(build_AR)' NM='$(build_NM)' RANLIB='$(build_RANLIB)' STRIP='$(build_STRIP)' SHA256SUM='$(build_SHA256SUM)' \
-                      DEBUG='$(DEBUG)' NO_HARDEN='$(NO_HARDEN)' \
+                      DEBUG='$(DEBUG)' \
                       ./gen_id '$(BUILD_ID_SALT)' 'GUIX_ENVIRONMENT=$(realpath $(GUIX_ENVIRONMENT))')
 
 $(host_arch)_$(host_os)_id:=$(shell env CC='$(host_CC)' C_STANDARD='$(C_STANDARD)' CXX='$(host_CXX)' CXX_STANDARD='$(CXX_STANDARD)' \
                                         CPPFLAGS='$(CPPFLAGS)' CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' \
                                         AR='$(host_AR)' NM='$(host_NM)' RANLIB='$(host_RANLIB)' STRIP='$(host_STRIP)' SHA256SUM='$(build_SHA256SUM)' \
-                                        DEBUG='$(DEBUG)' LTO='$(LTO)' NO_HARDEN='$(NO_HARDEN)' \
+                                        DEBUG='$(DEBUG)' LTO='$(LTO)' \
                                         ./gen_id '$(HOST_ID_SALT)' 'GUIX_ENVIRONMENT=$(realpath $(GUIX_ENVIRONMENT))')
 
 boost_packages_$(NO_BOOST) = $(boost_packages)
@@ -159,16 +160,17 @@ libevent_packages_$(NO_LIBEVENT) = $(libevent_packages)
 qrencode_packages_$(NO_QR) = $(qrencode_$(host_os)_packages)
 
 qt_packages_$(NO_QT) = $(qt_packages) $(qt_$(host_os)_packages) $(qt_$(host_arch)_$(host_os)_packages) $(qrencode_packages_)
+qt_native_packages_$(NO_QT) = $(qt_native_packages)
 
 bdb_packages_$(NO_BDB) = $(bdb_packages)
 sqlite_packages_$(NO_SQLITE) = $(sqlite_packages)
 wallet_packages_$(NO_WALLET) = $(bdb_packages_) $(sqlite_packages_)
+upnp_packages_$(NO_UPNP) = $(upnp_packages)
 
 zmq_packages_$(NO_ZMQ) = $(zmq_packages)
 multiprocess_packages_$(MULTIPROCESS) = $(multiprocess_packages)
-usdt_packages_$(NO_USDT) = $(usdt_$(host_os)_packages)
 
-packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_) $(usdt_packages_)
+packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_) $(upnp_packages_)
 native_packages += $($(host_arch)_$(host_os)_native_packages) $($(host_os)_native_packages)
 
 ifneq ($(zmq_packages_),)
@@ -194,7 +196,7 @@ $(host_prefix)/.stamp_$(final_build_id): $(native_packages) $(packages)
 	echo copying packages: $^
 	echo to: $(@D)
 	cd $(@D); $(foreach package,$^, $(build_TAR) xf $($(package)_cached); )
-	echo To build Bitcoin Core with these packages, pass \'--toolchain $(@D)/toolchain.cmake\' to the first CMake invocation.
+	echo To build BZX with these packages, pass \'--toolchain $(@D)/toolchain.cmake\' to the first CMake invocation.
 	touch $@
 
 ifeq ($(host),$(build))
@@ -202,6 +204,32 @@ ifeq ($(host),$(build))
 else
   crosscompiling=TRUE
 endif
+
+$(host_prefix)/share/config.site : config.site.in $(host_prefix)/.stamp_$(final_build_id)
+	$(AT)@mkdir -p $(@D)Add commentMore actions
+	$(AT)sed -e 's|@HOST@|$(host)|' \
+            -e 's|@CC@|$(host_CC)|' \
+            -e 's|@CXX@|$(host_CXX)|' \
+            -e 's|@AR@|$(host_AR)|' \
+            -e 's|@RANLIB@|$(host_RANLIB)|' \
+            -e 's|@NM@|$(host_NM)|' \
+            -e 's|@STRIP@|$(host_STRIP)|' \
+            -e 's|@build_os@|$(build_os)|' \
+            -e 's|@host_os@|$(host_os)|' \
+            -e 's|@CFLAGS@|$(strip $(host_CFLAGS) $(host_$(release_type)_CFLAGS))|' \
+            -e 's|@CXXFLAGS@|$(strip $(host_CXXFLAGS) $(host_$(release_type)_CXXFLAGS))|' \
+            -e 's|@CPPFLAGS@|$(strip $(host_CPPFLAGS) $(host_$(release_type)_CPPFLAGS))|' \
+            -e 's|@LDFLAGS@|$(strip $(host_LDFLAGS) $(host_$(release_type)_LDFLAGS))|' \
+            -e 's|@allow_host_packages@|$(ALLOW_HOST_PACKAGES)|' \
+            -e 's|@no_qt@|$(NO_QT)|' \
+            -e 's|@no_qr@|$(NO_QR)|' \
+            -e 's|@no_zmq@|$(NO_ZMQ)|' \
+            -e 's|@no_wallet@|$(NO_WALLET)|' \
+            -e 's|@no_bdb@|$(NO_BDB)|' \
+            -e 's|@no_sqlite@|$(NO_SQLITE)|' \
+            -e 's|@debug@|$(DEBUG)|' \
+            $< > $@
+	$(AT)touch $@
 
 $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(final_build_id)
 	@mkdir -p $(@D)
@@ -218,6 +246,7 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@STRIP@|$(host_STRIP)|' \
             -e 's|@OBJCOPY@|$(host_OBJCOPY)|' \
             -e 's|@OBJDUMP@|$(host_OBJDUMP)|' \
+            -e 's|@depends_prefix@|$(host_prefix)|' \
             -e 's|@CFLAGS@|$(strip $(host_CFLAGS))|' \
             -e 's|@CFLAGS_RELEASE@|$(strip $(host_release_CFLAGS))|' \
             -e 's|@CFLAGS_DEBUG@|$(strip $(host_debug_CFLAGS))|' \
@@ -234,6 +263,7 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@qrencode_packages@|$(qrencode_packages_)|' \
             -e 's|@zmq_packages@|$(zmq_packages_)|' \
             -e 's|@wallet_packages@|$(wallet_packages_)|' \
+            -e 's|@no_upnp@|$(NO_UPNP)|' \
             -e 's|@bdb_packages@|$(bdb_packages_)|' \
             -e 's|@sqlite_packages@|$(sqlite_packages_)|' \
             -e 's|@usdt_packages@|$(usdt_packages_)|' \
@@ -271,7 +301,7 @@ clean-all: clean
 clean:
 	@rm -rf $(WORK_PATH) $(BASE_CACHE) $(BUILD) *.log
 
-install: check-packages $(host_prefix)/toolchain.cmake
+install: check-packages $(host_prefix)/toolchain.cmake $(host_prefix)/share/config.site
 
 
 download-one: check-sources $(all_sources)
