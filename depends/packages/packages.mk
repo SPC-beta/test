@@ -1,24 +1,19 @@
-packages:=boost openssl libevent gmp zlib backtrace tor bls-dash
-darwin_packages:=zeromq
-linux_packages:=zeromq
-native_packages :=
+packages:= openssl gmp zlib backtrace tor bls-dash
 
-qt_linux_packages:=qt expat libxcb xcb_proto libXau xproto freetype fontconfig libxkbcommon libxcb_util libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm
+boost_packages = boost
 
-qt_darwin_packages=qt
-qt_mingw32_packages=qt
+libevent_packages = libevent
 
 qrencode_linux_packages = qrencode
-qrencode_android_packages = qrencode
 qrencode_darwin_packages = qrencode
 qrencode_mingw32_packages = qrencode
 
-bdb_packages=bdb
+qt_linux_packages:=qt expat libxcb xcb_proto libXau xproto freetype fontconfig libxkbcommon libxcb_util libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm
+qt_darwin_packages=qt
+qt_mingw32_packages=qt
 
-upnp_packages=miniupnpc
+bdb_packages=bdb
 
 zmq_packages=zeromq
 
-darwin_native_packages=
-$(host_arch)_$(host_os)_native_packages+=native_b2
-
+upnp_packages=miniupnpc
