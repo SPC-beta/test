@@ -119,7 +119,7 @@ option(BUILD_KERNEL_LIB "Build experimental BZXkernel library." ${BUILD_UTIL_CHA
 option(ENABLE_WALLET "Enable wallet." ON)
 cmake_dependent_option(BUILD_TESTS "Build tests." OFF "ENABLE_WALLET" OFF)
 option(BUILD_TX "Build ${BITCOIN_TX_NAME} executable." ${BUILD_CLI})
-option(WITH_BDB "Enable Berkeley DB (BDB) wallet support." OFF)
+option(WITH_BDB "Enable Berkeley DB (BDB) wallet support." ON)
 cmake_dependent_option(WARN_INCOMPATIBLE_BDB "Warn when using a Berkeley DB (BDB) version other than 4.8." ON "WITH_BDB" OFF)
 if(WITH_BDB)
   find_package(BerkeleyDB 4.8 MODULE REQUIRED)
