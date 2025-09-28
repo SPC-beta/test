@@ -97,11 +97,11 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/module)
 
 #=============================
 # Include utility functions
-#===include(cmake/utilities.cmake)
+#=============================
+include(cmake/utilities.cmake)
 include(CheckFunctionExists)
 include(CheckSymbolExists)
-include(CheckCXXCompilerFlag)==========================
-include(cmake/utilities.cmake)
+include(CheckCXXCompilerFlag)
 
 #=============================
 # Configurable options
