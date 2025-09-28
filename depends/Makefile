@@ -42,14 +42,15 @@ NO_WALLET ?=
 NO_UPNP ?=
 NO_ZMQ ?=
 NO_USDT ?=
-MULTIPROCESS ?=
+# Default NO_IPC value is 1 on Windows
+NO_IPC ?= $(if $(findstring mingw32,$(HOST)),1,)
 LTO ?=
 FALLBACK_DOWNLOAD_PATH ?= https://firo.org/depends-sources
 FALLBACK_DOWNLOAD_PATH_ALTERNATIVE ?= https://bitcoincore.org/depends-sources
 FALLBACK_DOWNLOAD_PATH_ALTERNATIVE ?= http://dash-depends-sources.s3-website-us-west-2.amazonaws.com
 
 C_STANDARD ?= c11
-CXX_STANDARD ?= c++17
+CXX_STANDARD ?= c++20
 
 BUILD = $(shell ./config.guess)
 PATCHES_PATH = $(BASEDIR)/patches
@@ -168,17 +169,18 @@ sqlite_packages_$(NO_SQLITE) = $(sqlite_packages)
 wallet_packages_$(NO_WALLET) = $(bdb_packages_) $(sqlite_packages_)
 upnp_packages_$(NO_UPNP) = $(upnp_packages)
 zmq_packages_$(NO_ZMQ) = $(zmq_packages)
-multiprocess_packages_$(MULTIPROCESS) = $(multiprocess_packages)
+ipc_packages_$(NO_IPC) = $(ipc_packages)
+usdt_packages_$(NO_USDT) = $(usdt_$(host_os)_packages)
 
-packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_)  $(upnp_packages_)
-native_packages += $($(host_arch)_$(host_os)_native_packages) $($(host_os)_native_packages)
+packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_) $(usdt_packages_) $(upnp_packages_)
+native_packages += $($(host_arch)_$(host_os)_native_packages) $($(host_os)_native_packages) $(qt_native_packages_)
 
 ifneq ($(zmq_packages_),)
 packages += $(zmq_packages)
 endif
 
-ifeq ($(multiprocess_packages_),)
-packages += $(multiprocess_packages)
+ifneq ($(ipc_packages_),)
+packages += $(ipc_packages)
 native_packages += $(multiprocess_native_packages)
 endif
 
@@ -196,7 +198,7 @@ $(host_prefix)/.stamp_$(final_build_id): $(native_packages) $(packages)
 	echo copying packages: $^
 	echo to: $(@D)
 	cd $(@D); $(foreach package,$^, $(build_TAR) xf $($(package)_cached); )
-	echo To build Firo with these packages, pass \'--toolchain $(@D)/toolchain.cmake\' to the first CMake invocation.
+	echo To build Bitcoin Core with these packages, pass \'--toolchain $(@D)/toolchain.cmake\' to the first CMake invocation.
 	touch $@
 
 ifeq ($(host),$(build))
@@ -204,31 +206,6 @@ ifeq ($(host),$(build))
 else
   crosscompiling=TRUE
 endif
-
-$(host_prefix)/share/config.site : config.site.in $(host_prefix)/.stamp_$(final_build_id)
-	$(AT)@mkdir -p $(@D)Add commentMore actions
-	$(AT)sed -e 's|@HOST@|$(host)|' \
-            -e 's|@CC@|$(host_CC)|' \
-            -e 's|@CXX@|$(host_CXX)|' \
-            -e 's|@AR@|$(host_AR)|' \
-            -e 's|@RANLIB@|$(host_RANLIB)|' \
-            -e 's|@NM@|$(host_NM)|' \
-            -e 's|@STRIP@|$(host_STRIP)|' \
-            -e 's|@build_os@|$(build_os)|' \
-            -e 's|@host_os@|$(host_os)|' \
-            -e 's|@CFLAGS@|$(strip $(host_CFLAGS) $(host_$(release_type)_CFLAGS))|' \
-            -e 's|@CXXFLAGS@|$(strip $(host_CXXFLAGS) $(host_$(release_type)_CXXFLAGS))|' \
-            -e 's|@CPPFLAGS@|$(strip $(host_CPPFLAGS) $(host_$(release_type)_CPPFLAGS))|' \
-            -e 's|@LDFLAGS@|$(strip $(host_LDFLAGS) $(host_$(release_type)_LDFLAGS))|' \
-            -e 's|@allow_host_packages@|$(ALLOW_HOST_PACKAGES)|' \
-            -e 's|@no_qt@|$(NO_QT)|' \
-            -e 's|@no_qr@|$(NO_QR)|' \
-            -e 's|@no_zmq@|$(NO_ZMQ)|' \
-            -e 's|@no_wallet@|$(NO_WALLET)|' \
-            -e 's|@no_bdb@|$(NO_BDB)|' \
-            -e 's|@debug@|$(DEBUG)|' \
-            $< > $@
-	$(AT)touch $@
 
 $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(final_build_id)
 	@mkdir -p $(@D)
@@ -245,7 +222,6 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@STRIP@|$(host_STRIP)|' \
             -e 's|@OBJCOPY@|$(host_OBJCOPY)|' \
             -e 's|@OBJDUMP@|$(host_OBJDUMP)|' \
-            -e 's|@depends_prefix@|$(host_prefix)|' \
             -e 's|@CFLAGS@|$(strip $(host_CFLAGS))|' \
             -e 's|@CFLAGS_RELEASE@|$(strip $(host_release_CFLAGS))|' \
             -e 's|@CFLAGS_DEBUG@|$(strip $(host_debug_CFLAGS))|' \
@@ -264,7 +240,8 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@wallet_packages@|$(wallet_packages_)|' \
             -e 's|@upnp_packages@|$(upnp_packages_)|' \
             -e 's|@bdb_packages@|$(bdb_packages_)|' \
-            -e 's|@no_harden@|$(NO_HARDEN)|' \
+            -e 's|@usdt_packages@|$(usdt_packages_)|' \
+            -e 's|@ipc_packages@|$(ipc_packages_)|' \
             $< > $@
 	touch $@
 
@@ -297,7 +274,7 @@ clean-all: clean
 clean:
 	@rm -rf $(WORK_PATH) $(BASE_CACHE) $(BUILD) *.log
 
-install: check-packages $(host_prefix)/toolchain.cmake $(host_prefix)/share/config.site
+install: check-packages $(host_prefix)/toolchain.cmake
 
 
 download-one: check-sources $(all_sources)
