@@ -47,7 +47,7 @@ NO_IPC ?= $(if $(findstring mingw32,$(HOST)),1,)
 LTO ?=
 FALLBACK_DOWNLOAD_PATH ?= https://firo.org/depends-sources
 FALLBACK_DOWNLOAD_PATH_ALTERNATIVE ?= https://bitcoincore.org/depends-sources
-FALLBACK_DOWNLOAD_PATH_ALTERNATIVE ?= http://dash-depends-sources.s3-website-us-west-2.amazonaws.com
+FALLBACK_DOWNLOAD_PATH_ALTERNATIVE_2 ?= http://dash-depends-sources.s3-website-us-west-2.amazonaws.com
 
 C_STANDARD ?= c11
 CXX_STANDARD ?= c++20
