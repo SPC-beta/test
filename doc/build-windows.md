@@ -1,96 +1,55 @@
 WINDOWS BUILD NOTES
 ====================
 
-Some notes on how to build Firo Core for Windows.
+Below are some notes on how to build Bitcoin Core for Windows.
 
-Most developers use cross-compilation from Ubuntu to build executables for
-Windows. This is also used to build the release binaries.
+The options known to work for building Bitcoin Core on Windows are:
 
-While there are potentially a number of ways to build on Windows (for example using msys / mingw-w64),
-using the Windows Subsystem For Linux is the most straightforward. If you are building with
-another method, please contribute the instructions here for others who are running versions
-of Windows that are not compatible with the Windows Subsystem for Linux.
+* On Linux, using the [Mingw-w64](https://www.mingw-w64.org/) cross compiler tool chain.
+* On Windows, using [Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/about) and Mingw-w64.
+* On Windows, using [Microsoft Visual Studio](https://visualstudio.microsoft.com). See [`build-windows-msvc.md`](./build-windows-msvc.md).
 
-Compiling with Windows Subsystem For Linux
--------------------------------------------
+Other options which may work, but which have not been extensively tested are (please contribute instructions):
 
-With Windows 10, Microsoft has released a new feature named the [Windows
-Subsystem for Linux](https://msdn.microsoft.com/commandline/wsl/about). This
-feature allows you to run a bash shell directly on Windows in an Ubuntu-based
-environment. Within this environment you can cross compile for Windows without
-the need for a separate Linux VM or server.
+* On Windows, using a POSIX compatibility layer application such as [cygwin](https://www.cygwin.com/) or [msys2](https://www.msys2.org/).
 
-This feature is not supported in versions of Windows prior to Windows 10 or on
-Windows Server SKUs. In addition, it is available [only for 64-bit versions of
-Windows](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide).
+The instructions below work on Ubuntu and Debian. Make sure the distribution's `g++-mingw-w64-x86-64-posix`
+package meets the minimum required `g++` version specified in [dependencies.md](dependencies.md).
 
-To get the bash shell, you must first activate the feature in Windows.
+Installing Windows Subsystem for Linux
+---------------------------------------
 
-1. Turn on Developer Mode
-  * Open Settings -> Update and Security -> For developers
-  * Select the Developer Mode radio button
-  * Restart if necessary
-2. Enable the Windows Subsystem for Linux feature
-  * From Start, search for "Turn Windows features on or off" (type 'turn')
-  * Select Windows Subsystem for Linux (beta)
-  * Click OK
-  * Restart if necessary
-3. Complete Installation
-  * Open a cmd prompt and type "bash"
-  * Accept the license
-  * Create a new UNIX user account (this is a separate account from your Windows account)
+Follow the upstream installation instructions, available [here](https://learn.microsoft.com/en-us/windows/wsl/install).
 
-After the bash shell is active, you can follow the instructions below, starting
-with the "Cross-compilation" section. Compiling the 64-bit version is
-recommended but it is possible to compile the 32-bit version.
+Cross-compilation for Ubuntu and Windows Subsystem for Linux
+------------------------------------------------------------
 
-Cross-compilation
--------------------
-
-These steps can be performed on, for example, an Ubuntu VM. The depends system
+The steps below can be performed on Ubuntu or WSL. The depends system
 will also work on other Linux distributions, however the commands for
 installing the toolchain will be different.
 
-Make sure you install the build requirements mentioned in
-[build-unix.md](/doc/build-unix.md).
+See [README.md](../depends/README.md) in the depends directory for which
+dependencies to install and [dependencies.md](dependencies.md) for a complete overview.
 
-Then, install the toolchains and curl:
+If you want to build the Windows installer using the `deploy` build target, you will need [NSIS](https://nsis.sourceforge.io/Main_Page):
 
-    sudo apt-get install g++-mingw-w64-i686 mingw-w64-i686-dev g++-mingw-w64-x86-64 mingw-w64-x86-64-dev curl
+    apt install nsis
 
-*******************
-Before starting to compile you need to update mingw alternatives
--------------
-For Windows 32-bit:
 
-    sudo update-alternatives --set i686-w64-mingw32-gcc /usr/bin/i686-w64-mingw32-gcc-posix
-    sudo update-alternatives --set i686-w64-mingw32-g++ /usr/bin/i686-w64-mingw32-g++-posix
+Acquire the source in the usual way:
 
-For Windows 64-bit:
+    git clone https://github.com/bitcoin/bitcoin.git
+    cd bitcoin
 
-    sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
-    sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+Note that for WSL the Bitcoin Core source path MUST be somewhere in the default mount file system, for
+example /usr/src/bitcoin, AND not under /mnt/d/. If this is not the case the dependency autoconf scripts will fail.
+This means you cannot use a directory that is located directly on the host Windows file system to perform the build.
 
-********************
-To build executables for Windows 32-bit:
-------------------
+Build using:
 
-    cd depends
-    make HOST=i686-w64-mingw32 -j`nproc`
-    cd ..
-    ./autogen.sh # not required when building from tarball
-    CONFIG_SITE=$PWD/depends/i686-w64-mingw32/share/config.site ./configure --prefix=/
-    make
-
-To build executables for Windows 64-bit:
-------------------
-
-    cd depends
-    make HOST=x86_64-w64-mingw32 -j`nproc`
-    cd ..
-    ./autogen.sh # not required when building from tarball
-    CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/
-    make
+    gmake -C depends HOST=x86_64-w64-mingw32  # Append "-j N" for N parallel jobs.
+    cmake -B build --toolchain depends/x86_64-w64-mingw32/toolchain.cmake
+    cmake --build build     # Append "-j N" for N parallel jobs.
 
 ## Depends system
 
@@ -100,8 +59,20 @@ Installation
 -------------
 
 After building using the Windows subsystem it can be useful to copy the compiled
-executables to a directory on the windows drive in the same directory structure
+executables to a directory on the Windows drive in the same directory structure
 as they appear in the release `.zip` archive. This can be done in the following
 way. This will install to `c:\workspace\bitcoin`, for example:
+```shell
+cmake --install build --prefix /mnt/c/workspace/bitcoin
+```
 
-    make install DESTDIR=/mnt/c/workspace/bitcoin
+Note that due to the presence of debug information, the binaries may be very large,
+if you do not need the debug information, you can prune it during install by calling:
+```shell
+cmake --install build --prefix /mnt/c/workspace/bitcoin --strip
+```
+
+You can also create an installer using:
+```shell
+cmake --build build --target deploy
+```

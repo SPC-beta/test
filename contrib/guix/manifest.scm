@@ -1,6 +1,5 @@
 (use-modules (gnu packages)
-             (gnu packages bash)
-             (gnu packages autotools)
+             ((gnu packages bash) #:select (bash-minimal))
              (gnu packages bison)
              ((gnu packages certs) #:select (nss-certs))
              ((gnu packages cmake) #:select (cmake-minimal))
@@ -10,17 +9,17 @@
              (gnu packages gawk)
              (gnu packages gcc)
              ((gnu packages installers) #:select (nsis-x86_64))
-             (gnu packages linux)
              ((gnu packages linux) #:select (linux-libre-headers-6.1))
              (gnu packages llvm)
              (gnu packages mingw)
              (gnu packages ninja)
              (gnu packages pkg-config)
              ((gnu packages python) #:select (python-minimal))
-             ((gnu packages python-build) #:select (python-tomli python-poetry-core))
+             ((gnu packages python-build) #:select (python-poetry-core))
              ((gnu packages python-crypto) #:select (python-asn1crypto))
+             ((gnu packages python-science) #:select (python-scikit-build-core))
+             ((gnu packages python-xyz) #:select (python-pydantic-2 python-pydantic-core))
              ((gnu packages tls) #:select (openssl))
-             (gnu packages perl)
              ((gnu packages version-control) #:select (git-minimal))
              (guix build-system cmake)
              (guix build-system gnu)
@@ -154,6 +153,265 @@ chain for " target " development."))
       (home-page (package-home-page pthreads-xgcc))
       (license (package-license pthreads-xgcc)))))
 
+;; While LIEF is packaged in Guix, we maintain our own package,
+;; to simplify building, and more easily apply updates.
+;; Moreover, the Guix's package uses cmake, which caused build
+;; failure; see https://github.com/bitcoin/bitcoin/pull/27296.
+(define-public python-lief
+  (package
+    (name "python-lief")
+    (version "0.16.6")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/lief-project/LIEF")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1pq9nagrnkl1x943bqnpiyxmkd9vk99znfxiwqp6vf012b50bz2a"))
+              (patches (search-our-patches "lief-scikit-0-9.patch"))))
+    (build-system pyproject-build-system)
+    (native-inputs (list cmake-minimal
+                         ninja
+                         python-scikit-build-core
+                         python-pydantic-core
+                         python-pydantic-2))
+    (arguments
+     (list
+      #:tests? #f                  ;needs network
+      #:phases #~(modify-phases %standard-phases
+                   (add-before 'build 'set-pythonpath
+                     (lambda _
+                       (setenv "PYTHONPATH"
+                         (string-append (string-append (getcwd) "/api/python/backend")
+                                      ":" (or (getenv "PYTHONPATH") "")))))
+                  (add-after 'set-pythonpath 'change-directory
+                     (lambda _
+                       (chdir "api/python"))))))
+    (home-page "https://github.com/lief-project/LIEF")
+    (synopsis "Library to instrument executable formats")
+    (description
+     "@code{python-lief} is a cross platform library which can parse, modify
+and abstract ELF, PE and MachO formats.")
+    (license license:asl2.0)))
+
+(define osslsigncode
+  (package
+    (name "osslsigncode")
+    (version "2.5")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/mtrojnar/osslsigncode")
+                    (commit version)))
+              (sha256
+               (base32
+                "1j47vwq4caxfv0xw68kw5yh00qcpbd56d7rq6c483ma3y7s96yyz"))))
+    (build-system cmake-build-system)
+    (inputs (list openssl))
+    (home-page "https://github.com/mtrojnar/osslsigncode")
+    (synopsis "Authenticode signing and timestamping tool")
+    (description "osslsigncode is a small tool that implements part of the
+functionality of the Microsoft tool signtool.exe - more exactly the Authenticode
+signing and timestamping. But osslsigncode is based on OpenSSL and cURL, and
+thus should be able to compile on most platforms where these exist.")
+    (license license:gpl3+))) ; license is with openssl exception
+
+(define-public python-elfesteem
+  (let ((commit "2eb1e5384ff7a220fd1afacd4a0170acff54fe56"))
+    (package
+      (name "python-elfesteem")
+      (version (git-version "0.1" "1" commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/LRGH/elfesteem")
+               (commit commit)))
+         (file-name (git-file-name name commit))
+         (sha256
+          (base32
+           "07x6p8clh11z8s1n2kdxrqwqm2almgc5qpkcr9ckb6y5ivjdr5r6"))))
+      (build-system python-build-system)
+      ;; There are no tests, but attempting to run python setup.py test leads to
+      ;; PYTHONPATH problems, just disable the test
+      (arguments '(#:tests? #f))
+      (home-page "https://github.com/LRGH/elfesteem")
+      (synopsis "ELF/PE/Mach-O parsing library")
+      (description "elfesteem parses ELF, PE and Mach-O files.")
+      (license license:lgpl2.1))))
+
+(define-public python-oscrypto
+  (package
+    (name "python-oscrypto")
+    (version "1.3.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/wbond/oscrypto")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "1v5wkmzcyiqy39db8j2dvkdrv2nlsc48556h73x4dzjwd6kg4q0a"))
+       (patches (search-our-patches "oscrypto-hard-code-openssl.patch"))))
+    (build-system python-build-system)
+    (native-search-paths
+     (list (search-path-specification
+            (variable "SSL_CERT_FILE")
+            (file-type 'regular)
+            (separator #f)                ;single entry
+            (files '("etc/ssl/certs/ca-certificates.crt")))))
+
+    (propagated-inputs
+      (list python-asn1crypto openssl))
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'hard-code-path-to-libscrypt
+           (lambda* (#:key inputs #:allow-other-keys)
+             (let ((openssl (assoc-ref inputs "openssl")))
+               (substitute* "oscrypto/__init__.py"
+                 (("@GUIX_OSCRYPTO_USE_OPENSSL@")
+                  (string-append openssl "/lib/libcrypto.so" "," openssl "/lib/libssl.so")))
+               #t)))
+         (add-after 'unpack 'disable-broken-tests
+           (lambda _
+             ;; This test is broken as there is no keyboard interrupt.
+             (substitute* "tests/test_trust_list.py"
+               (("^(.*)class TrustListTests" line indent)
+                (string-append indent
+                               "@unittest.skip(\"Disabled by Guix\")\n"
+                               line)))
+             (substitute* "tests/test_tls.py"
+               (("^(.*)class TLSTests" line indent)
+                (string-append indent
+                               "@unittest.skip(\"Disabled by Guix\")\n"
+                               line)))
+             #t))
+         (replace 'check
+           (lambda _
+             (invoke "python" "run.py" "tests")
+             #t)))))
+    (home-page "https://github.com/wbond/oscrypto")
+    (synopsis "Compiler-free Python crypto library backed by the OS")
+    (description "oscrypto is a compilation-free, always up-to-date encryption library for Python.")
+    (license license:expat)))
+
+(define-public python-oscryptotests
+  (package (inherit python-oscrypto)
+    (name "python-oscryptotests")
+    (propagated-inputs
+      (list python-oscrypto))
+    (arguments
+     `(#:tests? #f
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'hard-code-path-to-libscrypt
+           (lambda* (#:key inputs #:allow-other-keys)
+             (chdir "tests")
+             #t)))))))
+
+(define-public python-certvalidator
+  (let ((commit "a145bf25eb75a9f014b3e7678826132efbba6213"))
+    (package
+      (name "python-certvalidator")
+      (version (git-version "0.1" "1" commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/achow101/certvalidator")
+               (commit commit)))
+         (file-name (git-file-name name commit))
+         (sha256
+          (base32
+           "1qw2k7xis53179lpqdqyylbcmp76lj7sagp883wmxg5i7chhc96k"))))
+      (build-system python-build-system)
+      (propagated-inputs
+        (list python-asn1crypto
+              python-oscrypto
+              python-oscryptotests)) ;; certvalidator tests import oscryptotests
+      (arguments
+       `(#:phases
+         (modify-phases %standard-phases
+           (add-after 'unpack 'disable-broken-tests
+             (lambda _
+               (substitute* "tests/test_certificate_validator.py"
+                 (("^(.*)class CertificateValidatorTests" line indent)
+                  (string-append indent
+                                 "@unittest.skip(\"Disabled by Guix\")\n"
+                                 line)))
+               (substitute* "tests/test_crl_client.py"
+                 (("^(.*)def test_fetch_crl" line indent)
+                  (string-append indent
+                                 "@unittest.skip(\"Disabled by Guix\")\n"
+                                 line)))
+               (substitute* "tests/test_ocsp_client.py"
+                 (("^(.*)def test_fetch_ocsp" line indent)
+                  (string-append indent
+                                 "@unittest.skip(\"Disabled by Guix\")\n"
+                                 line)))
+               (substitute* "tests/test_registry.py"
+                 (("^(.*)def test_build_paths" line indent)
+                  (string-append indent
+                                 "@unittest.skip(\"Disabled by Guix\")\n"
+                                 line)))
+               (substitute* "tests/test_validate.py"
+                 (("^(.*)def test_revocation_mode_hard" line indent)
+                  (string-append indent
+                                 "@unittest.skip(\"Disabled by Guix\")\n"
+                                 line)))
+               (substitute* "tests/test_validate.py"
+                 (("^(.*)def test_revocation_mode_soft" line indent)
+                  (string-append indent
+                                 "@unittest.skip(\"Disabled by Guix\")\n"
+                                 line)))
+               #t))
+           (replace 'check
+             (lambda _
+               (invoke "python" "run.py" "tests")
+               #t)))))
+      (home-page "https://github.com/wbond/certvalidator")
+      (synopsis "Python library for validating X.509 certificates and paths")
+      (description "certvalidator is a Python library for validating X.509
+certificates or paths. Supports various options, including: validation at a
+specific moment in time, whitelisting and revocation checks.")
+      (license license:expat))))
+
+(define-public python-signapple
+  (let ((commit "85bfcecc33d2773bc09bc318cec0614af2c8e287"))
+    (package
+      (name "python-signapple")
+      (version (git-version "0.2.0" "1" commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/achow101/signapple")
+               (commit commit)))
+         (file-name (git-file-name name commit))
+         (sha256
+          (base32
+           "17yqjll8nw83q6dhgqhkl7w502z5vy9sln8m6mlx0f1c10isg8yg"))))
+      (build-system pyproject-build-system)
+      (propagated-inputs
+        (list python-asn1crypto
+              python-oscrypto
+              python-certvalidator
+              python-elfesteem))
+      (native-inputs (list python-poetry-core))
+      ;; There are no tests, but attempting to run python setup.py test leads to
+      ;; problems, just disable the test
+      (arguments '(#:tests? #f))
+      (home-page "https://github.com/achow101/signapple")
+      (synopsis "Mach-O binary signature tool")
+      (description "signapple is a Python tool for creating, verifying, and
+inspecting signatures in Mach-O binaries.")
+      (license license:expat))))
+
 (define-public mingw-w64-base-gcc
   (package
     (inherit base-gcc)
@@ -227,7 +485,7 @@ chain for " target " development."))
              (lambda* (#:key outputs #:allow-other-keys)
                ;; Install the rpc data base file under `$out/etc/rpc'.
                ;; Otherwise build will fail with "Permission denied."
-               ;; Can be removed when we are building 2.31 or later.
+               ;; Can be removed when we are building 2.32 or later.
                (let ((out (assoc-ref outputs "out")))
                  (substitute* "sunrpc/Makefile"
                    (("^\\$\\(inst_sysconfdir\\)/rpc(.*)$" _ suffix)
@@ -235,12 +493,42 @@ chain for " target " development."))
                    (("^install-others =.*$")
                     (string-append "install-others = " out "/etc/rpc\n")))))))))))))
 
+;; The sponge tool from moreutils.
+(define-public sponge
+  (package
+    (name "sponge")
+    (version "0.69")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://git.joeyh.name/index.cgi/moreutils.git/snapshot/
+                    moreutils-" version ".tar.gz"))
+              (file-name (string-append "moreutils-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1l859qnzccslvxlh5ghn863bkq2vgmqgnik6jr21b9kc6ljmsy8g"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (delete 'configure)
+               (replace 'install
+                (lambda* (#:key outputs #:allow-other-keys)
+                  (let ((bin (string-append (assoc-ref outputs "out") "/bin")))
+                  (install-file "sponge" bin)))))
+           #:make-flags
+           #~(list "sponge" (string-append "CC=" #$(cc-for-target)))))
+    (home-page "https://joeyh.name/code/moreutils/")
+    (synopsis "Miscellaneous general-purpose command-line tools")
+    (description "Just sponge")
+    (license license:gpl2+)))
+
 (packages->manifest
  (append
   (list ;; The Basics
-        bash
+        bash-minimal
         which
-        coreutils
+        coreutils-minimal
         ;; File(system) inspection
         grep
         diffutils
@@ -249,36 +537,29 @@ chain for " target " development."))
         patch
         gawk
         sed
+        sponge
         ;; Compression and archiving
         tar
         gzip
         xz
-        bzip2
-        zlib
-        (list zlib "static")
         ;; Build tools
         gcc-toolchain-13
-        linux-libre-headers-6.1
-        gcc
-        (list glibc "static")
         cmake-minimal
         gnu-make
         ninja
-        libtool
-        automake
-        autoconf-2.71
-        pkg-config
         ;; Scripting
         python-minimal ;; (3.10)
-        perl
         ;; Git
-        git-minimal)
+        git-minimal
+        ;; Tests
+        python-lief)
   (let ((target (getenv "HOST")))
     (cond ((string-suffix? "-mingw32" target)
            (list zip
                  (make-mingw-pthreads-cross-toolchain "x86_64-w64-mingw32")
                  nsis-x86_64
-                 nss-certs))
+                 nss-certs
+                 osslsigncode))
           ((string-contains target "-linux-")
            (list bison
                  pkg-config
@@ -288,5 +569,6 @@ chain for " target " development."))
            (list clang-toolchain-18
                  lld-18
                  (make-lld-wrapper lld-18 #:lld-as-ld? #t)
+                 python-signapple
                  zip))
           (else '())))))
