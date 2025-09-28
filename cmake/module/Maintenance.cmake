@@ -93,7 +93,7 @@ function(add_macos_deploy_target)
     file(CONFIGURE OUTPUT ${macos_app}/Contents/PkgInfo CONTENT "APPL????")
     # Populate Contents/Resources subdirectory.
     file(CONFIGURE OUTPUT ${macos_app}/Contents/Resources/empty.lproj CONTENT "")
-    configure_file(${PROJECT_SOURCE_DIR}/src/qt/res/icons/BZX.icns ${macos_app}/Contents/Resources/BZX.icns NO_SOURCE_PERMISSIONS COPYONLY)
+    configure_file(${PROJECT_SOURCE_DIR}/src/qt/res/icons/bitcoin.icns ${macos_app}/Contents/Resources/bitcoin.icns NO_SOURCE_PERMISSIONS COPYONLY)
     file(CONFIGURE OUTPUT ${macos_app}/Contents/Resources/Base.lproj/InfoPlist.strings
       CONTENT "{ CFBundleDisplayName = \"@CLIENT_NAME@\"; CFBundleName = \"@CLIENT_NAME@\"; }"
     )
