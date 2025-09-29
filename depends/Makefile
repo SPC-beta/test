@@ -42,14 +42,15 @@ NO_WALLET ?=
 NO_UPNP ?=
 NO_ZMQ ?=
 NO_USDT ?=
-MULTIPROCESS ?=
+# Default NO_IPC value is 1 on Windows
+NO_IPC ?= $(if $(findstring mingw32,$(HOST)),1,)
 LTO ?=
 FALLBACK_DOWNLOAD_PATH ?= https://firo.org/depends-sources
 FALLBACK_DOWNLOAD_PATH_ALTERNATIVE ?= https://bitcoincore.org/depends-sources
 FALLBACK_DOWNLOAD_PATH_ALTERNATIVE_2 ?= http://dash-depends-sources.s3-website-us-west-2.amazonaws.com
 
 C_STANDARD ?= c11
-CXX_STANDARD ?= c++17
+CXX_STANDARD ?= c++20
 
 BUILD = $(shell ./config.guess)
 PATCHES_PATH = $(BASEDIR)/patches
@@ -168,17 +169,18 @@ sqlite_packages_$(NO_SQLITE) = $(sqlite_packages)
 wallet_packages_$(NO_WALLET) = $(bdb_packages_) $(sqlite_packages_)
 upnp_packages_$(NO_UPNP) = $(upnp_packages)
 zmq_packages_$(NO_ZMQ) = $(zmq_packages)
-multiprocess_packages_$(MULTIPROCESS) = $(multiprocess_packages)
+ipc_packages_$(NO_IPC) = $(ipc_packages)
+usdt_packages_$(NO_USDT) = $(usdt_$(host_os)_packages)
 
-packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_) $(upnp_packages_)
-native_packages += $($(host_arch)_$(host_os)_native_packages) $($(host_os)_native_packages)
+packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_) $(usdt_packages_) $(upnp_packages_)
+native_packages += $($(host_arch)_$(host_os)_native_packages) $($(host_os)_native_packages) $(qt_native_packages_)
 
 ifneq ($(zmq_packages_),)
 packages += $(zmq_packages)
 endif
 
-ifeq ($(multiprocess_packages_),)
-packages += $(multiprocess_packages)
+ifneq ($(ipc_packages_),)
+packages += $(ipc_packages)
 native_packages += $(multiprocess_native_packages)
 endif
 
@@ -269,7 +271,7 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@sqlite_packages@|$(sqlite_packages_)|' \
             -e 's|@usdt_packages@|$(usdt_packages_)|' \
             -e 's|@no_harden@|$(NO_HARDEN)|' \
-            -e 's|@multiprocess@|$(MULTIPROCESS)|' \
+            -e 's|@ipc_packages@|$(ipc_packages_)|' \
             $< > $@
 	touch $@
 
