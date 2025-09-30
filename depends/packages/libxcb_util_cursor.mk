@@ -1,12 +1,12 @@
-package=libxcb_util_keysyms
-$(package)_version=0.4.0
+package=libxcb_util_cursor
+$(package)_version=0.1.5
 $(package)_download_path=https://xcb.freedesktop.org/dist
-$(package)_file_name=xcb-util-keysyms-$($(package)_version).tar.gz
-$(package)_sha256_hash=0807cf078fbe38489a41d755095c58239e1b67299f14460dec2ec811e96caa96
-$(package)_dependencies=libxcb xproto
+$(package)_file_name=xcb-util-cursor-$($(package)_version).tar.gz
+$(package)_sha256_hash=0e9c5446dc6f3beb8af6ebfcc9e27bcc6da6fe2860f7fc07b99144dfa568e93b
+$(package)_dependencies=libxcb libxcb_util_render libxcb_util_image
 
 define $(package)_set_vars
-$(package)_config_opts=--disable-static --disable-devel-docs --without-doxygen
+$(package)_config_opts = --disable-static
 $(package)_config_opts += --disable-dependency-tracking --enable-option-checking
 endef
 
@@ -27,5 +27,5 @@ define $(package)_stage_cmds
 endef
 
 define $(package)_postprocess_cmds
-  rm -rf share/man share/doc lib/*.la
+  rm lib/*.la
 endef
