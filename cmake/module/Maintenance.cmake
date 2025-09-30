@@ -42,7 +42,7 @@ function(add_maintenance_targets)
     VERBATIM
   )
 
-  foreach(target IN ITEMS bitcoinzerod bitcoinzero-qt bitcoinzero-cli bitcoinzero-tx bitcoinzero-util bitcoinzero-wallet test_bitcoinzero bench_bitcoinzero)
+  foreach(target IN ITEMS firod firo-qt firo-cli firo-tx firo-util firo-wallet test_firo bench_firo)
     if(TARGET ${target})
       list(APPEND executables $<TARGET_FILE:${target}>)
     endif()
@@ -66,34 +66,34 @@ function(add_maintenance_targets)
 endfunction()
 
 function(add_windows_deploy_target)
-  if(MINGW AND TARGET bitcoinzero-qt AND TARGET bitcoinzerod AND TARGET bitcoinzero-cli AND TARGET bitcoinzero-tx)
+  if(MINGW AND TARGET firo-qt AND TARGET firod AND TARGET firo-cli AND TARGET firo-tx)
     # TODO: Consider replacing this code with the CPack NSIS Generator.
     #       See https://cmake.org/cmake/help/latest/cpack_gen/nsis.html
     include(GenerateSetupNsi)
     generate_setup_nsi()
     add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/bitcoinzero-win64-setup.exe
+      OUTPUT ${PROJECT_BINARY_DIR}/firo-win64-setup.exe
       COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/release
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-qt> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-qt>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzerod> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzerod>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-cli> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-cli>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoinzero-tx> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoinzero-tx>
-      COMMAND makensis -V2 ${PROJECT_BINARY_DIR}/bitcoinzero-win64-setup.nsi
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:firo-qt> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:firo-qt>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:firod> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:firod>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:firo-cli> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:firo-cli>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:firo-tx> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:firo-tx>
+      COMMAND makensis -V2 ${PROJECT_BINARY_DIR}/firo-win64-setup.nsi
       VERBATIM
     )
-    add_custom_target(deploy DEPENDS ${PROJECT_BINARY_DIR}/bitcoinzero-win64-setup.exe)
+    add_custom_target(deploy DEPENDS ${PROJECT_BINARY_DIR}/firo-win64-setup.exe)
   endif()
 endfunction()
 
 function(add_macos_deploy_target)
-  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND TARGET bitcoinzero-qt)
-    set(macos_app "bitcoinzero-Qt.app")
+  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND TARGET firo-qt)
+    set(macos_app "Firo-Qt.app")
     # Populate Contents subdirectory.
     configure_file(${PROJECT_SOURCE_DIR}/share/qt/Info.plist.in ${macos_app}/Contents/Info.plist NO_SOURCE_PERMISSIONS)
     file(CONFIGURE OUTPUT ${macos_app}/Contents/PkgInfo CONTENT "APPL????")
     # Populate Contents/Resources subdirectory.
     file(CONFIGURE OUTPUT ${macos_app}/Contents/Resources/empty.lproj CONTENT "")
-    configure_file(${PROJECT_SOURCE_DIR}/src/qt/res/icons/bitcoin.icns ${macos_app}/Contents/Resources/bitcoin.icns NO_SOURCE_PERMISSIONS COPYONLY)
+    configure_file(${PROJECT_SOURCE_DIR}/src/qt/res/icons/firo.icns ${macos_app}/Contents/Resources/firo.icns NO_SOURCE_PERMISSIONS COPYONLY)
     file(CONFIGURE OUTPUT ${macos_app}/Contents/Resources/Base.lproj/InfoPlist.strings
       CONTENT "{ CFBundleDisplayName = \"@CLIENT_NAME@\"; CFBundleName = \"@CLIENT_NAME@\"; }"
     )
@@ -109,11 +109,11 @@ function(add_macos_deploy_target)
 
 
     add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/bitcoinzero-Qt
+      OUTPUT ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Firo-Qt
       COMMAND ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR} --config $<CONFIG> --component GUI --prefix ${macos_app}/Contents/MacOS
-      COMMAND ${CMAKE_COMMAND} -E rename ${macos_app}/Contents/MacOS/bin/$<TARGET_FILE_NAME:bitcoinzero-qt> ${macos_app}/Contents/MacOS/bitcoinzero-Qt
+      COMMAND ${CMAKE_COMMAND} -E rename ${macos_app}/Contents/MacOS/bin/$<TARGET_FILE_NAME:firo-qt> ${macos_app}/Contents/MacOS/Firo-Qt
       COMMAND ${CMAKE_COMMAND} -E rm -rf ${macos_app}/Contents/MacOS/bin
-      COMMAND ${STRIP_COMMAND} ${macos_app}/Contents/MacOS/bitcoinzero-Qt || true
+      COMMAND ${STRIP_COMMAND} ${macos_app}/Contents/MacOS/Firo-Qt || true
       VERBATIM
     )
 
@@ -128,7 +128,7 @@ function(add_macos_deploy_target)
       add_custom_command(
         OUTPUT ${PROJECT_BINARY_DIR}/${osx_volname}.zip
         COMMAND ${PYTHON_COMMAND} ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus ${macos_app} ${osx_volname} -translations-dir=${QT_TRANSLATIONS_DIR} -zip
-        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/bitcoinzero-Qt
+        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Firo-Qt
         VERBATIM
       )
       add_custom_target(deploydir
@@ -139,13 +139,13 @@ function(add_macos_deploy_target)
       )
     else()
       add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/bitcoinzero-Qt
+        OUTPUT ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/Firo-Qt
         COMMAND OBJDUMP=${CMAKE_OBJDUMP} ${PYTHON_COMMAND} ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus ${macos_app} ${osx_volname} -translations-dir=${QT_TRANSLATIONS_DIR}
-        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/bitcoinzero-Qt
+        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Firo-Qt
         VERBATIM
       )
       add_custom_target(deploydir
-        DEPENDS ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/bitcoinzero-Qt
+        DEPENDS ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/Firo-Qt
       )
 
       find_program(ZIP_COMMAND zip REQUIRED)
@@ -159,7 +159,7 @@ function(add_macos_deploy_target)
         DEPENDS ${PROJECT_BINARY_DIR}/dist/${osx_volname}.zip
       )
     endif()
-    add_dependencies(deploydir bitcoinzero-qt)
+    add_dependencies(deploydir firo-qt)
     add_dependencies(deploy deploydir)
   endif()
 endfunction()
