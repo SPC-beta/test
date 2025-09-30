@@ -37,15 +37,9 @@ define fetch_file_inner
 endef
 
 define fetch_file
-  ( test -f $$($(1)_source_dir)/$(4) || \
-    ( \
-      $(foreach path, \
-        $(2) $(FALLBACK_DOWNLOAD_PATH) \
-        $(FALLBACK_DOWNLOAD_PATH_ALTERNATIVE) \
-        $(FALLBACK_DOWNLOAD_PATH_ALTERNATIVE_2), \
-        $(call fetch_file_inner,$(1),$(path),$(3),$(4),$(5)) || ) false \
-    ) \
-  )
+    ( test -f $$($(1)_source_dir)/$(4) || \
+    ( $(call fetch_file_inner,$(1),$(2),$(3),$(4),$(5)) || \
+      $(call fetch_file_inner,$(1),$(FALLBACK_DOWNLOAD_PATH),$(4),$(4),$(5))))
 endef
 
 define int_get_build_recipe_hash
