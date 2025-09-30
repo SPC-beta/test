@@ -1,4 +1,4 @@
-packages:=
+packages:= openssl gmp zlib backtrace tor bls-dash
 
 boost_packages = boost
 
@@ -8,19 +8,17 @@ qrencode_linux_packages = qrencode
 qrencode_darwin_packages = qrencode
 qrencode_mingw32_packages = qrencode
 
-qt_linux_packages:=qt expat libxcb xcb_proto libXau xproto freetype fontconfig libxkbcommon libxcb_util libxcb_util_cursor libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm
-qt_freebsd_packages:=$(qt_linux_packages)
+qt_linux_packages:=qt expat libxcb xcb_proto libXau xproto freetype fontconfig libxkbcommon libxcb_util libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm
 qt_darwin_packages=qt
 qt_mingw32_packages=qt
 ifneq ($(host),$(build))
 qt_native_packages := native_qt
 endif
 
-sqlite_packages=sqlite
+bdb_packages=bdb
 
 zmq_packages=zeromq
 
-ipc_packages = capnp
-multiprocess_native_packages = native_libmultiprocess native_capnp
+upnp_packages=miniupnpc
 
-usdt_linux_packages=systemtap
+$(host_arch)_$(host_os)_native_packages+=native_b2

@@ -40,7 +40,5 @@ endef
 
 define $(package)_postprocess_cmds
   rm -rf bin lib/pkgconfig && \
-  rm include/ev*.h && \
-  rm include/event2/*_compat.h && \
-  rm lib/libevent.a
+  rm include/ev*.h
 endef
