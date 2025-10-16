@@ -10,7 +10,6 @@
 #include "wallet/wallet.h"
 #include "wallet/walletdb.h"
 #endif // ENABLE_WALLET
-#include "sigma.h"
 #include "crypto/sha256.h"
 #include "liblelantus/coin.h"
 #include "liblelantus/schnorr_prover.h"
@@ -363,9 +362,8 @@ bool CheckLelantusJoinSplitTransaction(
         int realHeight,
         bool isCheckWallet,
         bool fStatefulSigmaCheck,
-        sigma::CSigmaTxInfo* sigmaTxInfo,
         CLelantusTxInfo* lelantusTxInfo) {
-    std::unordered_set<Scalar, sigma::CScalarHash> txSerials;
+    std::unordered_set<Scalar, lelantus::CScalarHash> txSerials;
 
     Consensus::Params const & params = ::Params().GetConsensus();
 
@@ -448,7 +446,6 @@ bool CheckLelantusJoinSplitTransaction(
     }
 
     std::vector<std::vector<unsigned char>> anonymity_set_hashes;
-
     for (auto& idAndHash : joinsplit->getIdAndBlockHashes()) {
         auto& anonymity_set = anonymity_sets[idAndHash.first];
         {
@@ -503,48 +500,46 @@ bool CheckLelantusJoinSplitTransaction(
         anonymity_sets[idAndHash.first] = anonymity_set;
     }
 
-    const std::vector<uint32_t>& ids = joinsplit->getCoinGroupIds();
-    for (const auto& id: ids) {
-        if (!anonymity_sets.count(id))
-            return state.DoS(100,
-                             error("CheckLelantusJoinSplitTransaction: No anonymity set found."));
-    }
+    {
+        for (const auto& id: ids) {
+            if (!anonymity_sets.count(id))
+                return state.DoS(100,
+                                 error("CheckLelantusJoinSplitTransaction: No anonymity set found."));
+        }
 
-    BatchProofContainer* batchProofContainer = BatchProofContainer::get_instance();
-    bool useBatching = batchProofContainer->fCollectProofs && !isVerifyDB && !isCheckWallet && lelantusTxInfo && !lelantusTxInfo->fInfoIsComplete;
+        BatchProofContainer* batchProofContainer = BatchProofContainer::get_instance();
+        bool useBatching = batchProofContainer->fCollectProofs && !isVerifyDB && !isCheckWallet && lelantusTxInfo && !lelantusTxInfo->fInfoIsComplete;
 
-    Scalar challenge;
-    // if we are collecting proofs, skip verification and collect proofs
-    passVerify = joinsplit->Verify(anonymity_sets, anonymity_set_hashes, Cout, Vout, txHashForMetadata, challenge, useBatching);
+        Scalar challenge;
+        // if we are collecting proofs, skip verification and collect proofs
+        passVerify = joinsplit->Verify(anonymity_sets, anonymity_set_hashes, Cout, Vout, txHashForMetadata, challenge, useBatching);
 
-    // add proofs into container
-    if(useBatching) {
-        std::map<uint32_t, size_t> idAndSizes;
+        // add proofs into container
+        if(useBatching) {
+            std::map<uint32_t, size_t> idAndSizes;
 
-        for(auto itr : anonymity_sets)
-            idAndSizes[itr.first] = itr.second.size();
+            for(auto itr : anonymity_sets)
+                idAndSizes[itr.first] = itr.second.size();
 
-        batchProofContainer->add(joinsplit.get(), idAndSizes, challenge, nHeight >= params.nLelantusStartBlock);
-        batchProofContainer->add(joinsplit.get(), Cout);
+            batchProofContainer->add(joinsplit.get(), Cout);
+        }
     }
 
     if (passVerify) {
         const std::vector<Scalar>& serials = joinsplit->getCoinSerialNumbers();
-        const std::vector<uint32_t> &ids = joinsplit->getCoinGroupIds();
-
         if (serials.size() != ids.size()) {
             return state.DoS(100,
                              error("CheckLelantusJoinSplitTransaction: sized of serials and group ids don't match."));
         }
 
         // do not check for duplicates in case we've seen exact copy of this tx in this block before
-        if (!(sigmaTxInfo && sigmaTxInfo->zcTransactions.count(hashTx) > 0) && !(lelantusTxInfo && lelantusTxInfo->zcTransactions.count(hashTx) > 0)) {
+        if (!(lelantusTxInfo && lelantusTxInfo->zcTransactions.count(hashTx) > 0)) {
             for (size_t i = 0; i < serials.size(); ++i) {
-                    if (!CheckLelantusSpendSerial(
-                            state, lelantusTxInfo, serials[i], nHeight, false)) {
-                        LogPrintf("CheckLelantusJoinSplitTransaction: serial check failed, serial=%s\n", serials[i]);
-                        return false;
-                    }
+                if (!CheckLelantusSpendSerial(
+                        state, lelantusTxInfo, serials[i], nHeight, false)) {
+                    LogPrintf("CheckLelantusJoinSplitTransaction: serial check failed, serial=%s\n", serials[i]);
+                    return false;
+                }
             }
         }
 
@@ -558,11 +553,9 @@ bool CheckLelantusJoinSplitTransaction(
 
         if (!isVerifyDB && !isCheckWallet) {
             // add spend information to the index
-            {
-                if (lelantusTxInfo && !lelantusTxInfo->fInfoIsComplete) {
-                    for (size_t i = 0; i < serials.size(); i++) {
-                        lelantusTxInfo->spentSerials.insert(std::make_pair(serials[i], ids[i]));
-                    }
+            if (lelantusTxInfo && !lelantusTxInfo->fInfoIsComplete) {
+                for (size_t i = 0; i < serials.size(); i++) {
+                    lelantusTxInfo->spentSerials.insert(std::make_pair(serials[i], ids[i]));
                 }
             }
         }
@@ -655,7 +648,6 @@ bool CheckLelantusTransaction(
         int nHeight,
         bool isCheckWallet,
         bool fStatefulSigmaCheck,
-        sigma::CSigmaTxInfo* sigmaTxInfo,
         CLelantusTxInfo* lelantusTxInfo)
 {
     Consensus::Params const & consensus = ::Params().GetConsensus();
@@ -727,7 +719,7 @@ bool CheckLelantusTransaction(
             try {
                 if (!CheckLelantusJoinSplitTransaction(
                     tx, state, hashTx, isVerifyDB, nHeight, realHeight,
-                    isCheckWallet, fStatefulSigmaCheck, sigmaTxInfo, lelantusTxInfo)) {
+                    isCheckWallet, fStatefulSigmaCheck, lelantusTxInfo)) {
                         return false;
                 }
             }
@@ -1676,7 +1668,7 @@ std::unordered_map<int, CLelantusState::LelantusCoinGroupInfo> const & CLelantus
     return coinGroups;
 }
 
-std::unordered_map<Scalar, uint256, sigma::CScalarHash> const & CLelantusState::GetMempoolCoinSerials() const {
+std::unordered_map<Scalar, uint256, lelantus::CScalarHash> const & CLelantusState::GetMempoolCoinSerials() const {
     LOCK(mempool.cs);
     return mempool.lelantusState.GetMempoolCoinSerials();
 }
