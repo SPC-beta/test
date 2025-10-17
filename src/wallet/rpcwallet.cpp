@@ -10,7 +10,6 @@
 #include "core_io.h"
 #include "init.h"
 #include "validation.h"
-#include "sigma.h"
 #include "lelantus.h"
 #include "llmq/quorums_instantsend.h"
 #include "llmq/quorums_chainlocks.h"
