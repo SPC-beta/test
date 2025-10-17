@@ -43,12 +43,13 @@ NO_ZMQ ?=
 NO_USDT ?=
 MULTIPROCESS ?=
 LTO ?=
+NO_HARDEN ?=
 FALLBACK_DOWNLOAD_PATH ?= https://firo.org/depends-sources
 FALLBACK_DOWNLOAD_PATH_ALTERNATIVE ?= https://bitcoincore.org/depends-sources
 FALLBACK_DOWNLOAD_PATH_ALTERNATIVE_2 ?= http://dash-depends-sources.s3-website-us-west-2.amazonaws.com
 
 C_STANDARD ?= c11
-CXX_STANDARD ?= c++17
+CXX_STANDARD ?= c++20
 
 BUILD = $(shell ./config.guess)
 PATCHES_PATH = $(BASEDIR)/patches
@@ -144,13 +145,13 @@ include packages/packages.mk
 #
 build_id:=$(shell env CC='$(build_CC)' C_STANDARD='$(C_STANDARD)' CXX='$(build_CXX)' CXX_STANDARD='$(CXX_STANDARD)' \
                       AR='$(build_AR)' NM='$(build_NM)' RANLIB='$(build_RANLIB)' STRIP='$(build_STRIP)' SHA256SUM='$(build_SHA256SUM)' \
-                      DEBUG='$(DEBUG)' \
+                      DEBUG='$(DEBUG)' NO_HARDEN='$(NO_HARDEN)' \
                       ./gen_id '$(BUILD_ID_SALT)' 'GUIX_ENVIRONMENT=$(realpath $(GUIX_ENVIRONMENT))')
 
 $(host_arch)_$(host_os)_id:=$(shell env CC='$(host_CC)' C_STANDARD='$(C_STANDARD)' CXX='$(host_CXX)' CXX_STANDARD='$(CXX_STANDARD)' \
                                         CPPFLAGS='$(CPPFLAGS)' CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' \
                                         AR='$(host_AR)' NM='$(host_NM)' RANLIB='$(host_RANLIB)' STRIP='$(host_STRIP)' SHA256SUM='$(build_SHA256SUM)' \
-                                        DEBUG='$(DEBUG)' LTO='$(LTO)' \
+                                        DEBUG='$(DEBUG)' LTO='$(LTO)' NO_HARDEN='$(NO_HARDEN)' \
                                         ./gen_id '$(HOST_ID_SALT)' 'GUIX_ENVIRONMENT=$(realpath $(GUIX_ENVIRONMENT))')
 
 boost_packages_$(NO_BOOST) = $(boost_packages)
@@ -160,7 +161,6 @@ libevent_packages_$(NO_LIBEVENT) = $(libevent_packages)
 qrencode_packages_$(NO_QR) = $(qrencode_$(host_os)_packages)
 
 qt_packages_$(NO_QT) = $(qt_packages) $(qt_$(host_os)_packages) $(qt_$(host_arch)_$(host_os)_packages) $(qrencode_packages_)
-qt_native_packages_$(NO_QT) = $(qt_native_packages)
 
 bdb_packages_$(NO_BDB) = $(bdb_packages)
 sqlite_packages_$(NO_SQLITE) = $(sqlite_packages)
@@ -168,6 +168,7 @@ wallet_packages_$(NO_WALLET) = $(bdb_packages_) $(sqlite_packages_)
 
 zmq_packages_$(NO_ZMQ) = $(zmq_packages)
 multiprocess_packages_$(MULTIPROCESS) = $(multiprocess_packages)
+usdt_packages_$(NO_USDT) = $(usdt_$(host_os)_packages)
 
 packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_) $(upnp_packages_)
 native_packages += $($(host_arch)_$(host_os)_native_packages) $($(host_os)_native_packages)
@@ -204,32 +205,6 @@ else
   crosscompiling=TRUE
 endif
 
-$(host_prefix)/share/config.site : config.site.in $(host_prefix)/.stamp_$(final_build_id)
-	$(AT)@mkdir -p $(@D)Add commentMore actions
-	$(AT)sed -e 's|@HOST@|$(host)|' \
-            -e 's|@CC@|$(host_CC)|' \
-            -e 's|@CXX@|$(host_CXX)|' \
-            -e 's|@AR@|$(host_AR)|' \
-            -e 's|@RANLIB@|$(host_RANLIB)|' \
-            -e 's|@NM@|$(host_NM)|' \
-            -e 's|@STRIP@|$(host_STRIP)|' \
-            -e 's|@build_os@|$(build_os)|' \
-            -e 's|@host_os@|$(host_os)|' \
-            -e 's|@CFLAGS@|$(strip $(host_CFLAGS) $(host_$(release_type)_CFLAGS))|' \
-            -e 's|@CXXFLAGS@|$(strip $(host_CXXFLAGS) $(host_$(release_type)_CXXFLAGS))|' \
-            -e 's|@CPPFLAGS@|$(strip $(host_CPPFLAGS) $(host_$(release_type)_CPPFLAGS))|' \
-            -e 's|@LDFLAGS@|$(strip $(host_LDFLAGS) $(host_$(release_type)_LDFLAGS))|' \
-            -e 's|@allow_host_packages@|$(ALLOW_HOST_PACKAGES)|' \
-            -e 's|@no_qt@|$(NO_QT)|' \
-            -e 's|@no_qr@|$(NO_QR)|' \
-            -e 's|@no_zmq@|$(NO_ZMQ)|' \
-            -e 's|@no_wallet@|$(NO_WALLET)|' \
-            -e 's|@no_bdb@|$(NO_BDB)|' \
-            -e 's|@no_sqlite@|$(NO_SQLITE)|' \
-            -e 's|@debug@|$(DEBUG)|' \
-            $< > $@
-	$(AT)touch $@
-
 $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(final_build_id)
 	@mkdir -p $(@D)
 	sed -e 's|@depends_crosscompiling@|$(crosscompiling)|' \
@@ -245,7 +220,6 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@STRIP@|$(host_STRIP)|' \
             -e 's|@OBJCOPY@|$(host_OBJCOPY)|' \
             -e 's|@OBJDUMP@|$(host_OBJDUMP)|' \
-            -e 's|@depends_prefix@|$(host_prefix)|' \
             -e 's|@CFLAGS@|$(strip $(host_CFLAGS))|' \
             -e 's|@CFLAGS_RELEASE@|$(strip $(host_release_CFLAGS))|' \
             -e 's|@CFLAGS_DEBUG@|$(strip $(host_debug_CFLAGS))|' \
@@ -299,7 +273,7 @@ clean-all: clean
 clean:
 	@rm -rf $(WORK_PATH) $(BASE_CACHE) $(BUILD) *.log
 
-install: check-packages $(host_prefix)/toolchain.cmake $(host_prefix)/share/config.site
+install: check-packages $(host_prefix)/toolchain.cmake
 
 
 download-one: check-sources $(all_sources)
