@@ -754,7 +754,7 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
         }
 		
 		if (tx.IsSigmaSpend() || tx.IsSigmaMint()) {
-            return state.DoS(1, error( "Sigma already is not available, start using Lelantus."));
+            return state.DoS(1, error( "Sigma is not available, start using Lelantus."));
         }
 
         if (tx.IsPrivcoinRemint()) {
@@ -2749,7 +2749,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     txdata.reserve(block.vtx.size()); // Required so that pointers to individual PrecomputedTransactionData don't get invalidated
 
     std::set<uint256> txIds;
-    // batch verify Lelantus/Sigma if block is older than a day, that means we are syncing or reindexing
+    // batch verify Lelantus if block is older than a day, that means we are syncing or reindexing
     BatchProofContainer* batchProofContainer = BatchProofContainer::get_instance();
     batchProofContainer->fCollectProofs = ((GetSystemTimeInSeconds() - pindex->GetBlockTime()) > 86400) && GetBoolArg("-batching", true);
     std::size_t nSigma = 0;
@@ -3041,12 +3041,12 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 }
 
 /**
- * Erase all of sigma/lelantus transactions conflicting with given block from the mempool
+ * Erase all of lelantus transactions conflicting with given block from the mempool
  */
 void static RemoveConflictingPrivacyTransactionsFromMempool(const CBlock &block) {
     LOCK(mempool.cs);
 
-    // Erase conflicting sigma/lelantus txs from the mempool
+    // Erase conflicting lelantus txs from the mempool
     lelantus::CLelantusState *lelantusState = lelantus::CLelantusState::GetState();
     spark::CSparkState *sparkState = spark::CSparkState::GetState();
     BOOST_FOREACH(CTransactionRef tx, block.vtx) {
@@ -4202,7 +4202,7 @@ bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, const 
 }
 
 bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW, bool fCheckMerkleRoot, int nHeight, bool isVerifyDB) {
-    // CheckBlock not only checks the block, but also fills up sparkTxInfo, lelantusTxInfo and sigmaTxInfo.
+    // CheckBlock not only checks the block, but also fills up sparkTxInfo, lelantusTxInfo.
     if (!block.lelantusTxInfo)
         block.lelantusTxInfo = std::make_shared<lelantus::CLelantusTxInfo>();
     if (!block.sparkTxInfo)
@@ -4260,9 +4260,9 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
 
     for (CTransactionRef tx : block.vtx) {
         if (tx->IsSigmaMint() || tx->IsSigmaSpend()) {
-            return state.DoS(100, error("Sigma is temporarily disabled"), REJECT_INVALID, "bad-txns-privcoin");
+            return state.DoS(100, error("Sigma is disabled"), REJECT_INVALID, "bad-txns-privcoin");
         }
-        // We don't check transactions against sigma/lelantus state here, we'll check it again later in ConnectBlock
+        // We don't check transactions againstlelantus state here, we'll check it again later in ConnectBlock
         if (!CheckTransaction(*tx, state, false, tx->GetHash(), isVerifyDB, nHeight, false, false, NULL, NULL))
             return state.Invalid(false, state.GetRejectCode(), state.GetRejectReason(),
                                 strprintf("Transaction check failed (tx hash %s) %s", tx->GetHash().ToString(), state.GetDebugMessage()));
