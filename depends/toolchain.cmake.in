@@ -182,7 +182,7 @@ else()
 endif()
 
 set(upnp_packages @upnp_packages@)
-if("${usdt_packages}" STREQUAL "")
+if("${upnp_packages}" STREQUAL "")
   set(WITH_UPNP OFF CACHE BOOL "")
 else()
   set(WITH_UPNP ON CACHE BOOL "")
