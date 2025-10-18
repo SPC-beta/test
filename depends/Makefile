@@ -43,6 +43,8 @@ NO_UPNP ?=
 # Default NO_IPC value is 1 on Windows
 NO_IPC ?= $(if $(findstring mingw32,$(HOST)),1,)
 LTO ?=
+FALLBACK_DOWNLOAD_PATH ?= https://firo.org/depends-sources
+FALLBACK_DOWNLOAD_PATH_ALTERNATIVE ?= https://bitcoincore.org/depends-sources
 FALLBACK_DOWNLOAD_PATH ?= https://bitcoincore.org/depends-sources
 
 C_STANDARD ?= c11
