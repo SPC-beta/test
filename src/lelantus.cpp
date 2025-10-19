@@ -446,6 +446,8 @@ bool CheckLelantusJoinSplitTransaction(
     }
 
     std::vector<std::vector<unsigned char>> anonymity_set_hashes;
+    const std::vector<uint32_t>& ids = joinsplit->getCoinGroupIds();
+	
     for (auto& idAndHash : joinsplit->getIdAndBlockHashes()) {
         auto& anonymity_set = anonymity_sets[idAndHash.first];
         {
