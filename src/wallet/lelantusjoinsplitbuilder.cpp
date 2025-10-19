@@ -472,4 +472,3 @@ void LelantusJoinSplitBuilder::CreateJoinSplit(
     tx.vExtraPayload.assign(serialized.begin(), serialized.end());
     tx.vin[0].scriptSig = script;
 }
-}
