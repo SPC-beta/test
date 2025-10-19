@@ -13,7 +13,6 @@
 #include "lelantus.h"
 #include "llmq/quorums_instantsend.h"
 #include "llmq/quorums_chainlocks.h"
-#include "../sigma/coinspend.h"
 #include "net.h"
 #include "policy/policy.h"
 #include "policy/rbf.h"
