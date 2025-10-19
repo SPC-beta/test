@@ -272,10 +272,8 @@ CWalletTx LelantusJoinSplitBuilder::Build(
         tx.vExtraPayload.clear();
 
         // set correct type of transaction (this affects metadata hash)
-        if (chainActive.Height() >= Params().GetConsensus().nLelantusV3PayloadStartBlock) {
-            tx.nVersion = 3;
-            tx.nType = TRANSACTION_LELANTUS;
-        }
+        tx.nVersion = 3;
+        tx.nType = TRANSACTION_LELANTUS;
 
         // now every fields is populated then we can sign transaction
         uint256 sig = tx.GetHash();
@@ -285,7 +283,7 @@ CWalletTx LelantusJoinSplitBuilder::Build(
         // check fee
         result.SetTx(MakeTransactionRef(tx));
 
-        if (GetTransactionWeight(tx) >= MAX_NEW_TX_WEIGHT) {
+        if (GetTransactionWeight(tx) >= MAX_STANDARD_TX_SIZE) {
             throw std::runtime_error(_("Transaction is too large (size limit: 100Kb). Select less inputs or consolidate your UTXOs"));
         }
 
@@ -399,14 +397,7 @@ void LelantusJoinSplitBuilder::CreateJoinSplit(
     std::map<uint32_t, std::vector<lelantus::PublicCoin>> anonymity_sets;
     std::map<uint32_t, uint256> groupBlockHashes;
     int version = 0;
-
-    // after nLelantusFixesStartBlock set new transaction version,
-    {
-        if (chainActive.Height() >= Params().GetConsensus().nLelantusV3PayloadStartBlock)
-            version = LELANTUS_TX_TPAYLOAD;
-        else
-            version = LELANTUS_TX_VERSION_4_5;
-    }
+    version = LELANTUS_TX_TPAYLOAD;
 
     std::vector<std::vector<unsigned char>> anonymity_set_hashes;
     for (const auto &spend : spendCoins) {
@@ -475,17 +466,10 @@ void LelantusJoinSplitBuilder::CreateJoinSplit(
     serialized << joinSplit;
 
     CScript script;
-
-    if (chainActive.Height() >= Params().GetConsensus().nLelantusV3PayloadStartBlock) {
-        script << OP_LELANTUSJOINSPLITPAYLOAD;
-        tx.nVersion = 3;
-        tx.nType = TRANSACTION_LELANTUS;
-        tx.vExtraPayload.assign(serialized.begin(), serialized.end());
-    }
-    else {
-        script << OP_LELANTUSJOINSPLIT;
-        script.insert(script.end(), serialized.begin(), serialized.end());
-    }
-
+    script << OP_LELANTUSJOINSPLITPAYLOAD;
+    tx.nVersion = 3;
+    tx.nType = TRANSACTION_LELANTUS;
+    tx.vExtraPayload.assign(serialized.begin(), serialized.end());
     tx.vin[0].scriptSig = script;
+}
 }
