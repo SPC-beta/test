@@ -1654,7 +1654,7 @@ CAmount CWallet::GetDebit(const CTxIn &txin, const CTransaction& tx, const ismin
 {
     LOCK(cs_wallet);
 
-    if (IsPrivcoinRemint()) {
+    if (txin.IsPrivcoinSpend()) {
         // Reverting it to its pre-lelantus state.
         goto end;
     } else if (txin.IsPrivcoinRemint()) {
