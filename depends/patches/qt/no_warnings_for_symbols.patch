@@ -1,5 +1,3 @@
-diff --git a/qtbase/mkspecs/features/mac/no_warn_empty_obj_files.prf b/qtbase/mkspecs/features/mac/no_warn_empty_obj_files.prf
-index 598938ab..cb3c5e75 100644
 --- a/qtbase/mkspecs/features/mac/no_warn_empty_obj_files.prf
 +++ b/qtbase/mkspecs/features/mac/no_warn_empty_obj_files.prf
 @@ -1,7 +1,7 @@
