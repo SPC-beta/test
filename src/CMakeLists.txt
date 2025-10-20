@@ -221,7 +221,7 @@ target_link_libraries(bitcoin_common
     Boost::headers
     $<$<BOOL:ENABLE_CRASH_HOOKS>:${BACKTRACE_LIBRARY}>
     leveldb
-    $<$<BOOL:${WITH_ZMQ}>:bitcoinzero_zmq>
+    $<$<BOOL:${WITH_ZMQ}>:bitcoin_zmq>
     $<TARGET_NAME_IF_EXISTS:USDT::headers>
     $<$<BOOL:${WIN32}>:windows_system>
 )
@@ -356,7 +356,7 @@ target_link_libraries(bitcoinzero_node
     bitcoin_common
     bitcoin_util
     secp256k1
-    $<$<BOOL:${WITH_ZMQ}>:bitcoinzero_zmq>
+    $<$<BOOL:${WITH_ZMQ}>:bitcoin_zmq>
     leveldb
     univalue
     Boost::headers
@@ -387,7 +387,7 @@ if(BUILD_DAEMON)
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
-    $<$<BOOL:${WITH_ZMQ}>:bitcoinzero_zmq>
+    $<$<BOOL:${WITH_ZMQ}>:bitcoin_zmq>
     bitcoinzero_cli
     secp256k1
     secp256k1pp
@@ -446,7 +446,7 @@ target_link_libraries(bitcoinzero_cli
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
-    $<$<BOOL:${WITH_ZMQ}>:bitcoinzero_zmq>
+    $<$<BOOL:${WITH_ZMQ}>:bitcoin_zmq>
     $<TARGET_NAME_IF_EXISTS:bitcoinzero_wallet>
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
@@ -466,7 +466,7 @@ if(BUILD_CLI)
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
-    $<$<BOOL:${WITH_ZMQ}>:bitcoinzero_zmq>
+    $<$<BOOL:${WITH_ZMQ}>:bitcoin_zmq>
     bitcoinzero_cli
     $<TARGET_NAME_IF_EXISTS:bitcoinzero_wallet>
     ${TOR_LIBRARY}
