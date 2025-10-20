@@ -988,10 +988,12 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                 return false;
 
             if (!sparkNameData.name.empty() &&
-                        CSparkNameManager::IsInConflict(sparkNameData, pool.sparkNames, [=](decltype(pool.sparkNames)::const_iterator it)->std::string
-            {
-                            return it->second.first;
-                        }))
+                CSparkNameManager::IsInConflict(
+                    sparkNameData,
+                    pool.sparkNames,
+                    [](const auto& it) -> const std::string& {
+                        return it->second.first; // reuse string; no copy
+                    }))
             {
                 return state.Invalid(false, REJECT_CONFLICT, "txn-mempool-conflict");
             }
@@ -3387,6 +3389,7 @@ bool static DisconnectTip(CValidationState& state, const CChainParams& chainpara
     }
     LogPrint("bench", "- Disconnect block: %.2fms\n", (GetTimeMicros() - nStart) * 0.001);
 
+    BatchProofContainer* batchProofContainer = BatchProofContainer::get_instance();
     lelantus::DisconnectTipLelantus(block, pindexDelete);
     spark::DisconnectTipSpark(block, pindexDelete);
 
