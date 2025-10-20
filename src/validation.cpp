@@ -924,24 +924,19 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
     CSparkNameTxData sparkNameData;
     {
         LOCK(pool.cs);
-        if (tx.IsLelantusJoinSplit())
-        {
-            if (tx.vin.size() > 1)
-            {
+        if (tx.IsLelantusJoinSplit()) {
+            if (tx.vin.size() > 1) {
                 return state.Invalid(false, REJECT_CONFLICT, "txn-invalid-lelantus-joinsplit");
             }
             std::unique_ptr<lelantus::JoinSplit> joinsplit;
 
-            try
-            {
+            try {
                 joinsplit = lelantus::ParseLelantusJoinSplit(tx);
             }
-            catch (CBadTxIn&)
-            {
+            catch (CBadTxIn&) {
                 return state.Invalid(false, REJECT_CONFLICT, "txn-invalid-lelantus-joinsplit");
             }
-            catch (const std::exception &)
-            {
+            catch (const std::exception &) {
                 return state.Invalid(false, REJECT_CONFLICT, "failed to deserialize joinsplit");
             }
 
@@ -951,7 +946,10 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
             if (serials.size() != ids.size())
                 return state.Invalid(false, REJECT_CONFLICT, "txn-invalid-lelantus-joinsplit");
 
-			for (size_t i = 0; i < serials.size(); ++i)
+            for (size_t i = 0; i < serials.size(); ++i) {
+                if (!serials[i].isMember() || serials[i].isZero())
+                    return state.Invalid(false, REJECT_INVALID, "txn-invalid-lelantus-joinsplit-serial");
+
                 if (lelantusState->IsUsedCoinSerial(serials[i]) || pool.lelantusState.HasCoinSerial(serials[i])) {
                     LogPrintf("AcceptToMemoryPool(): lelantus serial number %s has been used\n",
                               serials[i].tostring());
@@ -959,9 +957,7 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                 }
                 lelantusSpendSerials.push_back(serials[i]);
             }
-        }
-
-        else if (tx.IsSparkSpend())
+        } else if (tx.IsSparkSpend())
         {
             if (tx.vin.size() > 1)
             {
