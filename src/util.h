@@ -16,6 +16,7 @@
 #endif
 
 #include "compat.h"
+#include "compat_layer.h"
 #include "tinyformat.h"
 #include "utiltime.h"
 
