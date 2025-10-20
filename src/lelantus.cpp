@@ -29,6 +29,8 @@
 
 #include <ios>
 
+int64_t nMinimumInputValue = DUST_HARD_LIMIT;
+
 namespace lelantus {
 
 static CLelantusState lelantusState;
