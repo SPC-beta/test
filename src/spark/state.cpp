@@ -471,14 +471,14 @@ bool CheckSparkBlock(CValidationState &state, const CBlock& block) {
     for (const auto& tx : block.vtx) {
         auto txSpendsValue =  GetSpendTransparentAmount(*tx);
 
-        if (txSpendsValue > consensus.GetMaxValueSparkSpendPerTransaction(block.nHeight)) {
+        if (txSpendsValue > consensus.GetMaxValueSparkSpendPerTransaction()) {
             return state.DoS(100, false, REJECT_INVALID,
                              "bad-txns-spark-spend-invalid");
         }
         blockSpendsValue += txSpendsValue;
     }
 
-    if (cmp::greater(blockSpendsValue, consensus.GetMaxValueSparkSpendPerBlock(block.nHeight))) {
+    if (cmp::greater(blockSpendsValue, consensus.GetMaxValueSparkSpendPerBlock())) {
         return state.DoS(100, false, REJECT_INVALID,
                          "bad-txns-spark-spend-invalid");
     }
@@ -949,7 +949,7 @@ bool CheckSparkTransaction(
             LOCK(cs_main);
             nRealHeight = chainActive.Height();
         }
-        if (GetSpendTransparentAmount(tx) > consensus.GetMaxValueSparkSpendPerTransaction(nRealHeight)) {
+        if (GetSpendTransparentAmount(tx) > consensus.GetMaxValueSparkSpendPerTransaction()) {
             return state.DoS(100, false,
                              REJECT_INVALID,
                              "bad-txns-spend-invalid");
