@@ -6,11 +6,11 @@ enum struct AddressType
       unknown = 0
     , payToPubKeyHash = 1
     , payToScriptHash = 2
-    , privcoinMint = 3
-    , privcoinSpend = 4
+    , zerocoinMint = 3
+    , zerocoinSpend = 4
     , sigmaMint = 5
     , sigmaSpend = 6
-    , privcoinRemint = 7
+    , zerocoinRemint = 7
     , lelantusMint = 8
     , lelantusJMint = 9
     , lelantusJSplit = 10
@@ -21,18 +21,18 @@ enum struct AddressType
     , sparkName = 15
 };
 
-namespace privcoin { namespace utils {
+namespace zerocoin { namespace utils {
 
-inline bool isPrivcoinMint(std::string const & str){
+inline bool isZerocoinMint(std::string const & str){
     return str == "Zeromint" || str == "zeromint";
 }
 
-inline bool isPrivcoinSpend(std::string const & str){
+inline bool isZerocoinSpend(std::string const & str){
     return str == "Zerospend";
 }
 
-inline bool isPrivcoin(std::string const & str){
-    return str == "Privcoin";
+inline bool isZerocoin(std::string const & str){
+    return str == "Zerocoin";
 }
 
 inline bool isSigmaMint(std::string const & str){
@@ -47,7 +47,7 @@ inline bool isSigma(std::string const & str){
     return str == "Sigma";
 }
 
-inline bool isPrivcoinRemint(std::string const & str){
+inline bool isZerocoinRemint(std::string const & str){
     return str == "Remint";
 }
 

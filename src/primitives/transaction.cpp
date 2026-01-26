@@ -33,9 +33,9 @@ CTxIn::CTxIn(uint256 hashPrevTx, uint32_t nOut, CScript scriptSigIn, uint32_t nS
     nSequence = nSequenceIn;
 }
 
-bool CTxIn::IsPrivcoinSpend() const
+bool CTxIn::IsZerocoinSpend() const
 {
-    return (prevout.IsNull() && scriptSig.size() > 0 && (scriptSig[0] == OP_PRIVCOINSPEND) );
+    return (prevout.IsNull() && scriptSig.size() > 0 && (scriptSig[0] == OP_ZEROCOINSPEND) );
 }
 
 bool CTxIn::IsSigmaSpend() const
@@ -48,9 +48,9 @@ bool CTxIn::IsLelantusJoinSplit() const
     return (prevout.IsNull() && scriptSig.size() > 0 && (scriptSig[0] == OP_LELANTUSJOINSPLIT || scriptSig[0] == OP_LELANTUSJOINSPLITPAYLOAD) );
 }
 
-bool CTxIn::IsPrivcoinRemint() const
+bool CTxIn::IsZerocoinRemint() const
 {
-    return (prevout.IsNull() && scriptSig.size() > 0 && (scriptSig[0] == OP_PRIVCOINTOSIGMAREMINT));
+    return (prevout.IsNull() && scriptSig.size() > 0 && (scriptSig[0] == OP_ZEROCOINTOSIGMAREMINT));
 }
 
 std::string CTxIn::ToString() const
@@ -84,7 +84,7 @@ CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.n
 
 uint256 CMutableTransaction::GetHash() const
 {
-    return SerializeHash(*this, SER_GETHASH);
+    return SerializeHash(*this, SER_GETHASH, SERIALIZE_TRANSACTION_NO_WITNESS);
 }
 
 std::string CMutableTransaction::ToString() const
@@ -105,13 +105,13 @@ std::string CMutableTransaction::ToString() const
 
 uint256 CTransaction::ComputeHash() const
 {
-    return SerializeHash(*this, SER_GETHASH);
+    return SerializeHash(*this, SER_GETHASH, SERIALIZE_TRANSACTION_NO_WITNESS);
 }
 
 
 uint256 CTransaction::GetWitnessHash() const
 {
-    if (true) {
+    if (!HasWitness()) {
         return GetHash();
     }
     return SerializeHash(*this, SER_GETHASH, 0);
@@ -141,10 +141,10 @@ double CTransaction::ComputePriority(double dPriorityInputs, unsigned int nTxSiz
     return dPriorityInputs / nTxSize;
 }
 
-bool CTransaction::IsPrivcoinSpend() const
+bool CTransaction::IsZerocoinSpend() const
 {
     for (const CTxIn &txin: vin) {
-        if (txin.IsPrivcoinSpend())
+        if (txin.IsZerocoinSpend())
             return true;
     }
     return false;
@@ -171,10 +171,10 @@ bool CTransaction::IsLelantusJoinSplit() const
     return false;
 }
 
-bool CTransaction::IsPrivcoinMint() const
+bool CTransaction::IsZerocoinMint() const
 {
     for (const CTxOut &txout: vout) {
-        if (txout.scriptPubKey.IsPrivcoinMint())
+        if (txout.scriptPubKey.IsZerocoinMint())
             return true;
     }
     return false;
@@ -182,7 +182,7 @@ bool CTransaction::IsPrivcoinMint() const
 
 bool CTransaction::IsSigmaMint() const
 {
-    if (IsPrivcoinRemint())
+    if (IsZerocoinRemint())
         return false;
         
     for (const CTxOut &txout: vout) {
@@ -222,14 +222,14 @@ bool CTransaction::IsSparkMint() const
     return false;
 }
 
-bool CTransaction::IsPrivcoinTransaction() const
+bool CTransaction::IsZerocoinTransaction() const
 {
-    return IsPrivcoinSpend() || IsPrivcoinMint();
+    return IsZerocoinSpend() || IsZerocoinMint();
 }
 
-bool CTransaction::IsPrivcoinV3SigmaTransaction() const
+bool CTransaction::IsZerocoinV3SigmaTransaction() const
 {
-    return IsSigmaSpend() || IsSigmaMint() || IsPrivcoinRemint();
+    return IsSigmaSpend() || IsSigmaMint() || IsZerocoinRemint();
 }
 
 bool CTransaction::IsLelantusTransaction() const
@@ -237,17 +237,17 @@ bool CTransaction::IsLelantusTransaction() const
     return IsLelantusMint() || IsLelantusJoinSplit();
 }
 
-bool CTransaction::IsPrivcoinRemint() const
+bool CTransaction::IsZerocoinRemint() const
 {
     for (const CTxIn &txin: vin) {
-        if (txin.IsPrivcoinRemint())
+        if (txin.IsZerocoinRemint())
             return true;
     }
     return false;
 }
 
 bool CTransaction::HasNoRegularInputs() const {
-    return IsPrivcoinSpend() || IsSigmaSpend() || IsPrivcoinRemint() || IsLelantusJoinSplit() || IsSparkSpend();
+    return IsZerocoinSpend() || IsSigmaSpend() || IsZerocoinRemint() || IsLelantusJoinSplit() || IsSparkSpend();
 }
 
 bool CTransaction::HasPrivateInputs() const {
@@ -262,7 +262,7 @@ unsigned int CTransaction::CalculateModifiedSize(unsigned int nTxSize) const
     // Providing any more cleanup incentive than making additional inputs free would
     // risk encouraging people to create junk outputs to redeem later.
     if (nTxSize == 0)
-        nTxSize = (GetTransactionWeight(*this));
+        nTxSize = (GetTransactionWeight(*this) + WITNESS_SCALE_FACTOR - 1) / WITNESS_SCALE_FACTOR;
     for (std::vector<CTxIn>::const_iterator it(vin.begin()); it != vin.end(); ++it)
     {
         unsigned int offset = 41U + std::min(110U, (unsigned int)it->scriptSig.size());
@@ -290,6 +290,8 @@ std::string CTransaction::ToString() const
         vExtraPayload.size());
     for (unsigned int i = 0; i < vin.size(); i++)
         str += "    " + vin[i].ToString() + "\n";
+    for (unsigned int i = 0; i < vin.size(); i++)
+        str += "    " + vin[i].scriptWitness.ToString() + "\n";
     for (unsigned int i = 0; i < vout.size(); i++)
         str += "    " + vout[i].ToString() + "\n";
     return str;
@@ -297,5 +299,5 @@ std::string CTransaction::ToString() const
 
 int64_t GetTransactionWeight(const CTransaction& tx)
 {
-    return ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION);
+    return ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * (WITNESS_SCALE_FACTOR -1) + ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION);
 }

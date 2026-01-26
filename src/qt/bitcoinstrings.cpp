@@ -199,6 +199,11 @@ QT_TRANSLATE_NOOP("BZX-core", ""
 "Set the number of script verification threads (%u to %d, 0 = auto, <0 = "
 "leave that many cores free, default: %d)"),
 QT_TRANSLATE_NOOP("BZX-core", ""
+"Sets the serialization of raw transaction or block hex returned in non-"
+"verbose mode, non-segwit(0) or segwit(1) (default: %d)"),
+QT_TRANSLATE_NOOP("BZX-core", ""
+"Support filtering of blocks and transaction with bloom filters (default: %u)"),
+QT_TRANSLATE_NOOP("BZX-core", ""
 "The block database contains a block which appears to be from the future. "
 "This may be due to your computer's date and time being set incorrectly. Only "
 "rebuild the block database if you are sure that your computer's date and "
@@ -304,7 +309,7 @@ QT_TRANSLATE_NOOP("BZX-core", "%s Daemon"),
 QT_TRANSLATE_NOOP("BZX-core", "%s RPC client version"),
 QT_TRANSLATE_NOOP("BZX-core", "%s corrupt, salvage failed"),
 QT_TRANSLATE_NOOP("BZX-core", "%s is set very high!"),
-QT_TRANSLATE_NOOP("BZX-core", "%s bitcoinzero-tx utility version"),
+QT_TRANSLATE_NOOP("BZX-core", "%s BZX-tx utility version"),
 QT_TRANSLATE_NOOP("BZX-core", "(%d could be used only on mainnet)"),
 QT_TRANSLATE_NOOP("BZX-core", "(default: %s)"),
 QT_TRANSLATE_NOOP("BZX-core", "(default: %u)"),
@@ -406,7 +411,7 @@ QT_TRANSLATE_NOOP("BZX-core", "Insufficient funds"),
 QT_TRANSLATE_NOOP("BZX-core", "Insufficient funds."),
 QT_TRANSLATE_NOOP("BZX-core", "Invalid -onion address: '%s'"),
 QT_TRANSLATE_NOOP("BZX-core", "Invalid -proxy address: '%s'"),
-QT_TRANSLATE_NOOP("BZX-core", "Invalid address"),
+QT_TRANSLATE_NOOP("BZX-core", "Invalid BZX address"),
 QT_TRANSLATE_NOOP("BZX-core", "Invalid amount for -%s=<amount>: '%s'"),
 QT_TRANSLATE_NOOP("BZX-core", "Invalid amount for -fallbackfee=<amount>: '%s'"),
 QT_TRANSLATE_NOOP("BZX-core", "Invalid amount for -mininput=<amount>: '%s'"),

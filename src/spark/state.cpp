@@ -24,7 +24,7 @@ struct ProofCheckState {
 static std::map<uint256, ProofCheckState> gCheckedSparkSpendTransactions;
 static CCriticalSection cs_checkedSparkSpendTransactions;
 
-static ParallelOpThreadPool<bool> gCheckProofThreadPool(boost::thread::hardware_concurrency());
+static ParallelOpThreadPool<bool> gCheckProofThreadPool(std::min(boost::thread::hardware_concurrency(), 4u));
 
 static CSparkState sparkState;
 
@@ -686,7 +686,7 @@ bool CheckSparkSpendTransaction(
         CSparkState::SparkCoinGroupInfo coinGroup;
         if (!sparkState.GetCoinGroupInfo(idAndHash.first, coinGroup)) {
             if (fStatefulSigmaCheck)
-                return state.DoS(100, false, NO_MINT_PRIVCOIN,
+                return state.DoS(100, false, NO_MINT_ZEROCOIN,
                                  "CheckSparkSpendTransaction: Error: no coins were minted with such parameters");
             else
                 // soft error, will check the proof later
@@ -804,17 +804,23 @@ bool CheckSparkSpendTransaction(
                 }
                 else if (!fStatefulSigmaCheck && !gCheckProofThreadPool.IsPoolShutdown()) {
                     // not an urgent check, put the proof into the thread pool for verification
-                    auto future = gCheckProofThreadPool.PostTask([spend, cover_sets]() {
-                        try {
-                            return spark::SpendTransaction::verify(*spend, cover_sets);
-                        } catch (const std::exception &) {
-                            return false;
-                        }
-                    });
-                    auto &checkState = gCheckedSparkSpendTransactions[hashTx];
-                    checkState.fChecked = false;
-                    checkState.fResult = false;
-                    checkState.checkInProgress = std::make_shared<boost::future<bool>>(std::move(future));
+                    // don't post a request if there are too many tasks already
+                    if (gCheckProofThreadPool.GetPendingTaskCount() < (std::size_t)gCheckProofThreadPool.GetNumberOfThreads()/2) {
+                        auto future = gCheckProofThreadPool.PostTask([spend, cover_sets]() mutable {
+                            try {
+                                bool result = spark::SpendTransaction::verify(*spend, cover_sets);
+                                spend.reset();
+                                cover_sets.clear();
+                                return result;
+                            } catch (const std::exception &) {
+                                return false;
+                            }
+                        });
+                        auto &checkState = gCheckedSparkSpendTransactions[hashTx];
+                        checkState.fChecked = false;
+                        checkState.fResult = false;
+                        checkState.checkInProgress = std::make_shared<boost::future<bool>>(std::move(future));
+                    }
                 }
             }
             while (fRecheckNeeded);

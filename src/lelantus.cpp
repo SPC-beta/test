@@ -412,7 +412,7 @@ bool CheckLelantusJoinSplitTransaction(
 
     uint256 txHashForMetadata;
 
-    // Obtain the hash of the transaction sans the privcoin part
+    // Obtain the hash of the transaction sans the zerocoin part
     CMutableTransaction txTemp = tx;
     txTemp.vin[0].scriptSig.clear();
     txTemp.vExtraPayload.clear();
@@ -455,7 +455,7 @@ bool CheckLelantusJoinSplitTransaction(
         {
             CLelantusState::LelantusCoinGroupInfo coinGroup;
             if (!lelantusState.GetCoinGroupInfo(idAndHash.first, coinGroup))
-                return state.DoS(100, false, NO_MINT_PRIVCOIN,
+                return state.DoS(100, false, NO_MINT_ZEROCOIN,
                                  "CheckLelantusJoinSplitTransaction: Error: no coins were minted with such parameters");
 
             CBlockIndex *index = coinGroup.lastBlock;

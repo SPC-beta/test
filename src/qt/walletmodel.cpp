@@ -571,9 +571,9 @@ static void NotifyRAPAddressBookChanged(WalletModel* walletmodel, CWallet* walle
         Q_ARG(int, status));
 }
 
-static void NotifyPrivcoinChanged(WalletModel *walletmodel, CWallet *wallet, const std::string &pubCoin, const std::string &isUsed, ChangeType status)
+static void NotifyZerocoinChanged(WalletModel *walletmodel, CWallet *wallet, const std::string &pubCoin, const std::string &isUsed, ChangeType status)
 {
-    qDebug() << "NotifyPrivcoinChanged:" + QString::fromStdString(pubCoin) + " " + QString::fromStdString(isUsed) + " status=" + QString::number(status);
+    qDebug() << "NotifyZerocoinChanged:" + QString::fromStdString(pubCoin) + " " + QString::fromStdString(isUsed) + " status=" + QString::number(status);
     QMetaObject::invokeMethod(walletmodel, "updateAddressBook", Qt::QueuedConnection,
                               Q_ARG(QString, QString::fromStdString(pubCoin)),
                               Q_ARG(QString, QString::fromStdString(isUsed)),
@@ -633,7 +633,7 @@ void WalletModel::subscribeToCoreSignals()
     wallet->NotifyChainLockReceived.connect(boost::bind(NotifyChainLockReceived, this, _1));
     wallet->ShowProgress.connect(boost::bind(ShowProgress, this, _1, _2));
     wallet->NotifyWatchonlyChanged.connect(boost::bind(NotifyWatchonlyChanged, this, _1));
-    wallet->NotifyPrivcoinChanged.connect(boost::bind(NotifyPrivcoinChanged, this, _1, _2, _3, _4));
+    wallet->NotifyZerocoinChanged.connect(boost::bind(NotifyZerocoinChanged, this, _1, _2, _3, _4));
     wallet->NotifyBip47KeysChanged.connect(boost::bind(NotifyBip47KeysChanged, this, _1, _2));
 
 }
@@ -650,7 +650,7 @@ void WalletModel::unsubscribeFromCoreSignals()
     wallet->NotifyChainLockReceived.disconnect(boost::bind(NotifyChainLockReceived, this, _1));
     wallet->ShowProgress.disconnect(boost::bind(ShowProgress, this, _1, _2));
     wallet->NotifyWatchonlyChanged.disconnect(boost::bind(NotifyWatchonlyChanged, this, _1));
-    wallet->NotifyPrivcoinChanged.disconnect(boost::bind(NotifyPrivcoinChanged, this, _1, _2, _3, _4));
+    wallet->NotifyZerocoinChanged.disconnect(boost::bind(NotifyZerocoinChanged, this, _1, _2, _3, _4));
     wallet->NotifyBip47KeysChanged.disconnect(boost::bind(NotifyBip47KeysChanged, this, _1, _2));
 }
 
@@ -1139,7 +1139,7 @@ WalletModel::SendCoinsReturn WalletModel::prepareMintSparkTransaction(std::vecto
         if (rcp.fSubtractFeeFromAmount)
             fSubtractFeeFromAmount = true;
 
-        { // User-entered address / amount:
+        { // User-entered BZX address / amount:
             if (!validateSparkAddress(rcp.address)) {
                 return InvalidAddress;
             }
@@ -1234,7 +1234,7 @@ WalletModel::SendCoinsReturn WalletModel::prepareSpendSparkTransaction(WalletMod
         if (rcp.fSubtractFeeFromAmount)
             fSubtractFeeFromAmount = true;
 
-        { // User-entered address / amount:
+        { // User-entered BZX address / amount:
             if (rcp.amount <= 0) {
                 return InvalidAmount;
             }

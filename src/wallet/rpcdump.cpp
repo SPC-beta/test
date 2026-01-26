@@ -114,7 +114,7 @@ UniValue importprivkey(const JSONRPCRequest& request)
     const CHDChain& chain = pwallet->GetHDChain();
     if(chain.nVersion == chain.VERSION_WITH_BIP39){
         throw JSONRPCError(RPC_WALLET_ERROR, "Importing wallets and private keys is disabled for mnemonic-enabled wallets."
-                                             "To import your dump file, create a non-mnemonic wallet by setting \"usemnemonic=0\" in your bitcoinzero.conf file, after backing up and removing your existing wallet.");
+                                             "To import your dump file, create a non-mnemonic wallet by setting \"usemnemonic=0\" in your BZX.conf file, after backing up and removing your existing wallet.");
     }
 
 
@@ -261,7 +261,7 @@ UniValue importaddress(const JSONRPCRequest& request)
         std::vector<unsigned char> data(ParseHex(request.params[0].get_str()));
         ImportScript(pwallet, CScript(data.begin(), data.end()), strLabel, fP2SH);
     } else {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address or script");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid BZX address or script");
     }
 
     if (fRescan)
@@ -464,7 +464,7 @@ UniValue importwallet(const JSONRPCRequest& request)
     const CHDChain& chain = pwallet->GetHDChain();
     if(chain.nVersion == chain.VERSION_WITH_BIP39){
         throw JSONRPCError(RPC_WALLET_ERROR, "Importing wallets and private keys is disabled for mnemonic-enabled wallets."
-                                             "To import your dump file, create a non-mnemonic wallet by setting \"usemnemonic=0\" in your bitcoinzero.conf file, after backing up and removing your existing wallet.");
+                                             "To import your dump file, create a non-mnemonic wallet by setting \"usemnemonic=0\" in your BZX.conf file, after backing up and removing your existing wallet.");
     }
 
 
@@ -593,8 +593,17 @@ UniValue dumpsparkviewkey(const JSONRPCRequest& request) {
         throw std::runtime_error("wallet not available");
     }
 
-    if (request.fHelp || request.params.size() != 0)
-        throw std::runtime_error("dumpviewkey\n\nDisplay our Spark View Key.\n");
+    if (request.fHelp || request.params.size() != 0)  {
+        throw std::runtime_error(
+            "dumpsparkviewkey\n"
+            "\nDisplay our Spark View Key.\n"
+            "\nResult:\n"
+            "\"key\"                (string) The Spark view key\n"
+            "\nExamples:\n"
+            + HelpExampleCli("dumpsparkviewkey", "")
+            + HelpExampleRpc("dumpsparkviewkey", "")
+        );
+    }
 
   return {pwallet->GetSparkViewKeyStr()};
 }
@@ -612,7 +621,7 @@ UniValue dumpprivkey(const JSONRPCRequest& request)
             "\nReveals the private key corresponding to 'address'.\n"
             "Then the importprivkey can be used with this output\n"
             "\nArguments:\n"
-            "1. \"address\"   (string, required) The address for the private key\n"
+            "1. \"address\"   (string, required) The BZX address for the private key\n"
             "\nResult:\n"
             "\"key\"                (string) The private key\n"
             "\nExamples:\n"
@@ -628,7 +637,7 @@ UniValue dumpprivkey(const JSONRPCRequest& request)
     std::string strAddress = request.params[0].get_str();
     CBitcoinAddress address;
     if (!address.SetString(strAddress))
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid BZX address");
     CKeyID keyID;
     if (!address.GetKeyID(keyID))
         throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
@@ -639,16 +648,16 @@ UniValue dumpprivkey(const JSONRPCRequest& request)
     return CBitcoinSecret(vchSecret).ToString();
 }
 
-UniValue dumpprivkey_bzx(const JSONRPCRequest& request)
+UniValue dumpprivkey_BZX(const JSONRPCRequest& request)
 {
 #ifndef UNSAFE_DUMPPRIVKEY
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
-            "dumpprivkey \"address\"\n"
-            "\nReveals the private key corresponding to 'address'.\n"
+            "dumpprivkey \"BZXaddress\"\n"
+            "\nReveals the private key corresponding to 'BZXaddress'.\n"
             "Then the importprivkey can be used with this output\n"
             "\nArguments:\n"
-            "1. \"address\"   (string, required) The address for the private key\n"
+            "1. \"BZXaddress\"   (string, required) The BZX address for the private key\n"
             "2. \"one-time-auth-code\"   (string, optional) A one time authorization code received from a previous call of dumpprivkey"
             "\nResult:\n"
             "\"key\"                (string) The private key\n"
@@ -835,7 +844,7 @@ UniValue dumpwallet(const JSONRPCRequest& request)
     return reply;
 }
 
-UniValue dumpwallet_bzx(const JSONRPCRequest& request)
+UniValue dumpwallet_BZX(const JSONRPCRequest& request)
 {
 #ifndef UNSAFE_DUMPPRIVKEY
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)

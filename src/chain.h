@@ -157,6 +157,8 @@ enum BlockStatus: uint32_t {
     BLOCK_FAILED_VALID       =   32, //!< stage after last reached validness failed
     BLOCK_FAILED_CHILD       =   64, //!< descends from failed block
     BLOCK_FAILED_MASK        =   BLOCK_FAILED_VALID | BLOCK_FAILED_CHILD,
+
+    BLOCK_OPT_WITNESS       =   128, //!< block data in blk*.data was received with a witness-enforcing client
 };
 
 /** The block chain is a tree shaped structure starting with the
@@ -255,7 +257,7 @@ public:
 
     //! List of spark names that were created or extended in this block. Map of spark name to <address, expiration block height, additional info>
     std::map<std::string, CSparkNameBlockIndexData> addedSparkNames;
-    //! List of spark names that were removed in this block because of expiration
+    //! List of spark names that were removed in this block because of expiration, unregistration or transfer. Map of spark name to <address, expiration block height, additional info>
     std::map<std::string, CSparkNameBlockIndexData> removedSparkNames;
 
     void SetNull()

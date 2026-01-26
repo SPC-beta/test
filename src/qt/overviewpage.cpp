@@ -186,10 +186,10 @@ void OverviewPage::handleEnabledTorChanged(){
 
     if(ui->checkboxEnabledTor->isChecked()){
         settings.setValue("fTorSetup", true);
-        msgBox.setText(tr("Please restart the BZX wallet to route your connection through Tor to protect your IP address. <br>Syncing your wallet might be slower with Tor. <br>Note that -torsetup in bitcoinzero.conf will always override any changes made here."));
+        msgBox.setText(tr("Please restart the BZX wallet to route your connection through Tor to protect your IP address. <br>Syncing your wallet might be slower with Tor. <br>Note that -torsetup in BZX.conf will always override any changes made here."));
     }else{
         settings.setValue("fTorSetup", false);
-        msgBox.setText(tr("Please restart the BZX wallet to disable routing of your connection through Tor to protect your IP address. <br>Note that -torsetup in bitcoinzero.conf will always override any changes made here."));
+        msgBox.setText(tr("Please restart the BZX wallet to disable routing of your connection through Tor to protect your IP address. <br>Note that -torsetup in BZX.conf will always override any changes made here."));
     }
     msgBox.exec();
 }
@@ -247,7 +247,8 @@ void OverviewPage::setBalance(
     ui->labelUnconfirmedPrivate->setText(BitcoinUnits::formatWithUnit(unit, unconfirmedPrivateBalance, false, BitcoinUnits::separatorAlways));
     ui->labelAnonymizable->setText(BitcoinUnits::formatWithUnit(unit, anonymizableBalance, false, BitcoinUnits::separatorAlways));
 
-    ui->anonymizeButton->setEnabled(spark::IsSparkAllowed() && anonymizableBalance > 0);
+    auto wallet = walletModel->getWallet();
+    ui->anonymizeButton->setEnabled(wallet && wallet->sparkWallet && spark::IsSparkAllowed() && anonymizableBalance > 0);
 
     // only show immature (newly mined) balance if it's non-zero, so as not to complicate things
     // for the non-mining users

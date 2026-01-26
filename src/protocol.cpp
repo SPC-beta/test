@@ -16,6 +16,8 @@ namespace NetMsgType {
     const char *VERSION="version";
     const char *VERACK="verack";
     const char *ADDR="addr";
+    const char *ADDRV2="addrv2";
+    const char *SENDADDRV2="sendaddrv2";
     const char *INV="inv";
     const char *GETDATA="getdata";
     const char *MERKLEBLOCK="merkleblock";
@@ -29,6 +31,9 @@ namespace NetMsgType {
     const char *PING="ping";
     const char *PONG="pong";
     const char *NOTFOUND="notfound";
+    const char *FILTERLOAD="filterload";
+    const char *FILTERADD="filteradd";
+    const char *FILTERCLEAR="filterclear";
     const char *REJECT="reject";
     const char *SENDHEADERS="sendheaders";
     const char *FEEFILTER="feefilter";
@@ -64,6 +69,8 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::VERSION,
     NetMsgType::VERACK,
     NetMsgType::ADDR,
+    NetMsgType::ADDRV2,
+    NetMsgType::SENDADDRV2,
     NetMsgType::INV,
     NetMsgType::GETDATA,
     NetMsgType::MERKLEBLOCK,
@@ -77,6 +84,9 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::PING,
     NetMsgType::PONG,
     NetMsgType::NOTFOUND,
+    NetMsgType::FILTERLOAD,
+    NetMsgType::FILTERADD,
+    NetMsgType::FILTERCLEAR,
     NetMsgType::REJECT,
     NetMsgType::SENDHEADERS,
     NetMsgType::FEEFILTER,
@@ -172,6 +182,13 @@ CAddress::CAddress(CService ipIn, ServiceFlags nServicesIn) : CService(ipIn)
     nServices = nServicesIn;
 }
 
+CAddress::CAddress(CService ipIn, ServiceFlags nServicesIn, unsigned int nTimeIn) : CService(ipIn)
+{
+    Init();
+    nServices = nServicesIn;
+    nTime = nTimeIn;
+}
+
 void CAddress::Init()
 {
     nServices = NODE_NONE;
@@ -198,7 +215,9 @@ bool operator<(const CInv& a, const CInv& b)
 std::string CInv::GetCommand() const
 {
     std::string cmd;
-    int masked = type & MSG_TYPE_MASK;
+    if (type & MSG_WITNESS_FLAG)
+        cmd.append("witness-");
+    BZX_UNUSED int masked = type & MSG_TYPE_MASK;
     // TODO: switch(masked)
     switch (type)
     {

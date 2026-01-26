@@ -30,7 +30,7 @@ static const int64_t DUST_HARD_LIMIT = 1000;   // 0.00001 BZX mininput
 /** Probability (percentage) that a Dandelion transaction enters fluff phase */
 #define DANDELION_FLUFF 10
 
-// Versions of privcoin mint/spend transactions
+// Versions of zerocoin mint/spend transactions
 #define LELANTUS_TX_VERSION_4               40
 #define LELANTUS_TX_VERSION_4_5             45
 #define LELANTUS_TX_TPAYLOAD                47

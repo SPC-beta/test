@@ -87,7 +87,7 @@ CSparkWallet::~CSparkWallet() {
 
 void CSparkWallet::FinishTasks() {
     ((ParallelOpThreadPool<void>*)threadPool)->Shutdown();
-    spark::ShutdownSparkState();;
+    spark::ShutdownSparkState();
 }
 
 void CSparkWallet::resetDiversifierFromDB(CWalletDB& walletdb) {
@@ -276,7 +276,7 @@ std::unordered_map<int32_t, spark::Address> CSparkWallet::getAllAddresses() {
 
 spark::Address CSparkWallet::getAddress(const int32_t& i) {
     if (lastDiversifier < i || addresses.count(i) == 0)
-        return spark::Address(viewKey, lastDiversifier);
+        return spark::Address(viewKey, i);
 
     return addresses[i];
 }
@@ -492,7 +492,7 @@ void CSparkWallet::UpdateSpendState(const GroupElement& lTag, const uint256& lTa
             addOrUpdateMint(mintMeta, lTagHash, walletdb);
         }
 
-//        pwalletMain->NotifyPrivcoinChanged(
+//        pwalletMain->NotifyZerocoinChanged(
 //                pwalletMain,
 //                lTagHash.GetHex(),
 //                std::string("used (") + std::to_string((double)mintMeta.v / COIN) + "mint)",
@@ -642,7 +642,7 @@ void CSparkWallet::UpdateMintState(const std::vector<spark::Coin>& coins, const 
                 UpdateSpendState(recoveredCoinData.T, lTagHash, spendTxHash, false);
             }
 
-//            pwalletMain->NotifyPrivcoinChanged(
+//            pwalletMain->NotifyZerocoinChanged(
 //                    pwalletMain,
 //                    lTagHash.GetHex(),
 //                    std::string("Update (") + std::to_string((double)mintMeta.v / COIN) + "mint)",
@@ -1079,6 +1079,7 @@ bool CSparkWallet::CreateSparkMintTransactions(
                     // Remove scriptSigs to eliminate the fee calculation dummy signatures
                     for (auto &vin : tx.vin) {
                         vin.scriptSig = CScript();
+                        vin.scriptWitness.SetNull();
                     }
 
                     // Can we complete this as a free transaction?
@@ -1306,6 +1307,12 @@ CWalletTx CSparkWallet::CreateSparkSpendTransaction(
         if (privRecipient.second) {
             recipientsToSubtractFee++;
         }
+    }
+
+    int nHeight;
+    {
+        LOCK(cs_main);
+        nHeight = chainActive.Height();
     }
 
     if (vOut > consensusParams.GetMaxValueSparkSpendPerTransaction(nHeight))
@@ -1584,8 +1591,8 @@ CWalletTx CSparkWallet::CreateSparkSpendTransaction(
                 i++;
             }
 
-            if (GetTransactionWeight(tx) >= MAX_STANDARD_TX_SIZE) {
-                throw std::runtime_error(_("Transaction is too large. Select less inputs or consolidate your UTXOs"));
+            if (GetTransactionWeight(tx) >= MAX_NEW_TX_WEIGHT) {
+                throw std::runtime_error(_("Transaction is too large (size limit: 250Kb). Select less inputs or consolidate your UTXOs"));
             }
 
             // check fee

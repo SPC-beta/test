@@ -769,9 +769,8 @@ bool CWallet::IsSpent(const uint256 &hash, unsigned int n) const
         LOCK(cs_wallet);
 
         auto& script = tx->tx->vout[n].scriptPubKey;
-        CWalletDB db(strWalletFile);
 
-        if (script.IsPrivcoinMint()) {
+        if (script.IsZerocoinMint()) {
             return true;
         } else if (zwallet && script.IsSigmaMint()) {
             return true;
@@ -1606,7 +1605,7 @@ isminetype CWallet::IsMine(const CTxIn &txin, const CTransaction& tx) const
 {
     LOCK(cs_wallet);
 
-    if (txin.IsPrivcoinSpend()) {
+    if (txin.IsZerocoinSpend()) {
         return ISMINE_NO;
     } else if (txin.IsLelantusJoinSplit()) {
         CWalletDB db(strWalletFile);
@@ -1621,7 +1620,7 @@ isminetype CWallet::IsMine(const CTxIn &txin, const CTransaction& tx) const
         if (db.HasLelantusSpendSerialEntry(joinsplit->getCoinSerialNumbers()[0])) {
             return ISMINE_SPENDABLE;
         }
-    } else if (txin.IsPrivcoinRemint()) {
+    } else if (txin.IsZerocoinRemint()) {
         return ISMINE_NO;
     }  else if (tx.IsSparkSpend()) {
         std::vector<GroupElement> lTags;
@@ -1655,10 +1654,10 @@ CAmount CWallet::GetDebit(const CTxIn &txin, const CTransaction& tx, const ismin
 {
     LOCK(cs_wallet);
 
-    if (txin.IsPrivcoinSpend()) {
+    if (txin.IsZerocoinSpend()) {
         // Reverting it to its pre-lelantus state.
         goto end;
-    } else if (txin.IsPrivcoinRemint()) {
+    } else if (txin.IsZerocoinRemint()) {
         return 0;
     } else if (txin.IsLelantusJoinSplit()) {
         if (!(filter & ISMINE_SPENDABLE)) {
@@ -2239,7 +2238,7 @@ void CWalletTx::GetAmounts(std::list<COutputEntry>& listReceived,
         // In either case, we need to get the destination address
         CTxDestination address;
 
-        if (txout.scriptPubKey.IsPrivcoinMint() || txout.scriptPubKey.IsSigmaMint()
+        if (txout.scriptPubKey.IsZerocoinMint() || txout.scriptPubKey.IsSigmaMint()
         || txout.scriptPubKey.IsLelantusMint() || txout.scriptPubKey.IsLelantusJMint()
         || txout.scriptPubKey.IsSparkMint() || txout.scriptPubKey.IsSparkSMint())
         {
@@ -2354,18 +2353,18 @@ CBlockIndex* CWallet::ScanForWalletTransactions(CBlockIndex *pindexStart, bool f
             LogPrintf("Rescanning last %i blocks (from block %i)...\n", chainActive.Height(), pindex->nHeight);
 
         ShowProgress(_("Rescanning..."), 0); // show rescan progress in GUI as dialog or on splashscreen, if -rescan on startup
-        double dProgressStart = Checkpoints::GuessVerificationProgress(pindex);
-        double dProgressTip = Checkpoints::GuessVerificationProgress(chainActive.Tip());
+        double dProgressStart = GuessVerificationProgress(chainParams.TxData(), pindex);
+        double dProgressTip = GuessVerificationProgress(chainParams.TxData(), chainActive.Tip());
         while (pindex)
         {
             // A temporary fix for inability to Ctrl-C rescan when restoring a wallet (will be fixed in 0.15.)
             if (ShutdownRequested())
                 return nullptr;
             if (pindex->nHeight % 100 == 0 && dProgressTip - dProgressStart > 0.0)
-                ShowProgress(_("Rescanning..."), std::max(1, std::min(99, (int)((Checkpoints::GuessVerificationProgress(pindex) - dProgressStart) / (dProgressTip - dProgressStart) * 100))));
+                ShowProgress(_("Rescanning..."), std::max(1, std::min(99, (int)((GuessVerificationProgress(chainParams.TxData(), pindex) - dProgressStart) / (dProgressTip - dProgressStart) * 100))));
             if (GetTime() >= nNow + 60) {
                 nNow = GetTime();
-                LogPrintf("Still rescanning. At block %d. Progress=%f\n", pindex->nHeight, Checkpoints::GuessVerificationProgress(pindex));
+                LogPrintf("Still rescanning. At block %d. Progress=%f\n", pindex->nHeight, GuessVerificationProgress(chainParams.TxData(), pindex));
             }
 
             CBlock block;
@@ -2554,7 +2553,7 @@ CAmount CWalletTx::GetAvailableCredit(bool fUseCache, bool fExcludeLocked) const
         return 0;
 
     // We cannot use cache if vout contains mints due to it will not update when it spend
-    if (fUseCache && fAvailableCreditCached && !tx->IsPrivcoinMint() && !tx->IsSigmaMint() && !tx->IsLelantusMint() &&  !tx->IsSparkMint() && !tx->IsSparkSpend() && !fExcludeLocked)
+    if (fUseCache && fAvailableCreditCached && !tx->IsZerocoinMint() && !tx->IsSigmaMint() && !tx->IsLelantusMint() &&  !tx->IsSparkMint() && !tx->IsSparkSpend() && !fExcludeLocked)
         return nAvailableCreditCached;
 
     CAmount nCredit = 0;
@@ -2563,7 +2562,7 @@ CAmount CWalletTx::GetAvailableCredit(bool fUseCache, bool fExcludeLocked) const
     {
         const CTxOut &txout = tx->vout[i];
 
-        bool isPrivate = txout.scriptPubKey.IsPrivcoinMint() || txout.scriptPubKey.IsSigmaMint() || txout.scriptPubKey.IsLelantusMint() || txout.scriptPubKey.IsLelantusJMint() || txout.scriptPubKey.IsSparkMint() || txout.scriptPubKey.IsSparkSMint();
+        bool isPrivate = txout.scriptPubKey.IsZerocoinMint() || txout.scriptPubKey.IsSigmaMint() || txout.scriptPubKey.IsLelantusMint() || txout.scriptPubKey.IsLelantusJMint() || txout.scriptPubKey.IsSparkMint() || txout.scriptPubKey.IsSparkSMint();
         if (isPrivate) continue;
         if (fExcludeLocked && pwallet->IsLockedCoin(hashTx, i)) continue;
 
@@ -2656,8 +2655,8 @@ bool CWalletTx::InStempool() const
 bool CWalletTx::IsTrusted() const
 {
     // Quick answer in most cases.
-    // Privcoin spend is always false due to it use nSequence incorrectly.
-    if (!tx->IsPrivcoinSpend() && !CheckFinalTx(*this))
+    // Zerocoin spend is always false due to it use nSequence incorrectly.
+    if (!tx->IsZerocoinSpend() && !CheckFinalTx(*this))
         return false;
     int nDepth = GetDepthInMainChain();
     if (nDepth >= 1)
@@ -2716,9 +2715,9 @@ bool CWalletTx::IsChange(uint32_t out) const {
     }
 
     // Legacy transaction handling.
-    // Privcoin spend have one special output mode to spend to yourself with change address,
+    // Zerocoin spend have one special output mode to spend to yourself with change address,
     // we don't want to identify that output as change.
-    if (!tx->IsPrivcoinSpend() && ::IsMine(*pwallet, tx->vout[out].scriptPubKey)) {
+    if (!tx->IsZerocoinSpend() && ::IsMine(*pwallet, tx->vout[out].scriptPubKey)) {
         CTxDestination address;
         if (!ExtractDestination(tx->vout[out].scriptPubKey, address)) {
             return true;
@@ -3398,18 +3397,18 @@ void CWallet::AvailableCoins(std::vector <COutput> &vCoins, bool fOnlyConfirmed,
                 bool found = false;
                 if(nCoinType == CoinType::ALL_COINS){
                     // We are now taking ALL_COINS to mean everything sans mints
-                    found = !(pcoin->tx->vout[i].scriptPubKey.IsPrivcoinMint()
+                    found = !(pcoin->tx->vout[i].scriptPubKey.IsZerocoinMint()
                             || pcoin->tx->vout[i].scriptPubKey.IsSigmaMint()
                             || pcoin->tx->vout[i].scriptPubKey.IsLelantusMint()
                             || pcoin->tx->vout[i].scriptPubKey.IsLelantusJMint()
                             || pcoin->tx->vout[i].scriptPubKey.IsSparkMint()
                             || pcoin->tx->vout[i].scriptPubKey.IsSparkSMint())
-                            || pcoin->tx->vout[i].scriptPubKey.IsPrivcoinRemint();
+                            || pcoin->tx->vout[i].scriptPubKey.IsZerocoinRemint();
                 } else if(nCoinType == CoinType::ONLY_MINTS){
                     // Do not consider anything other than mints
-                    found = (pcoin->tx->vout[i].scriptPubKey.IsPrivcoinMint()
+                    found = (pcoin->tx->vout[i].scriptPubKey.IsZerocoinMint()
                             || pcoin->tx->vout[i].scriptPubKey.IsSigmaMint()
-                            || pcoin->tx->vout[i].scriptPubKey.IsPrivcoinRemint()
+                            || pcoin->tx->vout[i].scriptPubKey.IsZerocoinRemint()
                             || pcoin->tx->vout[i].scriptPubKey.IsLelantusMint()
                             || pcoin->tx->vout[i].scriptPubKey.IsLelantusJMint()
                             || pcoin->tx->vout[i].scriptPubKey.IsSparkMint()
@@ -4142,6 +4141,7 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
                 // Remove scriptSigs to eliminate the fee calculation dummy signatures
                 for (auto& vin : txNew.vin) {
                     vin.scriptSig = CScript();
+                    vin.scriptWitness.SetNull();
                 }
 
                 // Allow to override the default confirmation target over the CoinControl instance
@@ -4565,6 +4565,7 @@ bool CWallet::CreateLelantusMintTransactions(
                     // Remove scriptSigs to eliminate the fee calculation dummy signatures
                     for (auto &vin : tx.vin) {
                         vin.scriptSig = CScript();
+                        vin.scriptWitness.SetNull();
                     }
 
                     // Can we complete this as a free transaction?
@@ -4771,7 +4772,7 @@ std::string CWallet::MintAndStoreLelantus(const CAmount& value,
         mints.push_back(dMints[i]);
         dMintTmp.SetTxHash(wtxAndFee[i].first.GetHash());
         zwallet->GetTracker().AddLelantus(walletdb, dMintTmp, true);
-        NotifyPrivcoinChanged(this,
+        NotifyZerocoinChanged(this,
             dMintTmp.GetPubcoinValue().GetHex(),
             "New (" + std::to_string(dMintTmp.GetAmount()) + " mint)",
             CT_NEW);
@@ -5104,7 +5105,7 @@ bool CWallet::CommitLelantusTransaction(CWalletTx& wtxNew, std::vector<CLelantus
         coin.nHeight = height;
 
         // raise event
-        NotifyPrivcoinChanged(
+        NotifyZerocoinChanged(
                 this,
                 coin.value.GetHex(),
                 "Used (" + std::to_string(coin.amount) + " mint)",
@@ -5116,7 +5117,7 @@ bool CWallet::CommitLelantusTransaction(CWalletTx& wtxNew, std::vector<CLelantus
         zwallet->GetTracker().AddLelantus(db, coin, true);
 
         // raise event
-        NotifyPrivcoinChanged(this,
+        NotifyZerocoinChanged(this,
                               coin.GetPubcoinValue().GetHex(),
                               "New (" + std::to_string(coin.GetAmount()) + " mint)",
                               CT_NEW);

@@ -5,8 +5,8 @@
 
 #include "rpcwallet.h"
 
-UniValue dumpprivkey_bzx(const JSONRPCRequest& request);
-UniValue dumpwallet_bzx(const JSONRPCRequest& request);
+UniValue dumpprivkey_BZX(const JSONRPCRequest& request);
+UniValue dumpwallet_BZX(const JSONRPCRequest& request);
 UniValue dumpprivkey(const JSONRPCRequest& request);
 UniValue dumpsparkviewkey(const JSONRPCRequest& request);
 UniValue importprivkey(const JSONRPCRequest& request);

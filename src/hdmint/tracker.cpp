@@ -239,7 +239,7 @@ bool CHDMintTracker::UpdateState(const CLelantusMintMeta& meta)
     walletdb.WritePubcoinHashes(hashPubcoin, primitives::GetPubCoinValueHash(pubcoin));
 
 
-    pwalletMain->NotifyPrivcoinChanged(
+    pwalletMain->NotifyZerocoinChanged(
             pwalletMain,
             dMint.GetPubcoinValue().GetHex(),
             std::string("Update (") + std::to_string((double)dMint.GetAmount() / COIN) + "mint)",
@@ -275,7 +275,7 @@ void CHDMintTracker::AddLelantus(CWalletDB& walletdb, const CHDMint& dMint, bool
     meta.isSeedCorrect = true;
     mapLelantusSerialHashes[meta.hashSerial] = meta;
 
-    pwalletMain->NotifyPrivcoinChanged(
+    pwalletMain->NotifyZerocoinChanged(
             pwalletMain,
             dMint.GetPubcoinValue().GetHex(),
             std::string("Update (") + std::to_string((double)dMint.GetAmount() / COIN) + "mint)",

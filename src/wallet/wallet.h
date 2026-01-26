@@ -1242,7 +1242,7 @@ public:
      * sigma/lelantus entry changed.
      * @note called with lock cs_wallet held.
      */
-    boost::signals2::signal<void (CWallet *wallet, const std::string &pubCoin, const std::string &isUsed, ChangeType status)> NotifyPrivcoinChanged;
+    boost::signals2::signal<void (CWallet *wallet, const std::string &pubCoin, const std::string &isUsed, ChangeType status)> NotifyZerocoinChanged;
 
 
     /** Show progress e.g. for rescan */

@@ -21,7 +21,7 @@
 
 const QString AddressTableModel::Send = "S";
 const QString AddressTableModel::Receive = "R";
-const QString AddressTableModel::Privcoin = "X";
+const QString AddressTableModel::Zerocoin = "X";
 const QString AddressTableModel::Transparent = "Transparent";
 const QString AddressTableModel::Spark = "Spark";
 const QString AddressTableModel::RAP = "RAP";
@@ -32,7 +32,7 @@ struct AddressTableEntry
     enum Type {
         Sending,
         Receiving,
-        Privcoin,
+        Zerocoin,
         Hidden /* QSortFilterProxyModel will filter these out */
     };
 
@@ -272,7 +272,7 @@ public:
                 cachedAddressTable.begin(), cachedAddressTable.end(), pubCoin, AddressTableEntryLessThan());
         int lowerIndex = (lower - cachedAddressTable.begin());
         bool inModel = (lower != upper);
-        AddressTableEntry::Type newEntryType = AddressTableEntry::Privcoin;
+        AddressTableEntry::Type newEntryType = AddressTableEntry::Zerocoin;
 
         switch(status)
         {
@@ -426,8 +426,8 @@ QVariant AddressTableModel::data(const QModelIndex &index, int role) const
             return Send;
         case AddressTableEntry::Receiving:
             return Receive;
-        case AddressTableEntry::Privcoin:
-            return Privcoin;
+        case AddressTableEntry::Zerocoin:
+            return Zerocoin;
         default: break;
         }
     }

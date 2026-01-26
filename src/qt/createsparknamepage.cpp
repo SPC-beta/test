@@ -102,10 +102,10 @@ bool CreateSparkNamePage::CreateSparkNameTransaction(const std::string &name, co
         const auto &consensusParams = Params().GetConsensus();
         CSparkNameManager *sparkNameManager = CSparkNameManager::GetInstance();
 
-
         CSparkNameTxData sparkNameData;
         sparkNameData.nVersion = CSparkNameTxData::CURRENT_VERSION;
         sparkNameData.operationType = (uint8_t)CSparkNameTxData::opRegister;
+        sparkNameData.name = name;
         sparkNameData.sparkAddress = address;
         sparkNameData.additionalInfo = additionalInfo;
         sparkNameData.sparkNameValidityBlocks = numberOfYears*365*24*24;

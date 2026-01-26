@@ -56,7 +56,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
         isAllJoinSplitFromMe = (wallet->IsMine(wtx.tx->vin[0], *wtx.tx) & ISMINE_SPENDABLE);
     }
 
-    if (wtx.tx->IsPrivcoinSpend() || isAllSigmaSpendFromMe || isAllJoinSplitFromMe) {
+    if (wtx.tx->IsZerocoinSpend() || isAllSigmaSpendFromMe || isAllJoinSplitFromMe) {
         CAmount nTxFee = nDebit - wtx.tx->GetValueOut();
         if (isAllJoinSplitFromMe && wtx.tx->vin.size() > 0) {
             try {
@@ -138,7 +138,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             }
         }
     }
-    else if (wtx.tx->IsPrivcoinRemint()) {
+    else if (wtx.tx->IsZerocoinRemint()) {
         TransactionRecord sub(hash, nTime);
         sub.type = TransactionRecord::SpendToSelf;
         CAmount txAmount = 0;
@@ -147,7 +147,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
         sub.idx = parts.size();
         sub.debit = -txAmount;
         sub.credit = txAmount;
-        sub.address = QCoreApplication::translate("BZX-core", "Privcoin->Sigma remint").toStdString();
+        sub.address = QCoreApplication::translate("BZX-core", "Zerocoin->Sigma remint").toStdString();
         parts.append(sub);
     }
     else if (nNet > 0 || wtx.IsCoinBase())
@@ -236,7 +236,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
         if (fAllFromMe && fAllToMe)
         {
             CAmount nChange = wtx.GetChange();
-            if (wtx.tx->IsSigmaMint() || wtx.tx->IsPrivcoinMint() || wtx.tx->IsLelantusMint())
+            if (wtx.tx->IsSigmaMint() || wtx.tx->IsZerocoinMint() || wtx.tx->IsLelantusMint())
             {
                 // Mint to self
                 parts.append(TransactionRecord(hash, nTime, TransactionRecord::Anonymize, "",
@@ -308,7 +308,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                         sub.type = TransactionRecord::SpendSparkTo;
                     }
                 }
-                else if(wtx.tx->IsPrivcoinMint() || wtx.tx->IsSigmaMint() || wtx.tx->IsLelantusMint())
+                else if(wtx.tx->IsZerocoinMint() || wtx.tx->IsSigmaMint() || wtx.tx->IsLelantusMint())
                 {
                     sub.type = TransactionRecord::Anonymize;
                 }

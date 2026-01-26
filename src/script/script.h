@@ -187,9 +187,9 @@ enum opcodetype
 
     OP_INVALIDOPCODE = 0xff,
 
-    // privcoin params
-    OP_PRIVCOINMINT = 0xc1,
-    OP_PRIVCOINSPEND = 0xc2,
+    // zerocoin params
+    OP_ZEROCOINMINT = 0xc1,
+    OP_ZEROCOINSPEND = 0xc2,
     OP_SIGMAMINT = 0xc3,
     OP_SIGMASPEND = 0xc4,
 
@@ -200,8 +200,8 @@ enum opcodetype
     // joinsplit in payload
     OP_LELANTUSJOINSPLITPAYLOAD = 0xc9,
 
-    // input for reminting privcoin to sigma (v3)
-    OP_PRIVCOINTOSIGMAREMINT = 0xc8,
+    // input for reminting zerocoin to sigma (v3)
+    OP_ZEROCOINTOSIGMAREMINT = 0xc8,
 
     // spark params
     OP_SPARKMINT = 0xd1,
@@ -667,12 +667,13 @@ public:
 
     bool IsPayToScriptHash() const;
     bool IsPayToWitnessScriptHash() const;
+    bool IsWitnessProgram(int& version, std::vector<unsigned char>& program) const;
 
-    // Checks if the script is privcoin v1 or v2 sigma mint/spend or not.
-    bool IsPrivcoinMint() const;
-    bool IsPrivcoinSpend() const;
+    // Checks if the script is zerocoin v1 or v2 sigma mint/spend or not.
+    bool IsZerocoinMint() const;
+    bool IsZerocoinSpend() const;
 
-    // Checks if the script is privcoin v3 sigma mint/spend or not.
+    // Checks if the script is zerocoin v3 sigma mint/spend or not.
     bool IsSigmaMint() const;
     bool IsSigmaSpend() const;
 
@@ -688,7 +689,7 @@ public:
 
     bool IsSparkSpend() const;
 
-    bool IsPrivcoinRemint() const;
+    bool IsZerocoinRemint() const;
 
     bool IsMint() const;
 
@@ -714,6 +715,22 @@ public:
         // The default std::vector::clear() does not release memory.
         CScriptBase().swap(*this);
     }
+};
+
+struct CScriptWitness
+{
+    // Note that this encodes the data elements being pushed, rather than
+    // encoding them as a CScript that pushes them.
+    std::vector<std::vector<unsigned char> > stack;
+
+    // Some compilers complain without a default constructor
+    CScriptWitness() { }
+
+    bool IsNull() const { return stack.empty(); }
+
+    void SetNull() { stack.clear(); stack.shrink_to_fit(); }
+
+    std::string ToString() const;
 };
 
 class CReserveScript

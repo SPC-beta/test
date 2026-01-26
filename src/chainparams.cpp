@@ -136,6 +136,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999;
+        // Deployment of SegWit (BIP141, BIP143, and BIP147)
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].bit = 1;
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nStartTime = 1479168000; // November 15th, 2016.
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1510704000; // November 15th, 2017.
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000007d13353b29bf1");
@@ -208,8 +212,7 @@ public:
         consensus.hashGenesisBlock = genesis.GetHash();
         assert(consensus.hashGenesisBlock == uint256S("0x000004d916d2e66f820fc0ba0b2554b6491a9c5bfc026ea515df5df2ceafcd53"));
         assert(genesis.hashMerkleRoot == uint256S("0xfede7817612c884cc527b1598013f6ef1feceea08bb80e1ffb0765dd74ba6a53"));
-        vSeeds.push_back(CDNSSeedData("51.195.91.123", "51.195.91.123", false));
-        vSeeds.push_back(CDNSSeedData("167.86.189.91:19", "167.86.189.91:19", false));
+        vSeeds.push_back(CDNSSeedData("51.178.87.162", "51.178.87.162", false));
         vSeeds.push_back(CDNSSeedData("176.57.189.38:29", "176.57.189.38:29", false));
         base58Prefixes[PUBKEY_ADDRESS] = std::vector < unsigned char > (1, 75);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector < unsigned char > (1, 34);

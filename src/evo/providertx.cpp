@@ -398,7 +398,7 @@ void CProRegTx::ToJson(UniValue& obj) const
     obj.push_back(Pair("version", nVersion));
     obj.push_back(Pair("collateralHash", collateralOutpoint.hash.ToString()));
     obj.push_back(Pair("collateralIndex", (int)collateralOutpoint.n));
-    obj.push_back(Pair("service", addr.ToString(false)));
+    obj.push_back(Pair("service", addr.ToString()));
     obj.push_back(Pair("ownerAddress", CBitcoinAddress(keyIDOwner).ToString()));
     obj.push_back(Pair("votingAddress", CBitcoinAddress(keyIDVoting).ToString()));
 
@@ -431,7 +431,7 @@ void CProUpServTx::ToJson(UniValue& obj) const
     obj.setObject();
     obj.push_back(Pair("version", nVersion));
     obj.push_back(Pair("proTxHash", proTxHash.ToString()));
-    obj.push_back(Pair("service", addr.ToString(false)));
+    obj.push_back(Pair("service", addr.ToString()));
     CTxDestination dest;
     if (ExtractDestination(scriptOperatorPayout, dest)) {
         CBitcoinAddress bitcoinAddress(dest);

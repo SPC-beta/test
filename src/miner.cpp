@@ -124,6 +124,7 @@ void BlockAssembler::resetBlock()
     // Reserve space for coinbase tx
     nBlockSize = 1000;
     nBlockSigOpsCost = 100;
+    fIncludeWitness = false;
 
     // These counters do not include coinbase tx
     nBlockTx = 0;
@@ -139,7 +140,7 @@ void BlockAssembler::resetBlock()
     nSparkSpendInputs = 0;
 }
 
-std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& scriptPubKeyIn)
+std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& scriptPubKeyIn, bool fMineWitnessTx)
 {
     // Create new block
     LogPrintf("BlockAssembler::CreateNewBlock()\n");
@@ -187,6 +188,14 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
             }
         }
     }
+
+    // Decide whether to include witness transactions
+    // This is only needed in case the witness softfork activation is reverted
+    // (which would require a very deep reorganization) or when
+    // -promiscuousmempoolflags is used.
+    // TODO: replace this with a call to main to assess validity of a mempool
+    // transaction (which in most cases can be a no-op).
+    fIncludeWitness = IsWitnessEnabled(pindexPrev, chainparams.GetConsensus()) && fMineWitnessTx;
 
     int nPackagesSelected = 0;
     int nDescendantsUpdated = 0;
@@ -305,6 +314,11 @@ bool BlockAssembler::TestPackage(uint64_t packageSize, int64_t packageSigOpsCost
     return true;
 }
 
+// Perform transaction-level checks before adding to block:
+// - transaction finality (locktime)
+// - premature witness (in case segwit transactions are added to mempool before
+//   segwit activation)
+// - serialized size (in case -blockmaxsize is in use)
 bool BlockAssembler::TestPackageTransactions(const CTxMemPool::setEntries& package)
 {
     uint64_t nPotentialBlockSize = nBlockSize; // only used with fNeedSizeAccounting
@@ -314,6 +328,8 @@ bool BlockAssembler::TestPackageTransactions(const CTxMemPool::setEntries& packa
         if (!llmq::chainLocksHandler->IsTxSafeForMining(it->GetTx().GetHash())) {
                 return false;
         }
+        if (!fIncludeWitness && it->GetTx().HasWitness())
+            return false;
         if (fNeedSizeAccounting) {
             uint64_t nTxSize = ::GetSerializeSize(it->GetTx(), SER_NETWORK, PROTOCOL_VERSION);
             if (nPotentialBlockSize + nTxSize >= nBlockMaxSize) {
@@ -394,10 +410,10 @@ bool BlockAssembler::TestForBlock(CTxMemPool::txiter iter)
         CAmount spendAmount = spark::GetSpendTransparentAmount(tx);
         const auto &params = chainparams.GetConsensus();
 
-        if (spendAmount > params.nMaxValueSparkSpendPerTransaction)
+        if (spendAmount > params.GetMaxValueSparkSpendPerTransaction(nHeight))
             return false;
 
-        if (spendAmount + nSparkSpendAmount > params.nMaxValueSparkSpendPerBlock)
+        if (spendAmount + nSparkSpendAmount > params.GetMaxValueSparkSpendPerBlock(nHeight))
             return false;
     }
 
@@ -426,10 +442,10 @@ void BlockAssembler::AddToBlock(CTxMemPool::txiter iter)
         CAmount spendAmount = spark::GetSpendTransparentAmount(tx);
         const auto &params = chainparams.GetConsensus();
 
-        if (spendAmount > params.nMaxValueSparkSpendPerTransaction)
+        if (spendAmount > params.GetMaxValueSparkSpendPerTransaction(nHeight))
             return;
 
-        if ((nSparkSpendAmount += spendAmount) > params.nMaxValueSparkSpendPerBlock)
+        if ((nSparkSpendAmount += spendAmount) > params.GetMaxValueSparkSpendPerBlock(nHeight))
             return;
     }
 
@@ -701,6 +717,10 @@ void BlockAssembler::addPriorityTxs()
             continue;
         }
 
+        // cannot accept witness transactions into a non-witness block
+        if (!fIncludeWitness && iter->GetTx().HasWitness())
+            continue;
+
         // If tx is dependent on other mempool txs which haven't yet been included
         // then put it in the waitSet
         if (isStillDependent(iter)) {
@@ -923,7 +943,7 @@ void static BZXMiner(const CChainParams &chainparams) {
                 LogPrintf("loop pindexPrev->nHeight=%s\n", pindexPrev->nHeight);
             }
             LogPrintf("BEFORE: pblocktemplate\n");
-            std::unique_ptr<CBlockTemplate> pblocktemplate = BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript);
+            std::unique_ptr<CBlockTemplate> pblocktemplate = BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript, {});
             LogPrintf("AFTER: pblocktemplate\n");
             if (!pblocktemplate.get()) {
                 LogPrintf("Error in BZXMiner: Keypool ran out, please call keypoolrefill before restarting the mining thread\n");

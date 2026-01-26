@@ -377,31 +377,52 @@ void CoinControlDialog::radioListMode(bool checked)
 // checkbox clicked by user
 void CoinControlDialog::viewItemChanged(QTreeWidgetItem* item, int column)
 {
-    if (column == COLUMN_CHECKBOX && item->text(COLUMN_TXHASH).length() == 64) // transaction hash is 64 characters (this means its a child node, so its not a parent node in tree mode)
+    if (column == COLUMN_CHECKBOX)
     {
-        COutPoint outpt(uint256S(item->text(COLUMN_TXHASH).toStdString()), item->text(COLUMN_VOUT_INDEX).toUInt());
+        // Handle child items (individual coins)
+        if (item->text(COLUMN_TXHASH).length() == 64)
+        {
+            COutPoint outpt(uint256S(item->text(COLUMN_TXHASH).toStdString()), item->text(COLUMN_VOUT_INDEX).toUInt());
 
-        if (item->checkState(COLUMN_CHECKBOX) == Qt::Unchecked)
-            coinControl->UnSelect(outpt);
-        else if (item->isDisabled()) // locked (this happens if "check all" through parent node)
-            item->setCheckState(COLUMN_CHECKBOX, Qt::Unchecked);
-        else
-            coinControl->Select(outpt);
+            if (item->checkState(COLUMN_CHECKBOX) == Qt::Unchecked)
+                coinControl->UnSelect(outpt);
+            else if (item->isDisabled())
+                item->setCheckState(COLUMN_CHECKBOX, Qt::Unchecked);
+            else
+                coinControl->Select(outpt);
+        }
+        // Handle parent items (wallet addresses)
+        else if (item->childCount() > 0)
+        {
+            Qt::CheckState parentState = item->checkState(COLUMN_CHECKBOX);
+
+            // If user clicks and Qt cycles to PartiallyChecked, force it to Checked.
+            if (parentState == Qt::PartiallyChecked) {
+                parentState = Qt::Checked;
+                item->setCheckState(COLUMN_CHECKBOX, parentState);
+            }
+
+            bool wasEnabled = ui->treeWidget->isEnabled();
+            if (wasEnabled)
+                ui->treeWidget->setEnabled(false);
+
+            for (int i = 0; i < item->childCount(); ++i)
+            {
+                QTreeWidgetItem* child = item->child(i);
+                if (!child->isDisabled())
+                {
+                    child->setCheckState(COLUMN_CHECKBOX, parentState);
+                }
+            }
+
+            if (wasEnabled)
+                ui->treeWidget->setEnabled(true);
+        }
 
         // selection changed -> update labels
-        if (ui->treeWidget->isEnabled()) // do not update on every click for (un)select all
+        if (ui->treeWidget->isEnabled())
             CoinControlDialog::updateLabels(model, this, anonymousMode);
     }
-
-    // TODO: Remove this temporary qt5 fix after Qt5.3 and Qt5.4 are no longer used.
-    //       Fixed in Qt5.5 and above: https://bugreports.qt.io/browse/QTBUG-43473
-#if QT_VERSION >= 0x050000
-    else if (column == COLUMN_CHECKBOX && item->childCount() > 0)
-    {
-        if (item->checkState(COLUMN_CHECKBOX) == Qt::PartiallyChecked && item->child(0)->checkState(COLUMN_CHECKBOX) == Qt::PartiallyChecked)
-            item->setCheckState(COLUMN_CHECKBOX, Qt::Checked);
-    }
-#endif
 }
 
 // shows count of locked unspent outputs
@@ -450,6 +471,7 @@ void CoinControlDialog::updateLabels(WalletModel *model, QDialog* dialog, bool a
     unsigned int nQuantity      = 0;
     int nQuantityUncompressed   = 0;
     bool fAllowFree             = false;
+    bool fWitness               = false;
 
     std::vector<COutPoint> vCoinControl;
     std::vector<COutput>   vOutputs;
@@ -460,9 +482,9 @@ void CoinControlDialog::updateLabels(WalletModel *model, QDialog* dialog, bool a
         // filter out outputs that don't match with mode
         {
             auto const &script = out.tx->tx->vout[out.i].scriptPubKey;
-            auto isMint = script.IsPrivcoinMint()
+            auto isMint = script.IsZerocoinMint()
                         || script.IsSigmaMint()
-                        || script.IsPrivcoinRemint()
+                        || script.IsZerocoinRemint()
                         || script.IsLelantusMint()
                         || script.IsLelantusJMint()
                         || script.IsSparkMint()
@@ -498,7 +520,14 @@ void CoinControlDialog::updateLabels(WalletModel *model, QDialog* dialog, bool a
 
         // Bytes
         CTxDestination address;
-        if(ExtractDestination(out.tx->tx->vout[out.i].scriptPubKey, address))
+        int witnessversion = 0;
+        std::vector<unsigned char> witnessprogram;
+        if (out.tx->tx->vout[out.i].scriptPubKey.IsWitnessProgram(witnessversion, witnessprogram))
+        {
+            nBytesInputs += (32 + 4 + 1 + (107 / WITNESS_SCALE_FACTOR) + 4);
+            fWitness = true;
+        }
+        else if(ExtractDestination(out.tx->tx->vout[out.i].scriptPubKey, address))
         {
             CPubKey pubkey;
             CKeyID *keyid = boost::get<CKeyID>(&address);
@@ -536,6 +565,14 @@ void CoinControlDialog::updateLabels(WalletModel *model, QDialog* dialog, bool a
         } else {
             // Bytes
             nBytes = nBytesInputs + ((CoinControlDialog::payAmounts.size() > 0 ? CoinControlDialog::payAmounts.size() + 1 : 2) * 34) + 10; // always assume +1 output for change here
+            if (fWitness)
+            {
+                // there is some fudging in these numbers related to the actual virtual transaction size calculation that will keep this estimate from being exact.
+                // usually, the result will be an overestimate within a couple of satoshis so that the confirmation dialog ends up displaying a slightly smaller fee.
+                // also, the witness stack size value value is a variable sized integer. usually, the number of stack items will be well under the single byte var int limit.
+                nBytes += 2; // account for the serialized marker and flag bytes
+                nBytes += nQuantity; // account for the witness byte that holds the number of stack items for each input.
+            }
 
             // in the subtract fee from amount case, we can tell if zero change already and subtract the bytes, so that fee calculation afterwards is accurate
             if (CoinControlDialog::fSubtractFeeFromAmount)
@@ -719,13 +756,13 @@ void CoinControlDialog::updateView()
             {
                 sAddress = QString::fromStdString(CBitcoinAddress(outputAddress).ToString());
 
-                // if listMode or change => show address. In tree mode, address is not shown again for direct wallet address outputs
+                // if listMode or change => show BZX address. In tree mode, address is not shown again for direct wallet address outputs
                 if (!treeMode || (!(sAddress == sWalletAddress)))
                     itemOutput->setText(COLUMN_ADDRESS, sAddress);
             } else if (out.tx->tx->IsSparkMint() || out.tx->tx->IsSparkSpend()) {
                 sAddress = "spark";
 
-                // if listMode or change => show address. In tree mode, address is not shown again for direct wallet address outputs
+                // if listMode or change => show BZX address. In tree mode, address is not shown again for direct wallet address outputs
                 if (!treeMode || (!(sAddress == sWalletAddress)))
                     itemOutput->setText(COLUMN_ADDRESS, sAddress);
             }

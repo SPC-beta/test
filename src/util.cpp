@@ -105,8 +105,8 @@ bool fMasternodeMode = false;
 bool fLiteMode = false;
 int nWalletBackups = 10;
 
-const char * const BITCOIN_CONF_FILENAME = "bitcoinzero.conf";
-const char * const BITCOIN_PID_FILENAME = "bitcoinzero.pid";
+const char * const BITCOIN_CONF_FILENAME = "BZX.conf";
+const char * const BITCOIN_PID_FILENAME = "BZXd.pid";
 
 CCriticalSection cs_args;
 std::map<std::string, std::string> mapArgs;
@@ -494,13 +494,13 @@ void PrintExceptionContinue(const std::exception_ptr pex, const char* pszThread)
 boost::filesystem::path GetDefaultDataDir()
 {
     namespace fs = boost::filesystem;
-    // Windows < Vista: C:\Documents and Settings\Username\Application Data\bitcoinzero
-    // Windows >= Vista: C:\Users\Username\AppData\Roaming\bitcoinzero
-    // Mac: ~/Library/Application Support/bitcoinzero
-    // Unix: ~/.bitcoinzero
+    // Windows < Vista: C:\Documents and Settings\Username\Application Data\BZX
+    // Windows >= Vista: C:\Users\Username\AppData\Roaming\BZX
+    // Mac: ~/Library/Application Support/BZX
+    // Unix: ~/.BZX
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "bitcoinzero";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "BZX";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -510,10 +510,10 @@ boost::filesystem::path GetDefaultDataDir()
         pathRet = fs::path(pszHome);
 #ifdef MAC_OSX
     // Mac
-    return pathRet / "Library/Application Support/bitcoinzero";
+    return pathRet / "Library/Application Support/BZX";
 #else
     // Unix
-    return pathRet / ".bitcoinzero";
+    return pathRet / ".BZX";
 #endif
 #endif
 }

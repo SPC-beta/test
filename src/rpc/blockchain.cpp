@@ -122,7 +122,9 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     if (chainActive.Contains(blockindex))
         confirmations = chainActive.Height() - blockindex->nHeight + 1;
     result.push_back(Pair("confirmations", confirmations));
+    result.push_back(Pair("strippedsize", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS)));
     result.push_back(Pair("size", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION)));
+    result.push_back(Pair("weight", (int)::GetBlockWeight(block)));
     result.push_back(Pair("height", blockindex->nHeight));
     result.push_back(Pair("version", block.nVersion));
     result.push_back(Pair("versionHex", strprintf("%08x", block.nVersion)));
@@ -218,6 +220,71 @@ UniValue getsparknamedata(const JSONRPCRequest& request)
     std::string sparkNameData = sparkNameManager->GetSparkNameAdditionalData(sparkName);
     result.push_back(Pair("additionalInfo", sparkNameData));
 
+    return result;
+}
+
+UniValue getsparknames(const JSONRPCRequest &request)
+{
+    if (request.fHelp || request.params.size() > 1) {
+        throw std::runtime_error(
+            "getsparknames [fOnlyOwn] \n"
+            "\nReturns a list of all Spark names and additional info.\n"
+            "\nArguments:\n"
+            "1. onlyown       (boolean, optional, default=false) Display only the spark names that belong to this wallet\n"
+            "\nResult:\n"
+            "[\n"
+            "  \"Name (string)\n"
+            "  \"Address (string)\"\n"
+            "  ...\n"
+            "]\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getsparknames", "")
+            + HelpExampleRpc("getsparknames", "")
+        );
+    }
+
+    LOCK(cs_main);
+
+    bool fOnlyOwn = request.params.size() > 0 ? request.params[0].get_bool() : false;
+
+#ifdef ENABLE_WALLET
+    CWallet *wallet = GetWalletForJSONRPCRequest(request);
+    if (fOnlyOwn && !wallet)
+        throw JSONRPCError(RPC_WALLET_ERROR, "Wallet functionality is disabled");
+
+    if (wallet) {
+        LOCK(wallet->cs_wallet);
+    }
+#else
+    if (fOnlyOwn)
+        throw JSONRPCError(RPC_WALLET_ERROR, "Wallet functionality is disabled");
+#endif
+
+    if (!spark::IsSparkAllowed()) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Spark is not activated yet");
+    }
+
+    CSparkNameManager *sparkNameManager = CSparkNameManager::GetInstance();
+    std::set<std::string> sparkNames = sparkNameManager->GetSparkNames();
+    UniValue result(UniValue::VARR);
+    for (const auto &name : sparkNames) {
+        UniValue entry(UniValue::VOBJ);
+
+        std::string sparkAddress;
+        if (sparkNameManager->GetSparkAddress(name, sparkAddress)) {
+#ifdef ENABLE_WALLET
+            if (fOnlyOwn && wallet && !wallet->IsSparkAddressMine(sparkAddress))
+                continue;
+#endif
+            entry.push_back(Pair("name", name));
+            entry.push_back(Pair("address", sparkAddress));
+            entry.push_back(Pair("validUntil", sparkNameManager->GetSparkNameBlockHeight(name)));
+            std::string addData = sparkNameManager->GetSparkNameAdditionalData(name);
+            if (!addData.empty())
+                entry.push_back(Pair("additionalInfo", addData));
+            result.push_back(entry);
+        }
+    }
     return result;
 }
 
@@ -886,6 +953,8 @@ UniValue getblock(const JSONRPCRequest& request)
             "  \"hash\" : \"hash\",     (string) the block hash (same as provided)\n"
             "  \"confirmations\" : n,   (numeric) The number of confirmations, or -1 if the block is not on the main chain\n"
             "  \"size\" : n,            (numeric) The block size\n"
+            "  \"strippedsize\" : n,    (numeric) The block size excluding witness data\n"
+            "  \"weight\" : n           (numeric) The block weight as defined in BIP 141\n"
             "  \"height\" : n,          (numeric) The block height or index\n"
             "  \"version\" : n,         (numeric) The block version\n"
             "  \"versionHex\" : \"00000000\", (string) The block version formatted in hexadecimal\n"
@@ -905,6 +974,7 @@ UniValue getblock(const JSONRPCRequest& request)
             "  \"bits\" : \"1d00ffff\", (string) The bits\n"
             "  \"difficulty\" : x.xxx,  (numeric) The difficulty\n"
             "  \"chainwork\" : \"xxxx\",  (string) Expected number of hashes required to produce the chain up to this block (in hex)\n"
+            "  \"nTx\" : n,             (numeric) The number of transactions in the block.\n"
             "  \"previousblockhash\" : \"hash\",  (string) The hash of the previous block\n"
             "  \"nextblockhash\" : \"hash\"       (string) The hash of the next block\n"
             "}\n"
@@ -916,9 +986,11 @@ UniValue getblock(const JSONRPCRequest& request)
             "  ],\n"
             "  ,...                     Same output as verbosity = 1.\n"
             "}\n"
+            "\nResult (for verbose=false):\n"
+            "\"data\"             (string) A string that is serialized, hex-encoded data for block 'hash'.\n"
             "\nExamples:\n"
-            + HelpExampleCli("getblock", "\"00000000000fd08c2fb661d2fcb0d49abb3a91e5f27082ce64feed3b4dede2e2\"")
-            + HelpExampleRpc("getblock", "\"00000000000fd08c2fb661d2fcb0d49abb3a91e5f27082ce64feed3b4dede2e2\"")
+            + HelpExampleCli("getblock", "\"00000000c937983704a73af28acdec37b049d214adbda81d7e2a3dd146f6ed09\"")
+            + HelpExampleRpc("getblock", "\"00000000c937983704a73af28acdec37b049d214adbda81d7e2a3dd146f6ed09\"")
         );
 
     LOCK(cs_main);
@@ -953,7 +1025,7 @@ UniValue getblock(const JSONRPCRequest& request)
 
     if (verbosity <= 0)
     {
-        CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
+        CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION | RPCSerializationFlags());
         ssBlock << block;
         std::string strHex = HexStr(ssBlock.begin(), ssBlock.end());
         return strHex;
@@ -1158,8 +1230,8 @@ UniValue gettxout(const JSONRPCRequest& request)
             "     \"hex\" : \"hex\",        (string) \n"
             "     \"reqSigs\" : n,          (numeric) Number of required signatures\n"
             "     \"type\" : \"pubkeyhash\", (string) The type, eg pubkeyhash\n"
-            "     \"addresses\" : [          (array of string) array of addresses\n"
-            "        \"address\"     (string) address\n"
+            "     \"addresses\" : [          (array of string) array of BZX addresses\n"
+            "        \"BZXaddress\"     (string) BZX address\n"
             "        ,...\n"
             "     ]\n"
             "  },\n"
@@ -1380,6 +1452,8 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     softforks.push_back(SoftForkDesc("DIP3", 4, tip, consensusParams));
     softforks.push_back(SoftForkDesc("DIP3Enforcement", 5, tip, consensusParams));
     softforks.push_back(SoftForkDesc("DIP8", 6, tip, consensusParams));
+    BIP9SoftForkDescPushBack(bip9_softforks, "csv", consensusParams, Consensus::DEPLOYMENT_CSV);
+    BIP9SoftForkDescPushBack(bip9_softforks, "segwit", consensusParams, Consensus::DEPLOYMENT_SEGWIT);
     obj.push_back(Pair("softforks",             softforks));
     obj.push_back(Pair("bip9_softforks", bip9_softforks));
 
@@ -1777,6 +1851,7 @@ static const CRPCCommand commands[] =
     { "blockchain",         "getblockcount",          &getblockcount,          true,  {} },
     { "blockchain",         "getsparknamedata",       &getsparknamedata,       true,  {"sparkname"} },
     { "blockchain",         "getsparknametxdetails",  &getsparknametxdetails,  true,  {"txhash"} },
+    { "blockchain",         "getsparknames",          &getsparknames,          true,  {} },
     { "blockchain",         "getblock",               &getblock,               true,  {"blockhash","verbose"} },
     { "blockchain",         "getblockhash",           &getblockhash,           true,  {"height"} },
     { "blockchain",         "getblockhashes",         &getblockhashes,         true,  {"high", "low"} },

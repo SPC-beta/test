@@ -57,6 +57,7 @@ public:
 private:
     static std::unique_ptr<BatchProofContainer> instance;
     // temp containers, to forget in case block connection fails
+    // map ((id, afterFixes), fIsSigmaToLelantus) to (sigma proof, serial, set size, challenge)
     std::map<std::pair<uint32_t, bool>, std::vector<LelantusSigmaProofData>> tempLelantusSigmaProofs;
     // map (version to (Range proof, Pubcoins))
     std::map<unsigned int, std::vector<std::pair<lelantus::RangeProof, std::vector<lelantus::PublicCoin>>>> tempRangeProofs;

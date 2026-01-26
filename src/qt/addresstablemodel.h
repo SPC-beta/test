@@ -54,7 +54,7 @@ public:
 
     static const QString Send;      /**< Specifies send address */
     static const QString Receive;   /**< Specifies receive address */
-    static const QString Privcoin;   /**< Specifies stealth address */
+    static const QString Zerocoin;   /**< Specifies stealth address */
     static const QString Transparent;
     static const QString Spark;
     static const QString SparkName;

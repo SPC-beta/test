@@ -47,13 +47,13 @@ void masternode_list_help()
             "  json           - Print info in JSON format (can be additionally filtered, partial match)\n"
             "  lastpaidblock  - Print the last block height a node was paid on the network\n"
             "  lastpaidtime   - Print the last time a node was paid on the network\n"
-            "  owneraddress   - Print the masternode owner address\n"
-            "  payee          - Print the masternode payout address (can be additionally filtered,\n"
+            "  owneraddress   - Print the masternode owner BZX address\n"
+            "  payee          - Print the masternode payout BZX address (can be additionally filtered,\n"
             "                   partial match)\n"
             "  pubKeyOperator - Print the masternode operator public key\n"
             "  status         - Print masternode status: ENABLED / POSE_BANNED\n"
             "                   (can be additionally filtered, partial match)\n"
-            "  votingaddress  - Print the masternode voting address\n"
+            "  votingaddress  - Print the masternode voting BZX address\n"
         );
 }
 
@@ -445,7 +445,7 @@ UniValue masternodelist(const JSONRPCRequest& request)
         }
 
         if (strMode == "addr") {
-            std::string strAddress = dmn->pdmnState->addr.ToString(false);
+            std::string strAddress = dmn->pdmnState->addr.ToString();
             if (strFilter !="" && strAddress.find(strFilter) == std::string::npos &&
                 strOutpoint.find(strFilter) == std::string::npos) return;
             obj.push_back(Pair(strOutpoint, strAddress));
@@ -535,8 +535,6 @@ static const CRPCCommand commands[] =
     { "BZX",               "masternodelist",             &masternodelist,         true,  {} },
     { "BZX",               "evomasternode",              &masternode,             true,  {} },
     { "BZX",               "evomasternodelist",          &masternodelist,         true,  {} },
-    { "BZX",               "masternodelist",             &masternodelist,         true,  {} },
-    { "BZX",               "masternodelists",            &masternodelist,         true,  {} },
 };
 
 void RegisterMasternodeRPCCommands(CRPCTable &t)

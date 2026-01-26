@@ -18,10 +18,10 @@ namespace lelantus_mintspend { struct lelantus_mintspend_test; }
 
 namespace lelantus {
 
-// Lelantus transaction info, added to the CBlock to ensure privcoin mint/spend transactions got their info stored into index
+// Lelantus transaction info, added to the CBlock to ensure zerocoin mint/spend transactions got their info stored into index
 class CLelantusTxInfo {
 public:
-    // all the privcoin transactions encountered so far
+    // all the zerocoin transactions encountered so far
     std::set<uint256> zcTransactions;
 
     // Vector of <pubCoin, <amount, hash>> for all the mints.

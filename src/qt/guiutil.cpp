@@ -140,7 +140,7 @@ void setupAddressWidget(QValidatedLineEdit *widget, QWidget *parent)
 #if QT_VERSION >= 0x040700
     // We don't want translators to use own addresses in translations
     // and this is the only place, where this address is supplied.
-    widget->setPlaceholderText(QObject::tr("Enter a address (e.g. %1)").arg(
+    widget->setPlaceholderText(QObject::tr("Enter a BZX address (e.g. %1)").arg(
         QString::fromStdString(DummyAddress(Params()))) +
         QObject::tr(" or a payment code") + QObject::tr(" or a BZX spark address (e.g. pr1cjgedy25xhr4fmzx8cm5gf940v5j2482m94uaa0yguxxw2yrel0f0hyjesg77px7at47f4s3jy8hthmyr6ajhvn025yp28fyuwzvar0gcc7p27rvttn2tyl9ejwthjpaavlmy3cm3sysz)"));
 #endif
@@ -787,6 +787,12 @@ QString formatServicesStr(quint64 mask)
                 break;
             case NODE_GETUTXO:
                 strList.append("GETUTXO");
+                break;
+            case NODE_BLOOM:
+                strList.append("BLOOM");
+                break;
+            case NODE_WITNESS:
+                strList.append("WITNESS");
                 break;
             case NODE_XTHIN:
                 strList.append("XTHIN");

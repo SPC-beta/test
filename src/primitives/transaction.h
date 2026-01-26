@@ -14,6 +14,15 @@
 
 #include <exception>
 
+// Witness encoding is enabled by OR-ing in this flag with GetSerializeType() for streams.
+// For full details see BIP144. SERIALIZE_TRANSACTION_NO_WITNESS (0x40000000) is defined
+// separately and is checked for in network stream serialization. This flag overlaps with
+// ADDRV2_FORMAT (0x20000000), which is OK as the two flags are never used together in the
+// same context.
+static const int SERIALIZE_TRANSACTION_NO_WITNESS = 0x40000000;
+
+static const int WITNESS_SCALE_FACTOR = 1;
+
 class CBadTxIn : public std::exception
 {
 };
@@ -91,6 +100,7 @@ public:
     CScript scriptSig;
     uint32_t nSequence;
     CScript prevPubKey;
+    CScriptWitness scriptWitness; //! Only serialized through CTransaction
 
     /* Setting nSequence to this value for every input in a transaction
      * disables nLockTime. */
@@ -154,10 +164,10 @@ public:
     }
 
     std::string ToString() const;
-    bool IsPrivcoinSpend() const;
+    bool IsZerocoinSpend() const;
     bool IsSigmaSpend() const;
     bool IsLelantusJoinSplit() const;
-    bool IsPrivcoinRemint() const;
+    bool IsZerocoinRemint() const;
 };
 
 /** An output of a transaction.  It contains the public key that the next input
@@ -201,11 +211,32 @@ public:
 
     CAmount GetDustThreshold(const CFeeRate &minRelayTxFee) const
     {
+        // "Dust" is defined in terms of CTransaction::minRelayTxFee,
+        // which has units satoshis-per-kilobyte.
+        // If you'd pay more than 1/3 in fees
+        // to spend something, then we consider it dust.
+        // A typical spendable non-segwit txout is 34 bytes big, and will
+        // need a CTxIn of at least 148 bytes to spend:
+        // so dust is a spendable txout less than
+        // 546*minRelayTxFee/1000 (in satoshis).
+        // A typical spendable segwit txout is 31 bytes big, and will
+        // need a CTxIn of at least 67 bytes to spend:
+        // so dust is a spendable txout less than
+        // 294*minRelayTxFee/1000 (in satoshis).
         if (scriptPubKey.IsUnspendable())
             return 0;
 
         size_t nSize = GetSerializeSize(*this, SER_DISK, 0);
-        nSize += (32 + 4 + 1 + 107 + 4); // the 148 mentioned above
+        int witnessversion = 0;
+        std::vector<unsigned char> witnessprogram;
+
+        if (scriptPubKey.IsWitnessProgram(witnessversion, witnessprogram)) {
+            // sum the sizes of the parts of a transaction input
+            // with 75% segwit discount applied to the script size.
+            nSize += (32 + 4 + 1 + (107 / WITNESS_SCALE_FACTOR) + 4);
+        } else {
+            nSize += (32 + 4 + 1 + 107 + 4); // the 148 mentioned above
+        }
 
         return 3 * minRelayTxFee.GetFee(nSize);
     }
@@ -264,6 +295,7 @@ struct CMutableTransaction;
  */
 template<typename Stream, typename TxType>
 inline void UnserializeTransaction(TxType& tx, Stream& s) {
+    const bool fAllowWitness = !(s.GetVersion() & SERIALIZE_TRANSACTION_NO_WITNESS);
 
     int32_t n32bitVersion;
     s >> n32bitVersion;
@@ -275,7 +307,24 @@ inline void UnserializeTransaction(TxType& tx, Stream& s) {
     tx.vout.clear();
     /* Try to read the vin. In case the dummy is there, this will be read as an empty vector. */
     s >> tx.vin;
-    s >> tx.vout;
+    if (tx.vin.size() == 0 && fAllowWitness) {
+        /* We read a dummy or an empty vin. */
+        s >> flags;
+        if (flags != 0) {
+            s >> tx.vin;
+            s >> tx.vout;
+        }
+    } else {
+        /* We read a non-empty vin. Assume a normal vout follows. */
+        s >> tx.vout;
+    }
+    if ((flags & 1) && fAllowWitness) {
+        /* The witness flag is present, and we support witnesses. */
+        flags ^= 1;
+        for (size_t i = 0; i < tx.vin.size(); i++) {
+            s >> tx.vin[i].scriptWitness.stack;
+        }
+    }
     if (flags) {
         /* Unknown flag in the serialization */
         throw std::ios_base::failure("Unknown transaction optional data");
@@ -289,11 +338,18 @@ inline void UnserializeTransaction(TxType& tx, Stream& s) {
 
 template<typename Stream, typename TxType>
 inline void SerializeTransaction(const TxType& tx, Stream& s) {
+    const bool fAllowWitness = !(s.GetVersion() & SERIALIZE_TRANSACTION_NO_WITNESS);
 
     int32_t n32bitVersion = tx.nVersion | (tx.nType << 16);
     s << n32bitVersion;
     unsigned char flags = 0;
     // Consistency check
+    if (fAllowWitness) {
+        /* Check whether witnesses need to be serialized. */
+        if (tx.HasWitness()) {
+            flags |= 1;
+        }
+    }
     if (flags) {
         /* Use extended format in case witnesses are to be serialized. */
         std::vector<CTxIn> vinDummy;
@@ -302,6 +358,11 @@ inline void SerializeTransaction(const TxType& tx, Stream& s) {
     }
     s << tx.vin;
     s << tx.vout;
+    if (flags & 1) {
+        for (size_t i = 0; i < tx.vin.size(); i++) {
+            s << tx.vin[i].scriptWitness.stack;
+        }
+    }
     s << tx.nLockTime;
     if (tx.nVersion == 3 && tx.nType != TRANSACTION_NORMAL)
         s << tx.vExtraPayload;
@@ -380,16 +441,16 @@ public:
     // Compute modified tx size for priority calculation (optionally given tx size)
     unsigned int CalculateModifiedSize(unsigned int nTxSize=0) const;
 
-    // Returns true, if this is any privcoin transaction.
-    bool IsPrivcoinTransaction() const;
+    // Returns true, if this is any zerocoin transaction.
+    bool IsZerocoinTransaction() const;
 
-    // Returns true, if this is a V3 privcoin mint or spend, made with sigma algorithm.
-    bool IsPrivcoinV3SigmaTransaction() const;
+    // Returns true, if this is a V3 zerocoin mint or spend, made with sigma algorithm.
+    bool IsZerocoinV3SigmaTransaction() const;
 
     bool IsLelantusTransaction() const;
 
-    bool IsPrivcoinSpend() const;
-    bool IsPrivcoinMint() const;
+    bool IsZerocoinSpend() const;
+    bool IsZerocoinMint() const;
 
     bool IsSigmaSpend() const;
     bool IsSigmaMint() const;
@@ -397,8 +458,7 @@ public:
     bool IsLelantusJoinSplit() const;
     bool IsLelantusMint() const;
 
-    bool IsPrivcoinRemint() const;
-
+    bool IsZerocoinRemint() const;
 
     bool IsSparkTransaction() const;
     bool IsSparkSpend() const;
@@ -417,8 +477,8 @@ public:
     bool IsCoinBase() const
     {
         return (vin.size() == 1 && vin[0].prevout.IsNull() && (vin[0].scriptSig.size() == 0
-            || (vin[0].scriptSig[0] != OP_PRIVCOINSPEND
-            && vin[0].scriptSig[0] != OP_PRIVCOINTOSIGMAREMINT
+            || (vin[0].scriptSig[0] != OP_ZEROCOINSPEND
+            && vin[0].scriptSig[0] != OP_ZEROCOINTOSIGMAREMINT
             && vin[0].scriptSig[0] != OP_LELANTUSJOINSPLIT
             && vin[0].scriptSig[0] != OP_LELANTUSJOINSPLITPAYLOAD
             && vin[0].scriptSig[0] != OP_SPARKSPEND)));
@@ -436,6 +496,15 @@ public:
 
     std::string ToString() const;
 
+    bool HasWitness() const
+    {
+        for (size_t i = 0; i < vin.size(); i++) {
+            if (!vin[i].scriptWitness.IsNull()) {
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 /** A mutable version of CTransaction. */
@@ -483,6 +552,15 @@ struct CMutableTransaction
         return !(a == b);
     }
 
+    bool HasWitness() const
+    {
+        for (size_t i = 0; i < vin.size(); i++) {
+            if (!vin[i].scriptWitness.IsNull()) {
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 typedef std::shared_ptr<const CTransaction> CTransactionRef;

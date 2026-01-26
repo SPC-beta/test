@@ -4,7 +4,6 @@
 
 #include "hdmint/mintpool.h"
 #include "lelantus.h"
-
 CMintPool::CMintPool(){}
 
 /**

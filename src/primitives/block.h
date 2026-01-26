@@ -112,7 +112,7 @@ public:
     mutable CTxOut txoutMasternode; // masternode payment
     mutable bool fChecked;
 
-    // memory only, privcoin tx info after V3-sigma.
+    // memory only, zerocoin tx info after V3-sigma.
     mutable std::shared_ptr<sigma::CSigmaTxInfo> sigmaTxInfo;
 
     mutable std::shared_ptr<lelantus::CLelantusTxInfo> lelantusTxInfo;
