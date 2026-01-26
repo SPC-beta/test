@@ -224,6 +224,14 @@ struct Params {
     // Number of block that introduces ability to specify super-transparent addresses
     int nExchangeAddressStartBlock;
 
+    // Functions to get the maximum spark spend per transaction and per block
+    int64_t GetMaxValueSparkSpendPerTransaction(int nHeight) const {
+        return nMaxValueSparkSpendPerTransaction;
+    }
+    int64_t GetMaxValueSparkSpendPerBlock(int nHeight) const {
+        return nMaxValueSparkSpendPerBlock;
+    }
+
     /** P2PKH or P2SH address for developer funds */
     std::string stage3DevelopmentFundAddress;
 
