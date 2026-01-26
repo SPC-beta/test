@@ -21,7 +21,7 @@
 // same context.
 static const int SERIALIZE_TRANSACTION_NO_WITNESS = 0x40000000;
 
-static const int WITNESS_SCALE_FACTOR = 1;
+static const int WITNESS_SCALE_FACTOR = 4;
 
 class CBadTxIn : public std::exception
 {
