@@ -410,10 +410,10 @@ bool BlockAssembler::TestForBlock(CTxMemPool::txiter iter)
         CAmount spendAmount = spark::GetSpendTransparentAmount(tx);
         const auto &params = chainparams.GetConsensus();
 
-        if (spendAmount > params.GetMaxValueSparkSpendPerTransaction(nHeight))
+        if (spendAmount > params.GetMaxValueSparkSpendPerTransaction())
             return false;
 
-        if (spendAmount + nSparkSpendAmount > params.GetMaxValueSparkSpendPerBlock(nHeight))
+        if (spendAmount + nSparkSpendAmount > params.GetMaxValueSparkSpendPerBlock())
             return false;
     }
 
@@ -442,10 +442,10 @@ void BlockAssembler::AddToBlock(CTxMemPool::txiter iter)
         CAmount spendAmount = spark::GetSpendTransparentAmount(tx);
         const auto &params = chainparams.GetConsensus();
 
-        if (spendAmount > params.GetMaxValueSparkSpendPerTransaction(nHeight))
+        if (spendAmount > params.GetMaxValueSparkSpendPerTransaction())
             return;
 
-        if ((nSparkSpendAmount += spendAmount) > params.GetMaxValueSparkSpendPerBlock(nHeight))
+        if ((nSparkSpendAmount += spendAmount) > params.GetMaxValueSparkSpendPerBlock())
             return;
     }
 
