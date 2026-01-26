@@ -1,12 +1,12 @@
 package=libxcb_util_keysyms
 $(package)_version=0.4.1
 $(package)_download_path=https://xcb.freedesktop.org/dist
-$(package)_file_name=xcb-util-keysyms-$($(package)_version).tar.xz
-$(package)_sha256_hash=7c260a5294412aed429df1da2f8afd3bd07b7cba3fec772fba15a613a6d5c638
+$(package)_file_name=xcb-util-keysyms-$($(package)_version).tar.gz
+$(package)_sha256_hash=1fa21c0cea3060caee7612b6577c1730da470b88cbdf846fa4e3e0ff78948e54
 $(package)_dependencies=libxcb xproto
 
 define $(package)_set_vars
-$(package)_config_opts=--disable-devel-docs --without-doxygen
+$(package)_config_opts=--disable-shared --disable-devel-docs --without-doxygen
 $(package)_config_opts += --disable-dependency-tracking --enable-option-checking
 endef
 

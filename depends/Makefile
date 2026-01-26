@@ -37,13 +37,14 @@ NO_LIBEVENT ?=
 NO_QT ?=
 NO_QR ?=
 NO_BDB ?=
-NO_SQLITE ?=
 NO_WALLET ?=
 NO_ZMQ ?=
 NO_USDT ?=
-MULTIPROCESS ?=
+# Default NO_IPC value is 1 on Windows
+NO_IPC ?= $(if $(findstring mingw32,$(HOST)),1,)
 LTO ?=
 NO_UPNP ?=
+
 FALLBACK_DOWNLOAD_PATH ?= https://firo.org/depends-sources
 FALLBACK_DOWNLOAD_PATH_ALTERNATIVE ?= https://bitcoincore.org/depends-sources
 FALLBACK_DOWNLOAD_PATH_ALTERNATIVE_2 ?= http://dash-depends-sources.s3-website-us-west-2.amazonaws.com
@@ -158,27 +159,28 @@ boost_packages_$(NO_BOOST) = $(boost_packages)
 
 libevent_packages_$(NO_LIBEVENT) = $(libevent_packages)
 
-qrencode_packages_$(NO_QR) = $(qrencode_packages)
+qrencode_packages_$(NO_QR) = $(qrencode_$(host_os)_packages)
 
 qt_packages_$(NO_QT) = $(qt_packages) $(qt_$(host_os)_packages) $(qt_$(host_arch)_$(host_os)_packages) $(qrencode_packages_)
 qt_native_packages_$(NO_QT) = $(qt_native_packages)
 
 bdb_packages_$(NO_BDB) = $(bdb_packages)
-sqlite_packages_$(NO_SQLITE) = $(sqlite_packages)
-wallet_packages_$(NO_WALLET) = $(bdb_packages_) $(sqlite_packages_)
+wallet_packages_$(NO_WALLET) = $(bdb_packages_)
 upnp_packages_$(NO_UPNP) = $(upnp_packages)
-zmq_packages_$(NO_ZMQ) = $(zmq_packages)
-multiprocess_packages_$(MULTIPROCESS) = $(multiprocess_packages)
 
-packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_) $(upnp_packages_)
+zmq_packages_$(NO_ZMQ) = $(zmq_packages)
+ipc_packages_$(NO_IPC) = $(ipc_packages)
+usdt_packages_$(NO_USDT) = $(usdt_$(host_os)_packages)
+
+packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_) $(usdt_packages_) $(upnp_packages_)
 native_packages += $($(host_arch)_$(host_os)_native_packages) $($(host_os)_native_packages) $(qt_native_packages_)
 
 ifneq ($(zmq_packages_),)
 packages += $(zmq_packages)
 endif
 
-ifeq ($(multiprocess_packages_),)
-packages += $(multiprocess_packages)
+ifneq ($(ipc_packages_),)
+packages += $(ipc_packages)
 native_packages += $(multiprocess_native_packages)
 endif
 
@@ -196,7 +198,7 @@ $(host_prefix)/.stamp_$(final_build_id): $(native_packages) $(packages)
 	echo copying packages: $^
 	echo to: $(@D)
 	cd $(@D); $(foreach package,$^, $(build_TAR) xf $($(package)_cached); )
-	echo To build Firo with these packages, pass \'--toolchain $(@D)/toolchain.cmake\' to the first CMake invocation.
+	echo To build Bitcoin Core with these packages, pass \'--toolchain $(@D)/toolchain.cmake\' to the first CMake invocation.
 	touch $@
 
 ifeq ($(host),$(build))
@@ -220,7 +222,6 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@STRIP@|$(host_STRIP)|' \
             -e 's|@OBJCOPY@|$(host_OBJCOPY)|' \
             -e 's|@OBJDUMP@|$(host_OBJDUMP)|' \
-            -e 's|@depends_prefix@|$(host_prefix)|' \
             -e 's|@CFLAGS@|$(strip $(host_CFLAGS))|' \
             -e 's|@CFLAGS_RELEASE@|$(strip $(host_release_CFLAGS))|' \
             -e 's|@CFLAGS_DEBUG@|$(strip $(host_debug_CFLAGS))|' \
@@ -239,10 +240,8 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@wallet_packages@|$(wallet_packages_)|' \
             -e 's|@upnp_packages@|$(upnp_packages_)|' \
             -e 's|@bdb_packages@|$(bdb_packages_)|' \
-            -e 's|@sqlite_packages@|$(sqlite_packages_)|' \
             -e 's|@usdt_packages@|$(usdt_packages_)|' \
-            -e 's|@no_harden@|$(NO_HARDEN)|' \
-            -e 's|@multiprocess@|$(MULTIPROCESS)|' \
+            -e 's|@ipc_packages@|$(ipc_packages_)|' \
             $< > $@
 	touch $@
 

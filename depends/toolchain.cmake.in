@@ -51,21 +51,6 @@ if(NOT DEFINED CMAKE_CXX_COMPILER)
   set(CMAKE_OBJCXX_COMPILER ${CMAKE_CXX_COMPILER})
 endif()
 
-# Detect if we're using the MingW toolchain
-if(CMAKE_CXX_COMPILER MATCHES "mingw")
-  set(WIN32 TRUE CACHE INTERNAL "Building for Win32 platform")
-  set(MINGW TRUE CACHE INTERNAL "Using MingW toolchain")
-  if(CMAKE_CXX_COMPILER MATCHES "i686-w64-mingw32")
-    set(MINGW_ARCH "32" CACHE INTERNAL "Using 32-bit MingW toolchain")
-    message(STATUS "Using 32-bit MingW toolchain.")
-  elseif(CMAKE_CXX_COMPILER MATCHES "x86_64-w64-mingw32")
-    set(MINGW_ARCH "64" CACHE INTERNAL "Using 64-bit MingW toolchain")
-    message(STATUS "Using 64-bit MingW toolchain.")
-  endif()
-else()
-  set(MINGW FALSE CACHE INTERNAL "Not using MingW toolchain")
-endif()
-
 # The DEPENDS_COMPILE_DEFINITIONS* variables are to be treated as lists.
 set(DEPENDS_COMPILE_DEFINITIONS @CPPFLAGS@)
 set(DEPENDS_COMPILE_DEFINITIONS_RELWITHDEBINFO @CPPFLAGS_RELEASE@)
@@ -107,6 +92,17 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(QT_TRANSLATIONS_DIR "${CMAKE_CURRENT_LIST_DIR}/translations")
 
+# The following is only necessary when using cmake from Nix or NixOS, because
+# Nix patches cmake to remove the root directory `/` from
+# CMAKE_SYSTEM_PREFIX_PATH. Adding it back is harmless on other platforms and
+# necessary on Nix because without it cmake find_path, find_package, etc
+# functions do not know where to look in CMAKE_FIND_ROOT_PATH for dependencies
+# (https://github.com/bitcoin/bitcoin/issues/32428).
+#
+# TODO: longer term, it may be possible to use a dependency provider, which
+# would bring the find_package calls completely under our control, making this
+# patch unnecessary.
+#
 # Make sure we only append once, as this file may be called repeatedly.
 if(NOT "/" IN_LIST CMAKE_PREFIX_PATH)
   list(APPEND CMAKE_PREFIX_PATH "/")
@@ -121,7 +117,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND NOT CMAKE_HOST_APPLE)
 endif()
 
 
-if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|FreeBSD|Windows)$")
+if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|FreeBSD)$")
   # Customize pkg-config behavior for finding dependencies
   # of the xcb QPA platform plugin:
   # 1. Restrict search paths to the depends.
@@ -177,16 +173,12 @@ else()
   set(WITH_USDT ON CACHE BOOL "")
 endif()
 
-if("@no_harden@")
-  set(ENABLE_HARDENING OFF CACHE BOOL "")
+set(ipc_packages @ipc_packages@)
+if("${ipc_packages}" STREQUAL "")
+  set(ENABLE_IPC OFF CACHE BOOL "")
 else()
-  set(ENABLE_HARDENING ON CACHE BOOL "")
-endif()
-
-if("@multiprocess@" STREQUAL "1")
-  set(WITH_MULTIPROCESS ON CACHE BOOL "")
-  set(Libmultiprocess_ROOT "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "")
-  set(LibmultiprocessNative_ROOT "${CMAKE_CURRENT_LIST_DIR}/native" CACHE PATH "")
-else()
-  set(WITH_MULTIPROCESS OFF CACHE BOOL "")
+  set(ENABLE_IPC ON CACHE BOOL "")
+  set(MPGEN_EXECUTABLE "${CMAKE_CURRENT_LIST_DIR}/native/bin/mpgen" CACHE FILEPATH "")
+  set(CAPNP_EXECUTABLE "${CMAKE_CURRENT_LIST_DIR}/native/bin/capnp" CACHE FILEPATH "")
+  set(CAPNPC_CXX_EXECUTABLE "${CMAKE_CURRENT_LIST_DIR}/native/bin/capnpc-c++" CACHE FILEPATH "")
 endif()
