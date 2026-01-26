@@ -757,8 +757,8 @@ bool CheckTransaction(const CTransaction &tx, CValidationState &state, bool fChe
                 return false;
         }
 
-        if (tx.IsPrivcoinSpend() || tx.IsPrivcoinMint()) {
-                return state.DoS(1, error("Privcoin is disabled at this point"));
+        if (tx.IsZerocoinSpend() || tx.IsZerocoinMint()) {
+                return state.DoS(1, error("Zerocoin is disabled at this point"));
         }
 
 		if (tx.IsSigmaSpend() || tx.IsSigmaMint()) {
@@ -4290,7 +4290,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
 
     for (CTransactionRef tx : block.vtx) {
         if (tx->IsSigmaMint() || tx->IsSigmaSpend()) {
-            return state.DoS(100, error("Sigma is disabled"), REJECT_INVALID, "bad-txns-privcoin");
+            return state.DoS(100, error("Sigma is disabled"), REJECT_INVALID, "bad-txns-zerocoin");
         }
         // We don't check transactions againstlelantus state here, we'll check it again later in ConnectBlock
         if (!CheckTransaction(*tx, state, false, tx->GetHash(), isVerifyDB, nHeight, false, false, NULL, NULL))
