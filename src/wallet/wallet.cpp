@@ -4422,8 +4422,8 @@ bool CWallet::CreateLelantusMintTransactions(
                     setCoins.clear();
 
                     // create recipient using random private coin to mock script sig
-                    lelantus::PrivateCoin privCoin(lelantusParams, mintedValue);
-                    auto recipient = CWallet::CreateLelantusMintRecipient(privCoin, dMint, false);
+                    lelantus::PrivateCoin zeroCoin(lelantusParams, mintedValue);
+                    auto recipient = CWallet::CreateLelantusMintRecipient(zeroCoin, dMint, false);
 
                     double dPriority = 0;
 
@@ -4608,7 +4608,7 @@ bool CWallet::CreateLelantusMintTransactions(
                         }
 
                         // Generate hdMint
-                        recipient = CWallet::CreateLelantusMintRecipient(privCoin, dMint);
+                        recipient = CWallet::CreateLelantusMintRecipient(zeroCoin, dMint);
 
                         // vout to mint
                         txout = CTxOut(recipient.nAmount, recipient.scriptPubKey);
