@@ -593,7 +593,7 @@ void handleInput(CTxIn const & input, size_t inputNo, uint256 const & txHash, in
 }
 
 template <class Iterator>
-void handlePrivcoinSpend(Iterator const begin, Iterator const end, uint256 const & txHash, int height, int txNumber, CCoinsViewCache const & view,
+void handleZerocoinSpend(Iterator const begin, Iterator const end, uint256 const & txHash, int height, int txNumber, CCoinsViewCache const & view,
         AddressIndexPtr & addressIndex, CTransaction const & tx)
 {
     if(!addressIndex)
@@ -654,8 +654,8 @@ void CDbIndexHelper::ConnectTransaction(CTransaction const & tx, int height, int
         }
     }
 
-    if(tx.IsPrivcoinSpend() || tx.IsSigmaSpend() || tx.IsLelantusJoinSplit() || tx.IsSparkSpend())
-        handlePrivcoinSpend(tx.vout.begin(), tx.vout.end(), tx.GetHash(), height, txNumber, view, addressIndex, tx);
+    if(tx.IsZerocoinSpend() || tx.IsSigmaSpend() || tx.IsLelantusJoinSplit() || tx.IsSparkSpend())
+        handleZerocoinSpend(tx.vout.begin(), tx.vout.end(), tx.GetHash(), height, txNumber, view, addressIndex, tx);
 
     no = 0;
     bool const txIsCoinBase = tx.IsCoinBase();
@@ -698,8 +698,8 @@ void CDbIndexHelper::DisconnectTransactionInputs(CTransaction const & tx, int he
 
 void CDbIndexHelper::DisconnectTransactionOutputs(CTransaction const & tx, int height, int txNumber, CCoinsViewCache const & view)
 {
-    if(tx.IsPrivcoinSpend() || tx.IsSigmaSpend() || tx.IsLelantusJoinSplit() || tx.IsSparkSpend())
-        handlePrivcoinSpend(tx.vout.begin(), tx.vout.end(), tx.GetHash(), height, txNumber, view, addressIndex, tx);
+    if(tx.IsZerocoinSpend() || tx.IsSigmaSpend() || tx.IsLelantusJoinSplit() || tx.IsSparkSpend())
+        handleZerocoinSpend(tx.vout.begin(), tx.vout.end(), tx.GetHash(), height, txNumber, view, addressIndex, tx);
 
     size_t no = 0;
     bool const txIsCoinBase = tx.IsCoinBase();
