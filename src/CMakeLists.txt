@@ -33,7 +33,7 @@ target_include_directories(bitcoin_clientversion PRIVATE ${PROJECT_BINARY_DIR}/s
 
 #=============================
 # util library
-# bitcoinzero does not have util subdirectory
+# bitcoin does not have util subdirectory
 #=============================
 
 add_library(bitcoin_util STATIC EXCLUDE_FROM_ALL
@@ -241,8 +241,8 @@ if(ENABLE_WALLET)
 endif()
 
 
-# P2P and RPC server functionality used by `bitcoind` and `bitcoinzero-qt` executables.
-add_library(bitcoinzero_node STATIC EXCLUDE_FROM_ALL
+# P2P and RPC server functionality used by `bitcoind` and `bitcoin-qt` executables.
+add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/activemasternode.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/addrdb.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/addrman.cpp
@@ -356,7 +356,7 @@ add_library(bitcoinzero_node STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/warnings.cpp
 )
 
-target_link_libraries(bitcoinzero_node
+target_link_libraries(bitcoin_node
   PRIVATE
     core_interface
     bitcoin_common
@@ -379,31 +379,38 @@ target_link_libraries(bitcoinzero_node
     $<$<BOOL:${WIN32}>:windows_system>
 )
 
-# Bitcoin Core bitcoinzerod.
+# Bitcoin Core bitcoind.
 if(BUILD_DAEMON)
-  add_executable(bitcoinzerod
-  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoind.cpp
+  add_executable(bitcoind
+    ${CMAKE_CURRENT_SOURCE_DIR}/bitcoind.cpp
   )
-  add_windows_resources(bitcoinzerod bitcoind-res.rc)
-  target_link_libraries(bitcoinzerod
+  add_windows_resources(bitcoind bitcoind-res.rc)
+
+  target_link_libraries(bitcoind
     core_interface
     univalue
     Boost::thread
-    bitcoinzero_node
+    bitcoin_node
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
     $<$<BOOL:${WITH_ZMQ}>:bitcoin_zmq>
-    bitcoinzero_cli
+    bitcoin_cli
     secp256k1
     secp256k1pp
-    $<TARGET_NAME_IF_EXISTS:bitcoinzero_wallet>
+
+    # Wallet libraries (REQUIRED)
+    $<TARGET_NAME_IF_EXISTS:bitcoin_wallet>
+    $<TARGET_NAME_IF_EXISTS:bitcoin_walletdb>
+    $<TARGET_NAME_IF_EXISTS:bitcoin_wallet_tool>
+
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
   )
-  set_platform_output_name(bitcoinzerod BITCOIN_DAEMON_NAME)
-  apply_wrapped_exception_flags(bitcoinzerod)
-  list(APPEND installable_targets bitcoinzerod)
+
+  set_platform_output_name(bitcoind BITCOIN_DAEMON_NAME)
+  apply_wrapped_exception_flags(bitcoind)
+  list(APPEND installable_targets bitcoind)
 endif()
 if(WITH_MULTIPROCESS)
   add_executable(bitcoin-node
@@ -412,9 +419,9 @@ if(WITH_MULTIPROCESS)
   )
   target_link_libraries(bitcoin-node
     core_interface
-    bitcoinzero_node
+    bitcoin_node
     bitcoin_ipc
-    $<TARGET_NAME_IF_EXISTS:bitcoinzero_wallet>
+    $<TARGET_NAME_IF_EXISTS:bitcoin_wallet>
   )
   list(APPEND installable_targets bitcoin-node)
 
@@ -436,64 +443,64 @@ if(WITH_MULTIPROCESS)
 endif()
 
 
-add_library(bitcoinzero_cli STATIC EXCLUDE_FROM_ALL
+add_library(bitcoin_cli STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/rpc/client.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/rpc/protocol.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
 )
-target_link_libraries(bitcoinzero_cli
+target_link_libraries(bitcoin_cli
   PUBLIC
     core_interface
     univalue
     Boost::filesystem
     Boost::thread
     Boost::program_options
-    bitcoinzero_node
+    bitcoin_node
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
     $<$<BOOL:${WITH_ZMQ}>:bitcoin_zmq>
-    $<TARGET_NAME_IF_EXISTS:bitcoinzero_wallet>
+    $<TARGET_NAME_IF_EXISTS:bitcoin_wallet>
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
 )
-target_include_directories(bitcoinzero_cli
+target_include_directories(bitcoin_cli
   PUBLIC
 )
 
 # Bitcoin Core RPC client
 if(BUILD_CLI)
-  add_executable(bitcoinzero-cli ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin-cli.cpp)
-  add_windows_resources(bitcoinzero-cli bitcoin-cli-res.rc)
-  target_link_libraries(bitcoinzero-cli
+  add_executable(bitcoin-cli ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin-cli.cpp)
+  add_windows_resources(bitcoin-cli bitcoin-cli-res.rc)
+  target_link_libraries(bitcoin-cli
     core_interface
     univalue
-    bitcoinzero_node
+    bitcoin_node
     $<TARGET_NAME_IF_EXISTS:libevent::pthreads>
     $<TARGET_NAME_IF_EXISTS:libevent::extra>
     $<TARGET_NAME_IF_EXISTS:libevent::core>
     $<$<BOOL:${WITH_ZMQ}>:bitcoin_zmq>
-    bitcoinzero_cli
-    $<TARGET_NAME_IF_EXISTS:bitcoinzero_wallet>
+    bitcoin_cli
+    $<TARGET_NAME_IF_EXISTS:bitcoin_wallet>
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
   )
-  set_platform_output_name(bitcoinzero-cli BITCOIN_CLI_NAME)
-  apply_wrapped_exception_flags(bitcoinzero-cli)
-  list(APPEND installable_targets bitcoinzero-cli)
+  set_platform_output_name(bitcoin-cli BITCOIN_CLI_NAME)
+  apply_wrapped_exception_flags(bitcoin-cli)
+  list(APPEND installable_targets bitcoin-cli)
 endif()
 
 
 if(BUILD_TX)
-  add_executable(bitcoinzero-tx ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin-tx.cpp
+  add_executable(bitcoin-tx ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin-tx.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/keystore.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/script/standard.cpp
   )
-  add_windows_resources(bitcoinzero-tx bitcoin-tx-res.rc)
-  target_link_libraries(bitcoinzero-tx
+  add_windows_resources(bitcoin-tx bitcoin-tx-res.rc)
+  target_link_libraries(bitcoin-tx
     core_interface
     bitcoin_crypto    
-    bitcoinzero_cli
+    bitcoin_cli
     bitcoin_common
     bitcoin_util
     univalue
@@ -502,9 +509,9 @@ if(BUILD_TX)
     $<$<BOOL:${WIN32}>:windows_system>
     $<$<BOOL:${WIN32}>:OpenSSL::Crypto>
   )
-  set_platform_output_name(bitcoinzero-tx BITCOIN_TX_NAME)
-  apply_wrapped_exception_flags(bitcoinzero-tx)
-  list(APPEND installable_targets bitcoinzero-tx)
+  set_platform_output_name(bitcoin-tx BITCOIN_TX_NAME)
+  apply_wrapped_exception_flags(bitcoin-tx)
+  list(APPEND installable_targets bitcoin-tx)
 endif()
 
 
