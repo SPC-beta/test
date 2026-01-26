@@ -202,8 +202,6 @@ QT_TRANSLATE_NOOP("BZX-core", ""
 "Sets the serialization of raw transaction or block hex returned in non-"
 "verbose mode, non-segwit(0) or segwit(1) (default: %d)"),
 QT_TRANSLATE_NOOP("BZX-core", ""
-"Support filtering of blocks and transaction with bloom filters (default: %u)"),
-QT_TRANSLATE_NOOP("BZX-core", ""
 "The block database contains a block which appears to be from the future. "
 "This may be due to your computer's date and time being set incorrectly. Only "
 "rebuild the block database if you are sure that your computer's date and "
