@@ -225,10 +225,10 @@ struct Params {
     int nExchangeAddressStartBlock;
 
     // Functions to get the maximum spark spend per transaction and per block
-    int64_t GetMaxValueSparkSpendPerTransaction(int nHeight) const {
+    int64_t GetMaxValueSparkSpendPerTransaction() const {
         return nMaxValueSparkSpendPerTransaction;
     }
-    int64_t GetMaxValueSparkSpendPerBlock(int nHeight) const {
+    int64_t GetMaxValueSparkSpendPerBlock() const {
         return nMaxValueSparkSpendPerBlock;
     }
 
