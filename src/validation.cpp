@@ -4603,7 +4603,7 @@ static bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state
             return state.DoS(100, error("%s: prev block invalid", __func__), REJECT_INVALID, "bad-prevblk");
 
         assert(pindexPrev);
-        if (fCheckpointsEnabled && !CheckIndexAgainstCheckpoint(pindexPrev, state, chainparams, hash))
+        if (!CheckIndexAgainstCheckpoint(pindexPrev, state, chainparams, hash))
             return error("%s: CheckIndexAgainstCheckpoint(): %s", __func__, state.GetRejectReason().c_str());
 
         if (!ContextualCheckBlockHeader(block, state, chainparams.GetConsensus(), pindexPrev, GetAdjustedTime()))
@@ -4761,7 +4761,7 @@ bool TestBlockValidity(CValidationState& state, const CChainParams& chainparams,
 {
     AssertLockHeld(cs_main);
     assert(pindexPrev && pindexPrev == chainActive.Tip());
-    if (fCheckpointsEnabled && !CheckIndexAgainstCheckpoint(pindexPrev, state, chainparams, block.GetHash()))
+    if (!CheckIndexAgainstCheckpoint(pindexPrev, state, chainparams, block.GetHash()))
         return error("%s: CheckIndexAgainstCheckpoint(): %s", __func__, state.GetRejectReason().c_str());
 
     CCoinsViewCache viewNew(pcoinsTip);
@@ -5114,7 +5114,7 @@ bool static LoadBlockIndexDB(const CChainParams& chainparams)
     LogPrintf("%s: hashBestChain=%s height=%d date=%s progress=%f\n", __func__,
         chainActive.Tip()->GetBlockHash().ToString(), chainActive.Height(),
         DateTimeStrFormat("%Y-%m-%d %H:%M:%S", chainActive.Tip()->GetBlockTime()),
-        GuessVerificationProgress(chainparams.TxData(), chainActive.Tip()));
+        Checkpoints::GuessVerificationProgress(chainActive.Tip()))
 
     return true;
 }
