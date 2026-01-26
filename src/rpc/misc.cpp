@@ -564,34 +564,6 @@ UniValue verifyprivatetxown(const JSONRPCRequest& request)
     return VerifyPrivateTxOwn(txid, vchSig, strMessage);
 }
 
-
-UniValue setmocktime(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() != 1)
-        throw std::runtime_error(
-            "setmocktime timestamp\n"
-            "\nSet the local time to given timestamp (-regtest only)\n"
-            "\nArguments:\n"
-            "1. timestamp  (integer, required) Unix seconds-since-epoch timestamp\n"
-            "   Pass 0 to go back to using the system time."
-        );
-
-    if (!Params().MineBlocksOnDemand())
-        throw std::runtime_error("setmocktime for regression testing (-regtest mode) only");
-
-    // For now, don't change mocktime if we're in the middle of validation, as
-    // this could have an effect on mempool time-based eviction, as well as
-    // IsCurrentForFeeEstimation() and IsInitialBlockDownload().
-    // TODO: figure out the right way to synchronize around mocktime, and
-    // ensure all callsites of GetTime() are accessing this safely.
-    LOCK(cs_main);
-
-    RPCTypeCheck(request.params, boost::assign::list_of(UniValue::VNUM));
-    SetMockTime(request.params[0].get_int64());
-
-    return NullUniValue;
-}
-
 bool getAddressFromIndex(AddressType const & type, const uint160 &hash, std::string &address)
 {
     if (type == AddressType::payToScriptHash) {
@@ -2133,8 +2105,6 @@ static const CRPCCommand commands[] =
     { "mobile",             "getmempoolsparktxs",     &getmempoolsparktxs,       true,         {} },
 
     { "mobile",             "checkifmncollateral",   &checkifmncollateral, false,              {} },
-
-    { "hidden",             "setmocktime",            &setmocktime,            true,           {"timestamp"} },
     { "hidden",             "echo",                   &echo,                   true,           {"arg0","arg1","arg2","arg3","arg4","arg5","arg6","arg7","arg8","arg9"} },
     { "hidden",             "echojson",               &echo,                  true,            {"arg0","arg1","arg2","arg3","arg4","arg5","arg6","arg7","arg8","arg9"} },
 };
