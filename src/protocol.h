@@ -180,33 +180,6 @@ extern const char *PONG;
  */
 extern const char *NOTFOUND;
 /**
- * The filterload message tells the receiving peer to filter all relayed
- * transactions and requested merkle blocks through the provided filter.
- * @since protocol version 70001 as described by BIP37.
- *   Only available with service bit NODE_BLOOM since protocol version
- *   70011 as described by BIP111.
- * @see https://bitcoin.org/en/developer-reference#filterload
- */
-extern const char *FILTERLOAD;
-/**
- * The filteradd message tells the receiving peer to add a single element to a
- * previously-set bloom filter, such as a new public key.
- * @since protocol version 70001 as described by BIP37.
- *   Only available with service bit NODE_BLOOM since protocol version
- *   70011 as described by BIP111.
- * @see https://bitcoin.org/en/developer-reference#filteradd
- */
-extern const char *FILTERADD;
-/**
- * The filterclear message tells the receiving peer to remove a previously-set
- * bloom filter.
- * @since protocol version 70001 as described by BIP37.
- *   Only available with service bit NODE_BLOOM since protocol version
- *   70011 as described by BIP111.
- * @see https://bitcoin.org/en/developer-reference#filterclear
- */
-extern const char *FILTERCLEAR;
-/**
  * The reject message informs the receiving node that one of its previous
  * messages has been rejected.
  * @since protocol version 70002 as described by BIP61.
@@ -294,10 +267,6 @@ enum ServiceFlags : uint64_t {
     // Bitcoin Core does not support this but a patch set called Bitcoin XT does.
     // See BIP 64 for details on how this is implemented.
     NODE_GETUTXO = (1 << 1),
-    // NODE_BLOOM means the node is capable and willing to handle bloom-filtered connections.
-    // Bitcoin Core nodes used to support this by default, without advertising this bit,
-    // but no longer do as of protocol version 70011 (= NO_BLOOM_VERSION)
-    NODE_BLOOM = (1 << 2),
     // NODE_WITNESS indicates that a node can be asked for blocks and transactions including
     // witness data.
     NODE_WITNESS = (1 << 3),
