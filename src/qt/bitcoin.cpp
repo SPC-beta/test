@@ -315,24 +315,76 @@ void BitcoinCore::initialize()
 
 void BitcoinCore::restart(QStringList args)
 {
-    if(execute_restart) { // Only restart 1x, no matter how often a user clicks on a restart-button
-        execute_restart = false;
-        try
+    if (!execute_restart) {
+        return;
+    }
+    execute_restart = false;
+
+    try {
+        qDebug() << __func__ << ": Running Restart in thread";
+
+        Interrupt(threadGroup);
+        threadGroup.join_all();
+
+        Shutdown();
+        qDebug() << __func__ << ": Shutdown finished";
+        Q_EMIT shutdownResult(1);
+
+        CExplicitNetCleanup::callCleanup();
+
+#if defined(Q_OS_WIN)
+        // ---- Windows ----
+        QString cmd = QCoreApplication::applicationFilePath();
+        for (const auto& a : args) {
+            cmd += " \"" + a + "\"";
+        }
+
+        STARTUPINFOW si{};
+        PROCESS_INFORMATION pi{};
+        si.cb = sizeof(si);
+
+        if (!CreateProcessW(
+                nullptr,
+                (LPWSTR)cmd.utf16(),
+                nullptr,
+                nullptr,
+                FALSE,
+                0,
+                nullptr,
+                nullptr,
+                &si,
+                &pi))
         {
-            qDebug() << __func__ << ": Running Restart in thread";
-            Interrupt(threadGroup);
-            threadGroup.join_all();
-            Shutdown();
-            qDebug() << __func__ << ": Shutdown finished";
-            Q_EMIT shutdownResult(1);
-            CExplicitNetCleanup::callCleanup();
-            QProcess::startDetached(QApplication::applicationFilePath(), args);
-            qDebug() << __func__ << ": Restart initiated...";
-            QApplication::quit();
+            qCritical() << "Restart failed (CreateProcessW)";
+            execute_restart = true;
+            return;
         }
-        catch (...) {
-            handleRunawayException(std::current_exception());
-        }
+
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        ExitProcess(0);
+
+#else
+        // ---- Linux / macOS / BSD ----
+        std::vector<std::string> sargs;
+        sargs.push_back(QCoreApplication::applicationFilePath().toStdString());
+        for (const auto& a : args)
+            sargs.push_back(a.toStdString());
+
+        std::vector<char*> cargs;
+        for (auto& s : sargs)
+            cargs.push_back(s.data());
+        cargs.push_back(nullptr);
+
+        execv(cargs[0], cargs.data());
+
+        // If execv returns, it failed
+        perror("execv");
+        execute_restart = true;
+#endif
+    }
+    catch (...) {
+        handleRunawayException(std::current_exception());
     }
 }
 
