@@ -1,4 +1,6 @@
 .NOTPARALLEL :
+# Disable builtin variables, rules and suffixes.
+MAKEFLAGS += --no-builtin-rules --no-builtin-variables
 
 # Pattern rule to print variables, e.g. make print-top_srcdir
 print-%: FORCE
@@ -40,8 +42,6 @@ NO_BDB ?=
 NO_WALLET ?=
 NO_ZMQ ?=
 NO_USDT ?=
-# Default NO_IPC value is 1 on Windows
-NO_IPC ?= $(if $(findstring mingw32,$(HOST)),1,)
 LTO ?=
 NO_UPNP ?=
 
@@ -169,19 +169,13 @@ wallet_packages_$(NO_WALLET) = $(bdb_packages_)
 upnp_packages_$(NO_UPNP) = $(upnp_packages)
 
 zmq_packages_$(NO_ZMQ) = $(zmq_packages)
-ipc_packages_$(NO_IPC) = $(ipc_packages)
 usdt_packages_$(NO_USDT) = $(usdt_$(host_os)_packages)
 
-packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_) $(usdt_packages_) $(upnp_packages_)
+packages += $($(host_arch)_$(host_os)_packages) $($(host_os)_packages) $(boost_packages_) $(libevent_packages_) $(qt_packages_) $(wallet_packages_) $(upnp_packages_) $(usdt_packages_)
 native_packages += $($(host_arch)_$(host_os)_native_packages) $($(host_os)_native_packages) $(qt_native_packages_)
 
 ifneq ($(zmq_packages_),)
 packages += $(zmq_packages)
-endif
-
-ifneq ($(ipc_packages_),)
-packages += $(ipc_packages)
-native_packages += $(multiprocess_native_packages)
 endif
 
 all_packages = $(packages) $(native_packages)
@@ -238,10 +232,9 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@qrencode_packages@|$(qrencode_packages_)|' \
             -e 's|@zmq_packages@|$(zmq_packages_)|' \
             -e 's|@wallet_packages@|$(wallet_packages_)|' \
+            -e 's|@usdt_packages@|$(usdt_packages_)|' \
             -e 's|@upnp_packages@|$(upnp_packages_)|' \
             -e 's|@bdb_packages@|$(bdb_packages_)|' \
-            -e 's|@usdt_packages@|$(usdt_packages_)|' \
-            -e 's|@ipc_packages@|$(ipc_packages_)|' \
             $< > $@
 	touch $@
 
