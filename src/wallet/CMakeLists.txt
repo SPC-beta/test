@@ -4,7 +4,7 @@
 
 # Wallet functionality used by bitcoind and bitcoin-wallet executables.
 
-add_library(BZX_wallet STATIC EXCLUDE_FROM_ALL
+add_library(bitcoin_wallet STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/../activemasternode.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../masternode-sync.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../lelantus.cpp
@@ -35,7 +35,7 @@ add_library(BZX_wallet STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/walletdb.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/authhelper.cpp
 )
-target_link_libraries(BZX_wallet
+target_link_libraries(bitcoin_wallet
   PUBLIC
     core_interface
     bitcoin_util
@@ -46,4 +46,4 @@ target_link_libraries(BZX_wallet
 )
 
 # BZX only supports BDB for wallet storage.
-target_link_libraries(BZX_wallet PUBLIC BerkeleyDB::BerkeleyDB)
+target_link_libraries(bitcoin_wallet PUBLIC BerkeleyDB::BerkeleyDB)
