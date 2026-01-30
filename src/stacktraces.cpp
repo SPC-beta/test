@@ -118,22 +118,29 @@ static std::string GetExeFileName()
 static std::string g_exeFileName = GetExeFileName();
 static std::string g_exeFileBaseName = fs::path(g_exeFileName).filename().string();
 
-static void my_backtrace_error_callback (void *data, const char *msg,
-                                  int errnum)
+static void my_backtrace_error_callback (void *data, const char *msg, int errnum)
 {
+    if (msg) {
+        LogPrintf("libbacktrace error: %s (errno: %d)\n", msg, errnum);
+    }
 }
 
 static backtrace_state* GetLibBacktraceState()
 {
 #if WIN32
-    // libbacktrace is not able to handle the DWARF debuglink in the .exe
-    // but luckily we can just specify the .dbg file here as it's a valid PE/XCOFF file
     static std::string debugFileName = g_exeFileName + ".dbg";
     static const char* exeFileNamePtr = fs::exists(debugFileName) ? debugFileName.c_str() : g_exeFileName.c_str();
 #else
     static const char* exeFileNamePtr = g_exeFileName.empty() ? nullptr : g_exeFileName.c_str();
 #endif
-    static backtrace_state* st = backtrace_create_state(exeFileNamePtr, 1, my_backtrace_error_callback, nullptr);
+    static bool logged = false;
+    static backtrace_state* st = [](){ 
+        if (!logged) {
+            LogPrintf("libbacktrace using executable: %s\n", exeFileNamePtr ? exeFileNamePtr : "(nullptr)");
+            logged = true;
+        }
+        return backtrace_create_state(exeFileNamePtr, 1, my_backtrace_error_callback, nullptr);
+    }();
     return st;
 }
 
@@ -143,21 +150,30 @@ static uint64_t GetBaseAddress()
     return 0;
 }
 
-// PC addresses returned by StackWalk64 are in the real mapped space, while libbacktrace expects them to be in the
-// default mapped space starting at 0x400000. This method converts the address.
-// TODO this is probably the same reason libbacktrace is not able to gather the stacktrace on Windows (returns pointers like 0x1 or 0xfffffff)
-// If they ever fix this problem, we might end up converting to invalid addresses here
+static uint64_t GetPreferredBaseAddress()
+{
+    HMODULE hModule = GetModuleHandle(nullptr);
+    if (!hModule) return 0;
+
+    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)hModule;
+    PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)((BYTE*)hModule + dosHeader->e_lfanew);
+
+    return ntHeaders->OptionalHeader.ImageBase;
+}
+
 static uint64_t ConvertAddress(uint64_t addr)
 {
-    MEMORY_BASIC_INFORMATION mbi;
+    static uint64_t preferredBase = GetPreferredBaseAddress();
 
+    MEMORY_BASIC_INFORMATION mbi;
     if (!VirtualQuery((PVOID)addr, &mbi, sizeof(mbi)))
         return 0;
 
-    uint64_t hMod = (uint64_t)mbi.AllocationBase;
-    uint64_t offset = addr - hMod;
-    return 0x400000 + offset;
+    uint64_t actualBase = (uint64_t)mbi.AllocationBase;
+    uint64_t offset = addr - actualBase;
+    return preferredBase + offset;
 }
+
 
 static __attribute__((noinline)) std::vector<uint64_t> GetStackFrames(size_t skip, size_t max_frames, const CONTEXT* pContext = nullptr)
 {
@@ -413,7 +429,7 @@ static std::string GetCrashInfoStrNoDebugInfo(crash_info ci)
 
     auto ciStr = EncodeBase32(MakeUCharSpan(ds));
     std::string s = ci.crashDescription + "\n";
-    s += strprintf("No debug information available for stacktrace. You should add debug information and then run:\n"
+    s += strprintf("Add debug information and then run:\n"
                    "%s -printcrashinfo=%s\n", g_exeFileBaseName, ciStr);
     return s;
 }
@@ -468,9 +484,7 @@ std::string GetCrashInfoStrFromSerializedStr(const std::string& ciStr)
 
 static std::string GetCrashInfoStr(const crash_info& ci, size_t spaces)
 {
-    if (ci.stackframeInfos.empty()) {
-        return GetCrashInfoStrNoDebugInfo(ci);
-    }
+    std::string s = GetCrashInfoStrNoDebugInfo(ci) + "\n";
 
     std::string sp;
     for (size_t i = 0; i < spaces; i++) {
@@ -497,11 +511,14 @@ static std::string GetCrashInfoStr(const crash_info& ci, size_t spaces)
     }
 
     // get max "filename:line" length so we can better format it
-    size_t lstrlen = std::max_element(lstrs.begin(), lstrs.end(), [](const std::string& a, const std::string& b) { return a.size() < b.size(); })->size();
+    size_t lstrlen = lstrs.empty() ? 0 : std::max_element(lstrs.begin(), lstrs.end(),
+        [](const std::string& a, const std::string& b) {
+            return a.size() < b.size();
+        })->size();
 
     std::string fmtStr = strprintf("%%2d#: (0x%%08X) %%-%ds - %%s\n", lstrlen);
 
-    std::string s = ci.crashDescription + "\n";
+    s += ci.crashDescription + "\n";
     for (size_t i = 0; i < ci.stackframeInfos.size(); i++) {
         auto& si = ci.stackframeInfos[i];
 
