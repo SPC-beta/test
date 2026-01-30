@@ -42,7 +42,7 @@ function(add_maintenance_targets)
     VERBATIM
   )
 
-  foreach(target IN ITEMS bitcoind bitcoin-qt bitcoin-cli bitcoin-tx bitcoin-util bitcoin-wallet test_bitcoin bench_bitcoin)
+  foreach(target IN ITEMS BZXd BZX-qt BZX-cli BZX-tx BZX-util BZX-wallet test_BZX bench_BZX)
     if(TARGET ${target})
       list(APPEND executables $<TARGET_FILE:${target}>)
     endif()
@@ -66,28 +66,28 @@ function(add_maintenance_targets)
 endfunction()
 
 function(add_windows_deploy_target)
-  if(MINGW AND TARGET bitcoin-qt AND TARGET bitcoind AND TARGET bitcoin-cli AND TARGET bitcoin-tx)
+  if(MINGW AND TARGET BZX-qt AND TARGET BZXd AND TARGET BZX-cli AND TARGET BZX-tx)
     # TODO: Consider replacing this code with the CPack NSIS Generator.
     #       See https://cmake.org/cmake/help/latest/cpack_gen/nsis.html
     include(GenerateSetupNsi)
     generate_setup_nsi()
     add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/bitcoin-win64-setup.exe
+      OUTPUT ${PROJECT_BINARY_DIR}/BZX-win64-setup.exe
       COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/release
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoin-qt> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoin-qt>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoind> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoind>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoin-cli> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoin-cli>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:bitcoin-tx> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:bitcoin-tx>
-      COMMAND makensis -V2 ${PROJECT_BINARY_DIR}/bitcoin-win64-setup.nsi
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:BZX-qt> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:BZX-qt>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:BZXd> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:BZXd>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:BZX-cli> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:BZX-cli>
+      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:BZX-tx> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:BZX-tx>
+      COMMAND makensis -V2 ${PROJECT_BINARY_DIR}/BZX-win64-setup.nsi
       VERBATIM
     )
-    add_custom_target(deploy DEPENDS ${PROJECT_BINARY_DIR}/bitcoin-win64-setup.exe)
+    add_custom_target(deploy DEPENDS ${PROJECT_BINARY_DIR}/BZX-win64-setup.exe)
   endif()
 endfunction()
 
 function(add_macos_deploy_target)
-  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND TARGET bitcoin-qt)
-    set(macos_app "bitcoin-Qt.app")
+  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND TARGET BZX-qt)
+    set(macos_app "BZX-Qt.app")
     # Populate Contents subdirectory.
     configure_file(${PROJECT_SOURCE_DIR}/share/qt/Info.plist.in ${macos_app}/Contents/Info.plist NO_SOURCE_PERMISSIONS)
     file(CONFIGURE OUTPUT ${macos_app}/Contents/PkgInfo CONTENT "APPL????")
@@ -109,11 +109,11 @@ function(add_macos_deploy_target)
 
 
     add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/bitcoin-Qt
+      OUTPUT ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/BZX-Qt
       COMMAND ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR} --config $<CONFIG> --component GUI --prefix ${macos_app}/Contents/MacOS
-      COMMAND ${CMAKE_COMMAND} -E rename ${macos_app}/Contents/MacOS/bin/$<TARGET_FILE_NAME:bitcoin-qt> ${macos_app}/Contents/MacOS/bitcoin-Qt
+      COMMAND ${CMAKE_COMMAND} -E rename ${macos_app}/Contents/MacOS/bin/$<TARGET_FILE_NAME:BZX-qt> ${macos_app}/Contents/MacOS/BZX-Qt
       COMMAND ${CMAKE_COMMAND} -E rm -rf ${macos_app}/Contents/MacOS/bin
-      COMMAND ${STRIP_COMMAND} ${macos_app}/Contents/MacOS/bitcoin-Qt || true
+      COMMAND ${STRIP_COMMAND} ${macos_app}/Contents/MacOS/BZX-Qt || true
       VERBATIM
     )
 
@@ -126,40 +126,40 @@ function(add_macos_deploy_target)
     
     if(CMAKE_HOST_APPLE)
       add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/${osx_volname}.zip
+        OUTPUT ${PROJECT_BINARY_DIR}/${osx_volname}.tar.gz
         COMMAND ${PYTHON_COMMAND} ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus ${macos_app} ${osx_volname} -translations-dir=${QT_TRANSLATIONS_DIR} -zip
-        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/bitcoin-Qt
+        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/BZX-Qt
         VERBATIM
       )
       add_custom_target(deploydir
-        DEPENDS ${PROJECT_BINARY_DIR}/${osx_volname}.zip
+        DEPENDS ${PROJECT_BINARY_DIR}/${osx_volname}.tar.gz
       )
       add_custom_target(deploy
-        DEPENDS ${PROJECT_BINARY_DIR}/${osx_volname}.zip
+        DEPENDS ${PROJECT_BINARY_DIR}/${osx_volname}.tar.gz
       )
     else()
       add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/bitcoin-Qt
+        OUTPUT ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/BZX-Qt
         COMMAND OBJDUMP=${CMAKE_OBJDUMP} ${PYTHON_COMMAND} ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus ${macos_app} ${osx_volname} -translations-dir=${QT_TRANSLATIONS_DIR}
-        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/bitcoin-Qt
+        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/BZX-Qt
         VERBATIM
       )
       add_custom_target(deploydir
-        DEPENDS ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/bitcoin-Qt
+        DEPENDS ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/BZX-Qt
       )
 
-      find_program(ZIP_COMMAND zip REQUIRED)
+      find_program(TAR_COMMAND tar REQUIRED)
       add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/dist/${osx_volname}.zip
+        OUTPUT ${PROJECT_BINARY_DIR}/dist/${osx_volname}.tar.gz
         WORKING_DIRECTORY dist
-        COMMAND ${PROJECT_SOURCE_DIR}/cmake/script/macos_zip.sh ${ZIP_COMMAND} ${osx_volname}.zip
+        COMMAND ${PROJECT_SOURCE_DIR}/cmake/script/macos_tar.bash ${TAR_COMMAND} ${osx_volname}.tar.gz
         VERBATIM
       )
       add_custom_target(deploy
-        DEPENDS ${PROJECT_BINARY_DIR}/dist/${osx_volname}.zip
+        DEPENDS ${PROJECT_BINARY_DIR}/dist/${osx_volname}.tar.gz
       )
     endif()
-    add_dependencies(deploydir bitcoin-qt)
+    add_dependencies(deploydir BZX-qt)
     add_dependencies(deploy deploydir)
   endif()
 endfunction()
