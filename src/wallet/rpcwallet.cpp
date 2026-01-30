@@ -2350,7 +2350,7 @@ void ListTransactions(CWallet * const pwallet, const CWalletTx& wtx, const std::
                     bool its_masternode_payment = false;
                     {
                         std::vector<CTxOut> voutMasternodePaymentsRet;
-                        mnpayments.GetBlockTxOuts(txHeight, GetTime(), CAmount(), voutMasternodePaymentsRet);
+                        mnpayments.GetBlockTxOuts(txHeight, CAmount(), voutMasternodePaymentsRet);
                         //compare address of payee to addr.
                         for(CTxOut const & out : voutMasternodePaymentsRet) {
                             CTxDestination payeeDest;
