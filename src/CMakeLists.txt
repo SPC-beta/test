@@ -241,7 +241,7 @@ if(ENABLE_WALLET)
 endif()
 
 
-# P2P and RPC server functionality used by `bitcoind` and `bitcoin-qt` executables.
+# P2P and RPC server functionality used by `bitcoind` and `BZX-qt` executables.
 add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_SOURCE_DIR}/activemasternode.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/addrdb.cpp
@@ -379,14 +379,13 @@ target_link_libraries(bitcoin_node
     $<$<BOOL:${WIN32}>:windows_system>
 )
 
-# Bitcoin Core bitcoind.
+# Bitcoin Core BZXd.
 if(BUILD_DAEMON)
-  add_executable(bitcoind
-    ${CMAKE_CURRENT_SOURCE_DIR}/bitcoind.cpp
+  add_executable(BZXd
+  ${CMAKE_CURRENT_SOURCE_DIR}/bitcoind.cpp
   )
-  add_windows_resources(bitcoind bitcoind-res.rc)
-
-  target_link_libraries(bitcoind
+  add_windows_resources(BZXd bitcoind-res.rc)
+  target_link_libraries(BZXd
     core_interface
     univalue
     Boost::thread
@@ -398,19 +397,21 @@ if(BUILD_DAEMON)
     bitcoin_cli
     secp256k1
     secp256k1pp
-
-    # Wallet libraries (REQUIRED)
     $<TARGET_NAME_IF_EXISTS:bitcoin_wallet>
-    $<TARGET_NAME_IF_EXISTS:bitcoin_walletdb>
-    $<TARGET_NAME_IF_EXISTS:bitcoin_wallet_tool>
-
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
   )
 
-  set_platform_output_name(bitcoind BITCOIN_DAEMON_NAME)
-  apply_wrapped_exception_flags(bitcoind)
-  list(APPEND installable_targets bitcoind)
+  set_platform_output_name(BZXd BITCOIN_DAEMON_NAME)
+  apply_wrapped_exception_flags(BZXd)
+  list(APPEND installable_targets BZXd)
+  # Generate DLSymbols on macOS
+  if(APPLE)
+      add_custom_command(TARGET BZXd POST_BUILD
+          COMMAND dsymutil "$<TARGET_FILE:BZXd>"
+          COMMENT "Generating dSYM for BZXd"
+      )
+  endif()
 endif()
 if(WITH_MULTIPROCESS)
   add_executable(bitcoin-node
@@ -470,9 +471,9 @@ target_include_directories(bitcoin_cli
 
 # Bitcoin Core RPC client
 if(BUILD_CLI)
-  add_executable(bitcoin-cli ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin-cli.cpp)
-  add_windows_resources(bitcoin-cli bitcoin-cli-res.rc)
-  target_link_libraries(bitcoin-cli
+  add_executable(BZX-cli ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin-cli.cpp)
+  add_windows_resources(BZX-cli bitcoin-cli-res.rc)
+  target_link_libraries(BZX-cli
     core_interface
     univalue
     bitcoin_node
@@ -485,19 +486,19 @@ if(BUILD_CLI)
     ${TOR_LIBRARY}
     $<$<BOOL:${WIN32}>:windows_system>
   )
-  set_platform_output_name(bitcoin-cli BITCOIN_CLI_NAME)
-  apply_wrapped_exception_flags(bitcoin-cli)
-  list(APPEND installable_targets bitcoin-cli)
+  set_platform_output_name(BZX-cli BITCOIN_CLI_NAME)
+  apply_wrapped_exception_flags(BZX-cli)
+  list(APPEND installable_targets BZX-cli)
 endif()
 
 
 if(BUILD_TX)
-  add_executable(bitcoin-tx ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin-tx.cpp
+  add_executable(BZX-tx ${CMAKE_CURRENT_SOURCE_DIR}/bitcoin-tx.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/keystore.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/script/standard.cpp
   )
-  add_windows_resources(bitcoin-tx bitcoin-tx-res.rc)
-  target_link_libraries(bitcoin-tx
+  add_windows_resources(BZX-tx bitcoin-tx-res.rc)
+  target_link_libraries(BZX-tx
     core_interface
     bitcoin_crypto    
     bitcoin_cli
@@ -509,9 +510,9 @@ if(BUILD_TX)
     $<$<BOOL:${WIN32}>:windows_system>
     $<$<BOOL:${WIN32}>:OpenSSL::Crypto>
   )
-  set_platform_output_name(bitcoin-tx BITCOIN_TX_NAME)
-  apply_wrapped_exception_flags(bitcoin-tx)
-  list(APPEND installable_targets bitcoin-tx)
+  set_platform_output_name(BZX-tx BITCOIN_TX_NAME)
+  apply_wrapped_exception_flags(BZX-tx)
+  list(APPEND installable_targets BZX-tx)
 endif()
 
 
@@ -564,3 +565,25 @@ install(TARGETS ${installable_targets}
   COMPONENT GUI
 )
 unset(installable_targets)
+
+if(INSTALL_MAN AND NOT WIN32)
+  # Install man pages with correct Firo names
+  if(BUILD_DAEMON)
+    install(FILES ${PROJECT_SOURCE_DIR}/doc/man/bitcoind.1
+      DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+      RENAME BZXd.1
+    )
+  endif()
+  if(BUILD_CLI)
+    install(FILES ${PROJECT_SOURCE_DIR}/doc/man/bitcoin-cli.1
+      DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+      RENAME BZX-cli.1
+    )
+  endif()
+  if(BUILD_TX)
+    install(FILES ${PROJECT_SOURCE_DIR}/doc/man/bitcoin-tx.1
+      DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+      RENAME BZX-tx.1
+    )
+  endif()
+endif()
