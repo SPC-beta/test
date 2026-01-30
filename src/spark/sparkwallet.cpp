@@ -1591,7 +1591,7 @@ CWalletTx CSparkWallet::CreateSparkSpendTransaction(
                 i++;
             }
 
-            if (GetTransactionWeight(tx) >= MAX_NEW_TX_WEIGHT) {
+            if (GetTransactionWeight(tx) >= MAX_BLOCK_BASE_SIZE) {
                 throw std::runtime_error(_("Transaction is too large (size limit: 250Kb). Select less inputs or consolidate your UTXOs"));
             }
 
