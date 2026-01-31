@@ -16,12 +16,14 @@ $(package)_relic_sha256_hash=ddad83b1406985a1e4703bd03bdbab89453aa700c0c99567cf8
 
 $(package)_extra_sources=$($(package)_relic_file_name)
 
-$(package)_patches = bls-signatures.patch
+$(package)_patches=bls-signatures.patch
+
 
 define $(package)_fetch_cmds
 $(call fetch_file,$(package),$($(package)_download_path),$($(package)_download_file),$($(package)_file_name),$($(package)_sha256_hash)) && \
 $(call fetch_file,$(package),$($(package)_relic_download_path),$($(package)_relic_download_file),$($(package)_relic_file_name),$($(package)_relic_sha256_hash))
 endef
+
 
 define $(package)_extract_cmds
   mkdir -p $($(package)_extract_dir) && \
@@ -32,28 +34,48 @@ define $(package)_extract_cmds
   cp $($(package)_source_dir)/$($(package)_relic_file_name) .
 endef
 
+
 define $(package)_set_vars
   $(package)_config_opts=-DCMAKE_INSTALL_PREFIX=$($(package)_staging_dir)/$(host_prefix)
-  $(package)_config_opts+= -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-  $(package)_config_opts+= -DCMAKE_PREFIX_PATH=$(host_prefix)
-  $(package)_config_opts+= -DSTLIB=ON -DSHLIB=OFF -DSTBIN=ON
-  $(package)_config_opts+= -DBUILD_BLS_PYTHON_BINDINGS=0 -DBUILD_BLS_TESTS=0 -DBUILD_BLS_BENCHMARKS=0
+  $(package)_config_opts+=-DCMAKE_POLICY_VERSION_MINIMUM=3.5
+  $(package)_config_opts+=-DCMAKE_PREFIX_PATH=$(host_prefix)
+
+  # static only
+  $(package)_config_opts+=-DSTLIB=ON -DSHLIB=OFF -DSTBIN=ON
+
+  # disable all optional outputs
+  $(package)_config_opts+=-DBUILD_BLS_PYTHON_BINDINGS=0
+  $(package)_config_opts+=-DBUILD_BLS_TESTS=0
+  $(package)_config_opts+=-DBUILD_BLS_BENCHMARKS=0
+
+  # critical: disable ALL assembly (BLS + RELIC)
+  $(package)_config_opts+=-DENABLE_ASM=OFF
+  $(package)_config_opts+=-DBUILD_ASM=OFF
+
+  # OS selection
   $(package)_config_opts_linux=-DOPSYS=LINUX -DCMAKE_SYSTEM_NAME=Linux
   $(package)_config_opts_darwin=-DOPSYS=MACOSX -DCMAKE_SYSTEM_NAME=Darwin
   $(package)_config_opts_mingw32=-DOPSYS=WINDOWS -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS=""
-  $(package)_config_opts+= -DWSIZE=64
+
+  $(package)_config_opts+=-DWSIZE=64
   $(package)_config_opts_debug=-DDEBUG=ON -DCMAKE_BUILD_TYPE=Debug
 
+  # toolchain (darwin)
   ifneq ($(darwin_native_toolchain),)
-    $(package)_config_opts_darwin+= -DCMAKE_AR="$(host_prefix)/native/bin/$($(package)_ar)"
-    $(package)_config_opts_darwin+= -DCMAKE_RANLIB="$(host_prefix)/native/bin/$($(package)_ranlib)"
+    $(package)_config_opts_darwin+=-DCMAKE_AR="$(host_prefix)/native/bin/$($(package)_ar)"
+    $(package)_config_opts_darwin+=-DCMAKE_RANLIB="$(host_prefix)/native/bin/$($(package)_ranlib)"
   else
-    $(package)_config_opts_darwin+= -DCMAKE_AR="$($(package)_ar)"
-    $(package)_config_opts_darwin+= -DCMAKE_RANLIB="$($(package)_ranlib)"
+    $(package)_config_opts_darwin+=-DCMAKE_AR="$($(package)_ar)"
+    $(package)_config_opts_darwin+=-DCMAKE_RANLIB="$($(package)_ranlib)"
   endif
 
+  # ensure sodium never leaks back in
   $(package)_cppflags+=-UBLSALLOC_SODIUM
+
+  # force Apple ld on macOS (lld causes Mach-O relocation failures)
+  $(package)_ldflags_darwin+=-fuse-ld=ld
 endef
+
 
 define $(package)_preprocess_cmds
   patch -p1 < $($(package)_patch_dir)/bls-signatures.patch && \
@@ -61,18 +83,21 @@ define $(package)_preprocess_cmds
   sed -i.old "s|GIT_TAG        .*RELIC_GIT_TAG.*|URL_HASH SHA256=$($(package)_relic_sha256_hash)|" src/CMakeLists.txt
 endef
 
+
 define $(package)_config_cmds
   export CC="$($(package)_cc)" && \
   export CXX="$($(package)_cxx)" && \
   export CFLAGS="$($(package)_cflags) $($(package)_cppflags)" && \
   export CXXFLAGS="$($(package)_cxxflags) $($(package)_cppflags)" && \
-  export LDFLAGS="$($(package)_ldflags)" && \
+  export LDFLAGS="$($(package)_ldflags) $($(package)_ldflags_darwin)" && \
   cmake ../ $($(package)_config_opts)
 endef
+
 
 define $(package)_build_cmds
   $(MAKE) $($(package)_build_opts)
 endef
+
 
 define $(package)_stage_cmds
   $(MAKE) install
