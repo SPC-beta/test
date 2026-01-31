@@ -6,7 +6,7 @@ $(package)_file_name=$(package)-$($(package)_download_file)
 $(package)_build_subdir=build
 $(package)_sha256_hash=94e49f3eaa29bc1f354cd569c00f4f4314d1c8ab4758527c248b67da9686135a
 $(package)_dependencies=gmp cmake
-$(package)_darwin_triplet=x86_64-apple-darwin19
+$(package)_darwin_triplet=x86_64-apple-darwin
 
 $(package)_relic_version=aecdcae7956f542fbee2392c1f0feb0a8ac41dc5
 $(package)_relic_download_path=https://github.com/relic-toolkit/relic/archive
