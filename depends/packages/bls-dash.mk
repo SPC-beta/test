@@ -15,7 +15,6 @@ $(package)_relic_build_subdir=relic
 $(package)_relic_sha256_hash=ddad83b1406985a1e4703bd03bdbab89453aa700c0c99567cf8de51c205e5dde
 
 $(package)_extra_sources=$($(package)_relic_file_name)
-
 $(package)_patches=bls-signatures.patch
 
 
@@ -43,7 +42,7 @@ define $(package)_set_vars
   # static only
   $(package)_config_opts+=-DSTLIB=ON -DSHLIB=OFF -DSTBIN=ON
 
-  # disable all optional outputs
+  # disable optional outputs
   $(package)_config_opts+=-DBUILD_BLS_PYTHON_BINDINGS=0
   $(package)_config_opts+=-DBUILD_BLS_TESTS=0
   $(package)_config_opts+=-DBUILD_BLS_BENCHMARKS=0
@@ -52,7 +51,7 @@ define $(package)_set_vars
   $(package)_config_opts+=-DENABLE_ASM=OFF
   $(package)_config_opts+=-DBUILD_ASM=OFF
 
-  # OS selection
+  # OS / toolchain selection
   $(package)_config_opts_linux=-DOPSYS=LINUX -DCMAKE_SYSTEM_NAME=Linux
   $(package)_config_opts_darwin=-DOPSYS=MACOSX -DCMAKE_SYSTEM_NAME=Darwin
   $(package)_config_opts_mingw32=-DOPSYS=WINDOWS -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS=""
@@ -60,7 +59,7 @@ define $(package)_set_vars
   $(package)_config_opts+=-DWSIZE=64
   $(package)_config_opts_debug=-DDEBUG=ON -DCMAKE_BUILD_TYPE=Debug
 
-  # toolchain (darwin)
+  # archive tools (darwin cross)
   ifneq ($(darwin_native_toolchain),)
     $(package)_config_opts_darwin+=-DCMAKE_AR="$(host_prefix)/native/bin/$($(package)_ar)"
     $(package)_config_opts_darwin+=-DCMAKE_RANLIB="$(host_prefix)/native/bin/$($(package)_ranlib)"
@@ -69,11 +68,9 @@ define $(package)_set_vars
     $(package)_config_opts_darwin+=-DCMAKE_RANLIB="$($(package)_ranlib)"
   endif
 
-  # ensure sodium never leaks back in
+  # make sure sodium never sneaks back
   $(package)_cppflags+=-UBLSALLOC_SODIUM
 
-  # force Apple ld on macOS (lld causes Mach-O relocation failures)
-  $(package)_ldflags_darwin+=-fuse-ld=ld
 endef
 
 
@@ -89,7 +86,7 @@ define $(package)_config_cmds
   export CXX="$($(package)_cxx)" && \
   export CFLAGS="$($(package)_cflags) $($(package)_cppflags)" && \
   export CXXFLAGS="$($(package)_cxxflags) $($(package)_cppflags)" && \
-  export LDFLAGS="$($(package)_ldflags) $($(package)_ldflags_darwin)" && \
+  export LDFLAGS="$($(package)_ldflags)" && \
   cmake ../ $($(package)_config_opts)
 endef
 
