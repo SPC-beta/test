@@ -44,6 +44,12 @@ define $(package)_set_vars
   $(package)_config_opts+= -DWSIZE=64
   $(package)_config_opts_debug=-DDEBUG=ON -DCMAKE_BUILD_TYPE=Debug
 
+  # macOS x86_64 fix: force 64-bit + PIC to avoid BRANCH relocation errors
+  ifeq ($(OS),Darwin)
+    $(package)_cflags_x86_64+= -m64 -fPIC
+    $(package)_cxxflags_x86_64+= -m64 -fPIC
+  endif
+
   ifneq ($(darwin_native_toolchain),)
     $(package)_config_opts_darwin+= -DCMAKE_AR="$(host_prefix)/native/bin/$($(package)_ar)"
     $(package)_config_opts_darwin+= -DCMAKE_RANLIB="$(host_prefix)/native/bin/$($(package)_ranlib)"
