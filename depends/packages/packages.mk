@@ -1,4 +1,4 @@
-packages:=boost openssl libevent gmp cmake zlib backtrace tor bls-dash
+packages:=boost openssl libevent gmp zlib backtrace tor bls-dash
 darwin_packages:=zeromq
 linux_packages:=zeromq
 native_packages :=
