@@ -70,8 +70,8 @@ endef
 define $(package)_config_cmds
   export CC="$($(package)_cc)" && \
   export CXX="$($(package)_cxx)" && \
-  export CFLAGS="$($(package)_cflags) $($(package)_cppflags)" && \
-  export CXXFLAGS="$($(package)_cxxflags) $($(package)_cppflags)" && \
+  export CFLAGS="$($(package)_cflags) $($(package)_cflags_x86_64) $($(package)_cppflags)" && \
+  export CXXFLAGS="$($(package)_cxxflags) $($(package)_cxxflags_x86_64) $($(package)_cppflags)" && \
   export LDFLAGS="$($(package)_ldflags)" && \
   cmake ../ $($(package)_config_opts)
 endef
