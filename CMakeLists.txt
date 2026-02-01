@@ -472,17 +472,26 @@ if(BUILD_DAEMON OR BUILD_GUI OR BUILD_CLI OR BUILD_TESTS OR BUILD_BENCH OR BUILD
   find_package(Libevent 2.1.8 MODULE REQUIRED)
 endif()
 
-# Find bls-dash library
+# Find bls-dash
 find_library(BLS_DASH_LIBRARY
   NAMES bls-dash
   REQUIRED
 )
+message(STATUS "Found bls-dash library: ${BLS_DASH_LIBRARY}")
 
-if(${BLS_DASH_LIBRARY} STREQUAL "BLS_DASH_LIBRARY-NOTFOUND")
-  message(FATAL_ERROR "bls-dash library not found")
-else()
-  message(STATUS "Found bls-dash library: ${BLS_DASH_LIBRARY}")
-endif()
+# Find RELIC (required by bls-dash)
+find_library(RELIC_LIBRARY
+  NAMES relic_s
+  REQUIRED
+)
+message(STATUS "Found RELIC library: ${RELIC_LIBRARY}")
+
+# Find GMP (required by RELIC)
+find_library(GMP_LIBRARY
+  NAMES gmp
+  REQUIRED
+)
+message(STATUS "Found GMP library: ${GMP_LIBRARY}")
 
 # Find tor library
 find_library(TOR_LIBRARY
