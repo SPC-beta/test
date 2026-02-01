@@ -403,9 +403,11 @@ endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   target_compile_definitions(core_interface INTERFACE OBJC_OLD_DISPATCH_PROTOTYPES=0)
-  # These flags are specific to ld64, and may cause issues with other linkers.
-  # For example: GNU ld will interpret -dead_strip as -de and then try and use
-  # "ad_strip" as the symbol for the entry point.
+
+  # Force Apple ld64 (GMP asm is incompatible with ld64.lld)
+  target_link_options(core_interface INTERFACE -fuse-ld=ld64)
+
+  # These flags are specific to ld64
   try_append_linker_flag("-Wl,-dead_strip" TARGET core_interface)
   try_append_linker_flag("-Wl,-dead_strip_dylibs" TARGET core_interface)
   if(CMAKE_HOST_APPLE)
