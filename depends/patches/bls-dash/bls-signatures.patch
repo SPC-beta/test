@@ -1,0 +1,9 @@
+diff --git a/src/threshold.cpp b/src/threshold.cpp
+index 36cef18..ddf8138 100644
+--- a/src/threshold.cpp
++++ b/src/threshold.cpp
+@@ -6,6 +6,7 @@
+ 
+ #include "schemes.hpp"
++
++#include <memory>
